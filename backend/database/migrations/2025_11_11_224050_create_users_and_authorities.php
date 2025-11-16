@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::dropIfExists('users');
         Schema::create('users', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->string('password');
+            $table->rememberToken();
             $table->string('full_name', 255);
             $table->string('email', 255)->unique();
             $table->string('phone', 50)->nullable();
@@ -41,15 +43,17 @@ return new class extends Migration
 
         Schema::create('authority_staff', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('user_id');
+            $table->string('full_name', 255);
+            $table->string('email', 255)->unique();
+            $table->string('password');
+            $table->rememberToken();
+
             $table->unsignedBigInteger('org_id');
             $table->string('role', 40); // staff_role
             $table->unsignedBigInteger('manager_id')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestampTz('created_at')->useCurrent();
 
-
-            $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('org_id')->references('id')->on('authority_orgs');
             $table->foreign('manager_id')->references('id')->on('authority_staff');
         });
