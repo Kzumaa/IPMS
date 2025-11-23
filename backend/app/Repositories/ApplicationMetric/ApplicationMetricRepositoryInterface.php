@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\ApplicaitonMetric;
+namespace App\Repositories\ApplicationMetric;
 
 use App\Models\ApplicationMetric;
 

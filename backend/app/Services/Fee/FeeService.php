@@ -2,7 +2,7 @@
 
 namespace App\Services\Fee;
 
-class FeeService
+class FeeService implements FeeServiceInterface
 {
 
 }

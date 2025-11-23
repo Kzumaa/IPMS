@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Application\ApplicationController;
 use App\Http\Controllers\Application\FeeQuoteController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
@@ -14,6 +15,13 @@ Route::get('/ping', function () {
 });
 
 Route::post('/applications/{id}/fee-quotes/generate', [FeeQuoteController::class, 'generate']);
+
+Route::prefix('applications')->group(function () {
+    Route::post('/', [ApplicationController::class, 'store']);
+    Route::get('/{id}', [ApplicationController::class, 'show']);
+    Route::put('/{id}', [ApplicationController::class, 'update']);
+    Route::put('/{id}/metrics', [ApplicationController::class, 'updateMetrics']);
+});
 
 
 Route::prefix('auth')->group(function () {
