@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class AuthorityOrg extends Model
 {
     public $timestamps = false;
+    protected $table = 'authority_orgs';
     protected $fillable = ['name', 'org_type', 'parent_id', 'address'];
 
 

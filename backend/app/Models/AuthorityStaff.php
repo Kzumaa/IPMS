@@ -11,6 +11,8 @@ class AuthorityStaff extends Authenticatable
 {
     use HasApiTokens, Notifiable;
 
+    public $timestamps = false;
+
     protected $table = 'authority_staff';
 
     protected $fillable = [

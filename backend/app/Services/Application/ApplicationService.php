@@ -5,11 +5,19 @@ namespace App\Services\Application;
 use App\Models\Application;
 use App\Models\ApplicationMetric;
 use App\Models\ApplicationParty;
+use App\Services\Assignment\AssignmentService;
+use App\Enums\ApplicationStatus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class ApplicationService
 {
+    protected $assignmentService;
+
+    public function __construct(AssignmentService $assignmentService)
+    {
+        $this->assignmentService = $assignmentService;
+    }
     public function createApplication(array $data): Application
     {
         return DB::transaction(function () use ($data) {
@@ -67,5 +75,14 @@ class ApplicationService
         $metrics = $application->metrics ?? ApplicationMetric::create(['application_id' => $application->id]);
         $metrics->update($data);
         return $metrics;
+    }
+
+    public function submitApplication(Application $application): Application
+    {
+        return DB::transaction(function () use ($application) {
+            $application->update(['status' => ApplicationStatus::SUBMITTED]);
+            $this->assignmentService->assignToFormalityExaminer($application);
+            return $application;
+        });
     }
 }

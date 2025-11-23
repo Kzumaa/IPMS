@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Application;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Services\Application\ApplicationService;
+use App\Enums\ApplicationStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -76,5 +77,19 @@ class ApplicationController extends Controller
         $metrics = $this->applicationService->updateMetrics($application, $validated);
 
         return response()->json($metrics);
+    }
+
+    public function submit($id)
+    {
+        $application = Application::findOrFail($id);
+        $this->authorize('update', $application);
+
+        if ($application->status !== ApplicationStatus::DRAFT) {
+            return response()->json(['message' => 'Application must be in DRAFT status to submit.'], 400);
+        }
+
+        $application = $this->applicationService->submitApplication($application);
+
+        return response()->json($application);
     }
 }
