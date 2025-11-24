@@ -18,4 +18,5 @@ enum ApplicationStatus: string
     case GRANTED = 'GRANTED';
     case REFUSED = 'REFUSED';
     case WITHDRAWN = 'WITHDRAWN';
+    case WAITING_RESPONSE = 'WAITING_RESPONSE';
 }

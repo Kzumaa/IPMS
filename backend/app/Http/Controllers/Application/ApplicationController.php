@@ -13,11 +13,16 @@ class ApplicationController extends Controller
 {
     protected $applicationService;
     protected $formalityExamService;
+    protected $substantiveExamService;
 
-    public function __construct(ApplicationService $applicationService, \App\Services\Examination\FormalityExamService $formalityExamService)
-    {
+    public function __construct(
+        ApplicationService $applicationService,
+        \App\Services\Examination\FormalityExamService $formalityExamService,
+        \App\Services\Examination\SubstantiveExamService $substantiveExamService
+    ) {
         $this->applicationService = $applicationService;
         $this->formalityExamService = $formalityExamService;
+        $this->substantiveExamService = $substantiveExamService;
     }
 
     public function store(Request $request)
@@ -106,6 +111,21 @@ class ApplicationController extends Controller
         ]);
 
         $record = $this->formalityExamService->processExaminationResult($application, $validated['result'], $validated['notes'] ?? null);
+
+        return response()->json($record);
+    }
+
+    public function completeSubstantiveExamination(Request $request, $id)
+    {
+        $application = Application::findOrFail($id);
+        $this->authorize('examine', $application);
+
+        $validated = $request->validate([
+            'result' => 'required|in:ACCEPTABLE,REJECTED,OBJECTION',
+            'notes' => 'nullable|string',
+        ]);
+
+        $record = $this->substantiveExamService->processExaminationResult($application, $validated['result'], $validated['notes'] ?? null);
 
         return response()->json($record);
     }
