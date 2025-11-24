@@ -14,15 +14,18 @@ class ApplicationController extends Controller
     protected $applicationService;
     protected $formalityExamService;
     protected $substantiveExamService;
+    protected $decisionService;
 
     public function __construct(
         ApplicationService $applicationService,
         \App\Services\Examination\FormalityExamService $formalityExamService,
-        \App\Services\Examination\SubstantiveExamService $substantiveExamService
+        \App\Services\Examination\SubstantiveExamService $substantiveExamService,
+        \App\Services\Decision\DecisionService $decisionService
     ) {
         $this->applicationService = $applicationService;
         $this->formalityExamService = $formalityExamService;
         $this->substantiveExamService = $substantiveExamService;
+        $this->decisionService = $decisionService;
     }
 
     public function store(Request $request)
@@ -126,6 +129,24 @@ class ApplicationController extends Controller
         ]);
 
         $record = $this->substantiveExamService->processExaminationResult($application, $validated['result'], $validated['notes'] ?? null);
+
+        return response()->json($record);
+    }
+
+    public function issueDecision(Request $request, $id)
+    {
+        $application = Application::findOrFail($id);
+        // Authorization: In real app, check if user has DECISION_MAKER role.
+        // For now, reuse 'examine' or allow if user is staff.
+        // Let's assume any staff can trigger this for now for simplicity, or reuse 'examine' policy.
+        $this->authorize('examine', $application); 
+
+        $validated = $request->validate([
+            'type' => 'required|in:GRANT,REFUSE',
+            'notes' => 'nullable|string',
+        ]);
+
+        $record = $this->decisionService->recordDecision($application, $validated['type'], $validated['notes'] ?? null);
 
         return response()->json($record);
     }

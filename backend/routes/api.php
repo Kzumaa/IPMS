@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Application\ApplicationController;
 use App\Http\Controllers\Application\FeeQuoteController;
+use App\Http\Controllers\Application\ProtectionTitleController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -24,7 +25,11 @@ Route::prefix('applications')->group(function () {
     Route::post('/{id}/submit', [ApplicationController::class, 'submit']);
     Route::post('/{id}/examination/complete', [ApplicationController::class, 'completeExamination']);
     Route::post('/{id}/substantive-examination/complete', [ApplicationController::class, 'completeSubstantiveExamination']);
+    Route::post('/{id}/decision', [ApplicationController::class, 'issueDecision']);
 });
+
+Route::get('/protection-titles/{id}/schedule', [ProtectionTitleController::class, 'getSchedule']);
+Route::post('/maintenance-fees/{id}/pay', [ProtectionTitleController::class, 'payFee']);
 
 
 Route::prefix('auth')->group(function () {
