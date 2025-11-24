@@ -12,10 +12,12 @@ use Illuminate\Support\Facades\Auth;
 class ApplicationController extends Controller
 {
     protected $applicationService;
+    protected $formalityExamService;
 
-    public function __construct(ApplicationService $applicationService)
+    public function __construct(ApplicationService $applicationService, \App\Services\Examination\FormalityExamService $formalityExamService)
     {
         $this->applicationService = $applicationService;
+        $this->formalityExamService = $formalityExamService;
     }
 
     public function store(Request $request)
@@ -35,7 +37,7 @@ class ApplicationController extends Controller
 
     public function show($id)
     {
-        $application = Application::with(['metrics', 'parties', 'payments'])->findOrFail($id);
+        $application = Application::with(['metrics', 'parties', 'payments', 'attachments'])->findOrFail($id);
         $this->authorize('view', $application);
         return response()->json($application);
     }
@@ -91,5 +93,20 @@ class ApplicationController extends Controller
         $application = $this->applicationService->submitApplication($application);
 
         return response()->json($application);
+    }
+
+    public function completeExamination(Request $request, $id)
+    {
+        $application = Application::findOrFail($id);
+        $this->authorize('examine', $application);
+
+        $validated = $request->validate([
+            'result' => 'required|in:PASS,FAIL',
+            'notes' => 'nullable|string',
+        ]);
+
+        $record = $this->formalityExamService->processExaminationResult($application, $validated['result'], $validated['notes'] ?? null);
+
+        return response()->json($record);
     }
 }

@@ -22,6 +22,7 @@ Route::prefix('applications')->group(function () {
     Route::put('/{id}', [ApplicationController::class, 'update']);
     Route::put('/{id}/metrics', [ApplicationController::class, 'updateMetrics']);
     Route::post('/{id}/submit', [ApplicationController::class, 'submit']);
+    Route::post('/{id}/examination/complete', [ApplicationController::class, 'completeExamination']);
 });
 
 
