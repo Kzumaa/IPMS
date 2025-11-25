@@ -16,7 +16,7 @@ class Application extends Model
     protected $fillable = [
         'app_no', 'app_type', 'title', 'filing_date', 'status', 'applicant_is_inventor',
         'publication_early_requested', 'pub_delay_months', 'receiving_org_id',
-        'current_assignee_id', 'created_by'
+        'current_assignee_id', 'created_by', 'deadlines', 'file_validation_results'
     ];
 
 
@@ -27,6 +27,8 @@ class Application extends Model
         'pub_delay_months' => 'integer',
         'app_type' => AppType::class,
         'status' => ApplicationStatus::class,
+        'deadlines' => 'array',
+        'file_validation_results' => 'array',
     ];
 
 

@@ -9,7 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class AuthorityStaff extends Authenticatable
 {
-    use HasApiTokens, Notifiable;
+    use HasApiTokens, Notifiable, \Illuminate\Database\Eloquent\Factories\HasFactory;
 
     public $timestamps = false;
 

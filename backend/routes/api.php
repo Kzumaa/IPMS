@@ -22,6 +22,7 @@ Route::prefix('applications')->group(function () {
     Route::get('/{id}', [ApplicationController::class, 'show']);
     Route::put('/{id}', [ApplicationController::class, 'update']);
     Route::put('/{id}/metrics', [ApplicationController::class, 'updateMetrics']);
+    Route::post('/{id}/attachments', [\App\Http\Controllers\Application\ApplicationAttachmentController::class, 'store']);
     Route::post('/{id}/submit', [ApplicationController::class, 'submit']);
     Route::post('/{id}/examination/complete', [ApplicationController::class, 'completeExamination']);
     Route::post('/{id}/substantive-examination/complete', [ApplicationController::class, 'completeSubstantiveExamination']);

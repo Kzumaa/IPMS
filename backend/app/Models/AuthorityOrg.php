@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AuthorityOrg extends Model
 {
+    use \Illuminate\Database\Eloquent\Factories\HasFactory;
+
     public $timestamps = false;
     protected $table = 'authority_orgs';
     protected $fillable = ['name', 'org_type', 'parent_id', 'address'];

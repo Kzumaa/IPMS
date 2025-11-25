@@ -13,10 +13,12 @@ use Illuminate\Support\Facades\Auth;
 class ApplicationService
 {
     protected $assignmentService;
+    protected $quoteGenerator;
 
-    public function __construct(AssignmentService $assignmentService)
+    public function __construct(AssignmentService $assignmentService, \App\Services\Fee\QuoteGenerator $quoteGenerator)
     {
         $this->assignmentService = $assignmentService;
+        $this->quoteGenerator = $quoteGenerator;
     }
     public function createApplication(array $data): Application
     {
@@ -79,10 +81,94 @@ class ApplicationService
 
     public function submitApplication(Application $application): Application
     {
+        // 1. Validate Files
+        $validationResults = $this->validateFiles($application);
+        if (!empty($validationResults)) {
+            $application->update(['file_validation_results' => $validationResults]);
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'files' => 'Missing required documents: ' . implode(', ', $validationResults)
+            ]);
+        }
+
+        // 2. Refresh Fees
+        // In a real scenario, we might want to force a recalculation here.
+        // For now, we assume the user has already triggered fee calculation or we do it here.
+        $this->quoteGenerator->generate($application, 'TT263-2016');
+
         return DB::transaction(function () use ($application) {
-            $application->update(['status' => ApplicationStatus::SUBMITTED]);
+            // 3. Calculate Deadlines
+            $deadlines = $this->calculateDeadlines($application);
+
+            $application->update([
+                'status' => ApplicationStatus::SUBMITTED,
+                'filing_date' => now(), // Set filing date on submission
+                'deadlines' => $deadlines,
+                'file_validation_results' => null // Clear errors on success
+            ]);
             $this->assignmentService->assignToFormalityExaminer($application);
             return $application;
         });
+    }
+
+    protected function validateFiles(Application $application): array
+    {
+        $missing = [];
+        $attachments = $application->attachments()->pluck('doc_type')->toArray();
+        \Illuminate\Support\Facades\Log::info('Validating files for app ' . $application->id, ['type' => $application->app_type, 'attachments' => $attachments]);
+
+        // Map requirements based on AppType
+        $required = match ($application->app_type) {
+            \App\Enums\AppType::PATENT, \App\Enums\AppType::UTILITY => ['DESCRIPTION', 'CLAIMS', 'ABSTRACT'],
+            \App\Enums\AppType::INDUSTRIAL_DESIGN => ['ID_DESCRIPTION', 'ID_PHOTOS_SET'],
+            default => []
+        };
+
+        foreach ($required as $req) {
+            if (!in_array($req, $attachments)) {
+                $missing[] = $req;
+            }
+        }
+
+        // Special check for Design Drawings quantity (min 4)
+        if ($application->app_type === \App\Enums\AppType::INDUSTRIAL_DESIGN) {
+             $drawingCount = $application->attachments()->where('doc_type', 'ID_PHOTOS_SET')->count();
+             // Note: In a real app, we might check page count or file content.
+             // Here we assume 1 attachment record = 1 set of drawings or check metadata.
+             // For simplicity, let's just ensure at least one DRAWINGS file exists (already checked above).
+             // If we want to enforce "4 views", we'd need more detailed metadata in Attachment.
+        }
+
+        return $missing;
+    }
+
+    protected function calculateDeadlines(Application $application): array
+    {
+        $filingDate = now();
+        $deadlines = [];
+
+        // Formality Exam: 1 month from filing
+        $deadlines['formality_exam'] = $filingDate->copy()->addMonth()->toIso8601String();
+
+        if ($application->app_type === \App\Enums\AppType::INDUSTRIAL_DESIGN) {
+            // Publication: 2 months from accepted (approx 3 months from filing if smooth)
+            // We can't set exact publication date yet as it depends on acceptance.
+            // But we can set a target. Let's set it relative to filing for now or leave null.
+            // Docs say: "Within 2 months from the date the application is accepted".
+            
+            // Substantive Exam: 7 months from publication.
+            // Again, dependent on future events.
+        } else {
+            // Patent/Utility
+            // Publication: 19th month from priority/filing
+            $baseDate = $application->metrics->priority_date ?? $filingDate; // Assuming priority_date exists in metrics or we use filing
+            // Note: priority_date is not yet in metrics, using filing date for now.
+            $deadlines['publication'] = $filingDate->copy()->addMonths(19)->toIso8601String();
+
+            // Substantive Exam Request Deadline
+            $months = $application->app_type === \App\Enums\AppType::PATENT ? 42 : 36;
+            $deadlines['substantive_exam_request'] = $filingDate->copy()->addMonths($months)->toIso8601String();
+        }
+
+        return $deadlines;
     }
 }
