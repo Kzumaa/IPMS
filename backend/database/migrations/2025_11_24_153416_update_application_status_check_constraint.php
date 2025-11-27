@@ -12,8 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE applications DROP CONSTRAINT IF EXISTS chk_applications_status");
-        DB::statement("ALTER TABLE applications ADD CONSTRAINT chk_applications_status CHECK (status IN ('DRAFT', 'SUBMITTED', 'FORMALITY_EXAM', 'PUBLISHED', 'SUB_EXAM_REQ', 'SUB_EXAM', 'GRANTED', 'REFUSED', 'WITHDRAWN', 'WAITING_RESPONSE'))");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE applications DROP CONSTRAINT IF EXISTS chk_applications_status");
+            DB::statement("ALTER TABLE applications ADD CONSTRAINT chk_applications_status CHECK (status IN ('DRAFT', 'SUBMITTED', 'FORMALITY_EXAM', 'PUBLISHED', 'SUB_EXAM_REQ', 'SUB_EXAM', 'GRANTED', 'REFUSED', 'WITHDRAWN', 'WAITING_RESPONSE'))");
+        }
     }
 
     /**
@@ -21,7 +23,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE applications DROP CONSTRAINT IF EXISTS chk_applications_status");
-        DB::statement("ALTER TABLE applications ADD CONSTRAINT chk_applications_status CHECK (status IN ('DRAFT', 'SUBMITTED', 'FORMALITY_EXAM', 'PUBLISHED', 'SUB_EXAM_REQ', 'SUB_EXAM', 'GRANTED', 'REFUSED', 'WITHDRAWN'))");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE applications DROP CONSTRAINT IF EXISTS chk_applications_status");
+            DB::statement("ALTER TABLE applications ADD CONSTRAINT chk_applications_status CHECK (status IN ('DRAFT', 'SUBMITTED', 'FORMALITY_EXAM', 'PUBLISHED', 'SUB_EXAM_REQ', 'SUB_EXAM', 'GRANTED', 'REFUSED', 'WITHDRAWN'))");
+        }
     }
 };

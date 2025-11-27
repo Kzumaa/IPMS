@@ -16,8 +16,15 @@ class File extends Model
     protected $casts = ['uploaded_at' => 'datetime'];
 
 
+    protected $appends = ['download_url'];
+
     public function uploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    public function getDownloadUrlAttribute()
+    {
+        return $this->url ?? \Illuminate\Support\Facades\Storage::disk(strtolower($this->storage))->url($this->object_key);
     }
 }

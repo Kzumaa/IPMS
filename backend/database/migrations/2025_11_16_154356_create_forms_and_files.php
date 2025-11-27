@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -46,11 +47,10 @@ return new class extends Migration
             $table->foreign('application_id')->references('id')->on('applications')->cascadeOnDelete();
             $table->foreign('signature_file_id')->references('id')->on('files');
         });
-        DB::statement("ALTER TABLE form_answers ADD CONSTRAINT chk_form_answers_form CHECK (form IN ('M01_SC_GP','M07_KDCN'))");
-
-
-
-        DB::statement("ALTER TABLE files ADD CONSTRAINT chk_files_storage CHECK (storage IN ('S3','R2'))");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE form_answers ADD CONSTRAINT chk_form_answers_form CHECK (form IN ('M01_SC_GP','M07_KDCN'))");
+            DB::statement("ALTER TABLE files ADD CONSTRAINT chk_files_storage CHECK (storage IN ('S3','R2'))");
+        }
 
 
         Schema::create('application_attachments', function (Blueprint $table) {
@@ -67,7 +67,9 @@ return new class extends Migration
             $table->foreign('application_id')->references('id')->on('applications')->cascadeOnDelete();
             $table->foreign('file_id')->references('id')->on('files')->cascadeOnDelete();
         });
-        DB::statement("ALTER TABLE application_attachments ADD CONSTRAINT chk_application_attachments_doc_type CHECK (doc_type IN ('FORM','DESCRIPTION','CLAIMS','ABSTRACT','DRAWINGS','ID_DESCRIPTION','ID_PHOTOS_SET','PRIORITY_DOC','POA','PAYMENT_RECEIPT','TRANSLATION','OTHER','OFFICIAL_NOTICE','GAZETTE','DECISION','CERTIFICATE'))");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE application_attachments ADD CONSTRAINT chk_application_attachments_doc_type CHECK (doc_type IN ('FORM','DESCRIPTION','CLAIMS','ABSTRACT','DRAWINGS','ID_DESCRIPTION','ID_PHOTOS_SET','PRIORITY_DOC','POA','PAYMENT_RECEIPT','TRANSLATION','OTHER','OFFICIAL_NOTICE','GAZETTE','DECISION','CERTIFICATE'))");
+        }
     }
 
     /**

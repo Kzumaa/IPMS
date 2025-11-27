@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -35,7 +36,9 @@ return new class extends Migration
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->text('address')->nullable();
         });
-        DB::statement("ALTER TABLE authority_orgs ADD CONSTRAINT chk_authority_orgs_org_type CHECK (org_type IN ('HQ','REGIONAL_OFFICE','DEPARTMENT'))");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE authority_orgs ADD CONSTRAINT chk_authority_orgs_org_type CHECK (org_type IN ('HQ','REGIONAL_OFFICE','DEPARTMENT'))");
+        }
         Schema::table('authority_orgs', function (Blueprint $table) {
             $table->foreign('parent_id')->references('id')->on('authority_orgs');
         });
@@ -57,7 +60,9 @@ return new class extends Migration
             $table->foreign('org_id')->references('id')->on('authority_orgs');
             $table->foreign('manager_id')->references('id')->on('authority_staff');
         });
-        DB::statement("ALTER TABLE authority_staff ADD CONSTRAINT chk_authority_staff_role CHECK (role IN ('AUTH_ADMIN','AUTH_MANAGER','FORMALITY_OFFICER','EXAMINER','CASHIER','CLERK'))");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE authority_staff ADD CONSTRAINT chk_authority_staff_role CHECK (role IN ('AUTH_ADMIN','AUTH_MANAGER','FORMALITY_OFFICER','EXAMINER','CASHIER','CLERK'))");
+        }
     }
 
     /**

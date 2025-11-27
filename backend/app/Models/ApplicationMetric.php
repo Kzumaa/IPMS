@@ -23,6 +23,7 @@ class ApplicationMetric extends Model
         'id_images_per_variant',
         'has_priority',
         'priority_count',
+        'is_user_classified',
     ];
 
     protected $casts = [
@@ -36,6 +37,7 @@ class ApplicationMetric extends Model
         'id_images_per_variant' => 'integer',
         'has_priority' => 'boolean',
         'priority_count' => 'integer',
+        'is_user_classified' => 'boolean',
     ];
 
     public function application(): BelongsTo

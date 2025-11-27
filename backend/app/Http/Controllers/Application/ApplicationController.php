@@ -45,7 +45,7 @@ class ApplicationController extends Controller
 
     public function show($id)
     {
-        $application = Application::with(['metrics', 'parties', 'payments', 'attachments'])->findOrFail($id);
+        $application = Application::with(['metrics', 'parties', 'payments.receiptFile', 'attachments.file'])->findOrFail($id);
         $this->authorize('view', $application);
         return response()->json($application);
     }
@@ -60,6 +60,18 @@ class ApplicationController extends Controller
             'applicant_is_inventor' => 'boolean',
             'publication_early_requested' => 'boolean',
             'pub_delay_months' => 'nullable|integer|min:0',
+            'priority_claims' => 'nullable|array',
+            'priority_claims.*.number' => 'required|string',
+            'priority_claims.*.country_code' => 'required|string|size:2',
+            'priority_claims.*.filing_date' => 'required|date',
+            'priority_claims.*.kind' => 'nullable|string',
+            'ipc_classes' => 'nullable|array',
+            'ipc_classes.*.ipc_code' => 'required|string',
+            'ipc_classes.*.version' => 'nullable|string',
+            'locarno_classes' => 'nullable|array',
+            'locarno_classes.*.class_no' => 'required|string',
+            'locarno_classes.*.subclass_no' => 'nullable|string',
+            'locarno_classes.*.field_of_use' => 'nullable|string',
         ]);
 
         $application = $this->applicationService->updateApplication($application, $validated);

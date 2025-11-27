@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -36,8 +37,10 @@ return new class extends Migration
             $table->foreign('current_assignee_id')->references('id')->on('authority_staff');
             $table->foreign('created_by')->references('id')->on('users');
         });
-        DB::statement("ALTER TABLE applications ADD CONSTRAINT chk_applications_app_type CHECK (app_type IN ('PATENT','UTILITY','INDUSTRIAL_DESIGN'))");
-        DB::statement("ALTER TABLE applications ADD CONSTRAINT chk_applications_status CHECK (status IN ('DRAFT','SUBMITTED','FORMALITY_EXAM','PUBLISHED','SUB_EXAM_REQ','SUB_EXAM','GRANTED','REFUSED','WITHDRAWN'))");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE applications ADD CONSTRAINT chk_applications_app_type CHECK (app_type IN ('PATENT','UTILITY','INDUSTRIAL_DESIGN'))");
+            DB::statement("ALTER TABLE applications ADD CONSTRAINT chk_applications_status CHECK (status IN ('DRAFT','SUBMITTED','FORMALITY_EXAM','PUBLISHED','SUB_EXAM_REQ','SUB_EXAM','GRANTED','REFUSED','WITHDRAWN'))");
+        }
 
 
         Schema::create('application_parties', function (Blueprint $table) {
@@ -56,7 +59,9 @@ return new class extends Migration
             $table->foreign('application_id')->references('id')->on('applications')->cascadeOnDelete();
             $table->foreign('user_id')->references('id')->on('users');
         });
-        DB::statement("ALTER TABLE application_parties ADD CONSTRAINT chk_application_parties_role CHECK (role IN ('APPLICANT','INVENTOR','REPRESENTATIVE'))");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE application_parties ADD CONSTRAINT chk_application_parties_role CHECK (role IN ('APPLICANT','INVENTOR','REPRESENTATIVE'))");
+        }
 
 
         Schema::create('application_assignments', function (Blueprint $table) {
@@ -79,8 +84,10 @@ return new class extends Migration
             $table->foreign('staff_id')->references('id')->on('authority_staff');
             $table->foreign('assigned_by_id')->references('id')->on('authority_staff');
         });
-        DB::statement("ALTER TABLE application_assignments ADD CONSTRAINT chk_application_assignments_stage CHECK (stage IN ('INTAKE','FORMALITY_EXAM','SUBSTANTIVE_EXAM','PAYMENT_VALIDATION'))");
-        DB::statement("ALTER TABLE application_assignments ADD CONSTRAINT chk_application_assignments_status CHECK (status IN ('ACTIVE','COMPLETED','REASSIGNED','CANCELLED'))");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE application_assignments ADD CONSTRAINT chk_application_assignments_stage CHECK (stage IN ('INTAKE','FORMALITY_EXAM','SUBSTANTIVE_EXAM','PAYMENT_VALIDATION'))");
+            DB::statement("ALTER TABLE application_assignments ADD CONSTRAINT chk_application_assignments_status CHECK (status IN ('ACTIVE','COMPLETED','REASSIGNED','CANCELLED'))");
+        }
     }
 
     /**

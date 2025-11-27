@@ -84,6 +84,7 @@ class QuoteGenerator
             'id_variants' => (int)($metrics->id_variants ?? 0),
             'id_images_per_variant' => (int)($metrics->id_images_per_variant ?? 0),
             'priority_count' => (int)($metrics->priority_count ?? 0),
+            'is_user_classified' => (int)($metrics->is_user_classified ?? 0),
         ];
         $safe = preg_replace('/\s+/', '', $expr);
 // Replace identifiers with values
@@ -91,7 +92,7 @@ class QuoteGenerator
             $safe = preg_replace('/\b' . preg_quote($k, '/') . '\b/', (string)$v, $safe);
         }
 // Whitelist characters
-        if (preg_match('/[^0-9\+\-\*\/\(\)\.,a-z]/i', $safe)) {
+        if (preg_match('/[^0-9\+\-\*\/\(\)\.,a-z\?\:]/i', $safe)) {
             return 0.0;
         }
 // Replace allowed functions namespace

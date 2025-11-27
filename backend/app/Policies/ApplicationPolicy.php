@@ -29,8 +29,11 @@ class ApplicationPolicy
         return $user->id === $application->created_by;
     }
 
-    public function examine(AuthorityStaff $user, Application $application): bool
+    public function examine($user, Application $application): bool
     {
-        return $user->id === $application->current_assignee_id;
+        if ($user instanceof AuthorityStaff) {
+            return $user->is_active;
+        }
+        return false;
     }
 }

@@ -67,4 +67,24 @@ class Application extends Model
     {
         return $this->hasMany(ApplicationAttachment::class);
     }
+
+    public function priorityClaims(): HasMany
+    {
+        return $this->hasMany(PriorityClaim::class);
+    }
+
+    public function ipcClasses(): HasMany
+    {
+        return $this->hasMany(IpcClass::class);
+    }
+
+    public function locarnoClasses(): HasMany
+    {
+        return $this->hasMany(LocarnoClass::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
 }

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration {
     /**
@@ -24,7 +25,9 @@ return new class extends Migration {
             $table->foreign('actor_user_id')->references('id')->on('users');
             $table->foreign('file_id')->references('id')->on('files');
         });
-        DB::statement("ALTER TABLE application_events ADD CONSTRAINT chk_application_events_type CHECK (type IN ('STATUS_CHANGE','FILE_ADDED','FEE_QUOTE_CREATED','PAYMENT_POSTED','OFFICIAL_NOTICE_RECEIVED','PUBLICATION','SUB_EXAM_REQUESTED','GRANT','REFUSAL','RENEWAL_DUE','REMINDER_SENT','META_UPDATE'))");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE application_events ADD CONSTRAINT chk_application_events_type CHECK (type IN ('STATUS_CHANGE','FILE_ADDED','FEE_QUOTE_CREATED','PAYMENT_POSTED','OFFICIAL_NOTICE_RECEIVED','PUBLICATION','SUB_EXAM_REQUESTED','GRANT','REFUSAL','RENEWAL_DUE','REMINDER_SENT','META_UPDATE'))");
+        }
 
 
         Schema::create('user_reminders', function (Blueprint $table) {
@@ -44,7 +47,9 @@ return new class extends Migration {
             $table->foreign('created_by')->references('id')->on('users');
             $table->foreign('related_event_id')->references('id')->on('application_events');
         });
-        DB::statement("ALTER TABLE user_reminders ADD CONSTRAINT chk_user_reminders_status CHECK (status IN ('OPEN','DONE','OVERDUE'))");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE user_reminders ADD CONSTRAINT chk_user_reminders_status CHECK (status IN ('OPEN','DONE','OVERDUE'))");
+        }
     }
 
     /**

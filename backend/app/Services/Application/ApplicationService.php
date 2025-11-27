@@ -24,6 +24,7 @@ class ApplicationService
     {
         return DB::transaction(function () use ($data) {
             $user = Auth::user();
+//            dd($user);
 
             $application = Application::create([
                 'app_type' => $data['app_type'],
@@ -68,15 +69,54 @@ class ApplicationService
 
     public function updateApplication(Application $application, array $data): Application
     {
-        $application->update($data);
-        return $application;
+        return DB::transaction(function () use ($application, $data) {
+            $application->update($data);
+
+            // Handle Priority Claims
+            if (isset($data['priority_claims'])) {
+                $application->priorityClaims()->delete();
+                $application->priorityClaims()->createMany($data['priority_claims']);
+                
+                // Update metric: priority_count
+                $this->updateMetrics($application, ['priority_count' => count($data['priority_claims'])]);
+            }
+
+            // Handle IPC Classes (Patent/Utility)
+            if (isset($data['ipc_classes'])) {
+                $application->ipcClasses()->delete();
+                $application->ipcClasses()->createMany($data['ipc_classes']);
+                
+                // Update metrics: ipc_groups, is_user_classified
+                $count = count($data['ipc_classes']);
+                $this->updateMetrics($application, [
+                    'ipc_groups' => $count,
+                    'is_user_classified' => $count > 0
+                ]);
+            }
+
+            // Handle Locarno Classes (Industrial Design)
+            if (isset($data['locarno_classes'])) {
+                $application->locarnoClasses()->delete();
+                $application->locarnoClasses()->createMany($data['locarno_classes']);
+                
+                // Update metrics: ipc_groups (used for Locarno count too), is_user_classified
+                $count = count($data['locarno_classes']);
+                $this->updateMetrics($application, [
+                    'ipc_groups' => $count,
+                    'is_user_classified' => $count > 0
+                ]);
+            }
+
+            return $application->refresh();
+        });
     }
 
     public function updateMetrics(Application $application, array $data): ApplicationMetric
     {
-        $metrics = $application->metrics ?? ApplicationMetric::create(['application_id' => $application->id]);
-        $metrics->update($data);
-        return $metrics;
+        return ApplicationMetric::updateOrCreate(
+            ['application_id' => $application->id],
+            $data
+        );
     }
 
     public function submitApplication(Application $application): Application
@@ -129,6 +169,13 @@ class ApplicationService
             }
         }
 
+        // Conditional Check: Priority Claims
+        if (($application->metrics->priority_count ?? 0) > 0) {
+            if (!in_array('PRIORITY_DOC', $attachments)) {
+                $missing[] = 'PRIORITY_DOC';
+            }
+        }
+
         // Special check for Design Drawings quantity (min 4)
         if ($application->app_type === \App\Enums\AppType::INDUSTRIAL_DESIGN) {
              $drawingCount = $application->attachments()->where('doc_type', 'ID_PHOTOS_SET')->count();
@@ -154,7 +201,7 @@ class ApplicationService
             // We can't set exact publication date yet as it depends on acceptance.
             // But we can set a target. Let's set it relative to filing for now or leave null.
             // Docs say: "Within 2 months from the date the application is accepted".
-            
+
             // Substantive Exam: 7 months from publication.
             // Again, dependent on future events.
         } else {
