@@ -33,6 +33,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/protection-titles/{id}/schedule', [ProtectionTitleController::class, 'getSchedule']);
     Route::post('/maintenance-fees/{id}/pay', [ProtectionTitleController::class, 'payFee']);
 
+    Route::post('/applications/{id}/analyze', [ApplicationController::class, 'analyze']);
+
     Route::get('/auth/me', [AuthController::class, 'me']);      // returns type + data
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 });

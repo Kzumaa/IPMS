@@ -15,17 +15,20 @@ class ApplicationController extends Controller
     protected $formalityExamService;
     protected $substantiveExamService;
     protected $decisionService;
+    protected $fileMetricService;
 
     public function __construct(
         ApplicationService $applicationService,
         \App\Services\Examination\FormalityExamService $formalityExamService,
         \App\Services\Examination\SubstantiveExamService $substantiveExamService,
-        \App\Services\Decision\DecisionService $decisionService
+        \App\Services\Decision\DecisionService $decisionService,
+        \App\Services\File\FileMetricService $fileMetricService
     ) {
         $this->applicationService = $applicationService;
         $this->formalityExamService = $formalityExamService;
         $this->substantiveExamService = $substantiveExamService;
         $this->decisionService = $decisionService;
+        $this->fileMetricService = $fileMetricService;
     }
 
     public function store(Request $request)
@@ -161,5 +164,45 @@ class ApplicationController extends Controller
         $record = $this->decisionService->recordDecision($application, $validated['type'], $validated['notes'] ?? null);
 
         return response()->json($record);
+    }
+
+    public function analyze(Request $request, $id)
+    {
+        $application = Application::with('attachments.file')->findOrFail($id);
+        $this->authorize('update', $application);
+
+        $results = [];
+        $hasWarnings = false;
+
+        foreach ($application->attachments as $attachment) {
+            if (!$attachment->file) continue;
+
+            // Only analyze current attachments
+            if (!$attachment->is_current) continue;
+
+            $result = $this->fileMetricService->analyze($attachment->file, $application, $attachment->doc_type);
+            
+            $results[] = [
+                'file_id' => $attachment->file_id,
+                'filename' => $attachment->file->filename,
+                'doc_type' => $attachment->doc_type,
+                'status' => $result['status'],
+                'message' => $result['message'],
+                'metrics' => $result['metrics']
+            ];
+
+            if ($result['status'] === 'skipped' || $result['status'] === 'failed') {
+                $hasWarnings = true;
+            }
+        }
+
+        // Reload metrics to get updated values
+        $application->load('metrics');
+
+        return response()->json([
+            'application_metrics' => $application->metrics,
+            'file_results' => $results,
+            'warning' => $hasWarnings ? 'Some files require manual verification.' : null
+        ]);
     }
 }
