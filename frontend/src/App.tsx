@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { RouterProvider } from 'react-router-dom'
+import router from './router'
+import './App.css'
 
-export default function App() {
-    const [data, setData] = useState<any>(null);
-    useEffect(() => {
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/ping`)
-            .then(r => r.json()).then(setData).catch(console.error);
-    }, []);
-    return <pre>{JSON.stringify(data, null, 2)}</pre>;
+function App() {
+    return <RouterProvider router={router} />
 }
+
+export default App
