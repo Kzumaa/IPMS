@@ -1,0 +1,68 @@
+{
+    "appName": "Apex IPMS",
+    "landing": {
+        "heroTitle": "Secure Your Innovations. Manage Your Global IP Portfolio.",
+        "heroSubtitle": "The trusted platform for patent attorneys, R&D teams, and enterprises to track filings, meet deadlines, and protect assets worldwide.",
+        "requestDemo": "Request a Demo",
+        "whyChoose": "Why Leading Enterprises Choose {{appName}}",
+        "features": {
+            "security": {
+                "title": "Bank-Grade Security",
+                "desc": "Protect your sensitive IP data with end-to-end encryption and robust security protocols trusted by financial institutions."
+            },
+            "deadline": {
+                "title": "Never Miss a Deadline",
+                "desc": "Automated docketing and intelligent reminders ensure you stay ahead of every critical filing and renewal date."
+            },
+            "global": {
+                "title": "Global Portfolio View",
+                "desc": "Manage your international patents and trademarks from a single, intuitive dashboard with real-time status updates."
+            }
+        },
+        "trustedBy": "Trusted by industry leaders",
+        "nav": {
+            "features": "Features",
+            "pricing": "Pricing",
+            "about": "About Us"
+        }
+    },
+    "login": {
+        "welcomeBack": "Welcome back",
+        "enterDetails": "Please enter your details to sign in.",
+        "emailLabel": "Email",
+        "emailPlaceholder": "Enter your email",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "rememberMe": "Remember me",
+        "forgotPassword": "Forgot password?",
+        "signIn": "Sign In",
+        "dontHaveAccount": "Don't have an account?",
+        "createAccount": "Create one now",
+        "staffPortal": "Staff Portal",
+        "clientLogin": "Client Login",
+        "staffLoginTitle": "Internal Access / Staff Portal",
+        "staffIdLabel": "Staff ID / Email",
+        "staffIdPlaceholder": "Enter your staff ID or email",
+        "authenticate": "Authenticate",
+        "needHelp": "Need help with access? Contact IT Security.",
+        "protectMatters": "Protect What Matters.",
+        "protectDesc": "Secure your IP with world-class infrastructure and manage your entire intellectual property portfolio in one place."
+    },
+    "dashboard": {
+        "title": "IPMS Pro",
+        "subtitle": "Enterprise",
+        "nav": {
+            "dashboard": "Dashboard",
+            "ipAssets": "IP Assets",
+            "patents": "Patents",
+            "trademarks": "Trademarks",
+            "filings": "Filings",
+            "applications": "Applications",
+            "tasks": "Tasks",
+            "reports": "Reports",
+            "newFiling": "New Filing",
+            "settings": "Settings",
+            "help": "Help"
+        }
+    }
+}
