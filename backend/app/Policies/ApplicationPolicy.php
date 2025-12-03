@@ -32,7 +32,7 @@ class ApplicationPolicy
     public function examine($user, Application $application): bool
     {
         if ($user instanceof AuthorityStaff) {
-            return $user->is_active;
+            return $user->is_active && $user->id === $application->current_assignee_id;
         }
         return false;
     }

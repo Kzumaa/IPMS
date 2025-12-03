@@ -45,6 +45,38 @@ class SubmissionTest extends TestCase
             'status' => 'DRAFT',
         ]);
 
+        // Create required attachments
+        $file = \App\Models\File::create([
+            'filename' => 'test.pdf',
+            'original_name' => 'test.pdf',
+            'mime' => 'application/pdf',
+            'size_bytes' => 1024,
+            'storage' => 'S3',
+            'bucket' => 'test-bucket',
+            'object_key' => 'test.pdf',
+            'sha256' => hash('sha256', 'test content'),
+            'uploaded_by' => $this->user->id,
+        ]);
+
+        \App\Models\ApplicationAttachment::create([
+            'application_id' => $application->id,
+            'file_id' => $file->id,
+            'doc_type' => 'DESCRIPTION',
+            'is_current' => true,
+        ]);
+        \App\Models\ApplicationAttachment::create([
+            'application_id' => $application->id,
+            'file_id' => $file->id,
+            'doc_type' => 'CLAIMS',
+            'is_current' => true,
+        ]);
+        \App\Models\ApplicationAttachment::create([
+            'application_id' => $application->id,
+            'file_id' => $file->id,
+            'doc_type' => 'ABSTRACT',
+            'is_current' => true,
+        ]);
+
         $response = $this->actingAs($this->user)->postJson("/api/applications/{$application->id}/submit");
 
 

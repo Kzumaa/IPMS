@@ -6,5 +6,6 @@ use App\Models\ApplicationMetric;
 
 interface ApplicationMetricRepositoryInterface
 {
-    public function saveForApplication(int $applicationId, array $metrics): ApplicationMetric;
+    public function create(array $data): ApplicationMetric;
+    public function updateOrCreate(array $attributes, array $values = []): ApplicationMetric;
 }

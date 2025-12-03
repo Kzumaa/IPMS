@@ -2,18 +2,17 @@
 
 namespace App\Repositories\ApplicationMetric;
 
-
 use App\Models\ApplicationMetric;
 
 class ApplicationMetricRepository implements ApplicationMetricRepositoryInterface
 {
-    public function saveForApplication(int $applicationId, array $metrics): ApplicationMetric
+    public function create(array $data): ApplicationMetric
     {
-        $metrics['application_id'] = $applicationId;
+        return ApplicationMetric::create($data);
+    }
 
-        return ApplicationMetric::updateOrCreate(
-            ['application_id' => $applicationId],
-            $metrics
-        );
+    public function updateOrCreate(array $attributes, array $values = []): ApplicationMetric
+    {
+        return ApplicationMetric::updateOrCreate($attributes, $values);
     }
 }

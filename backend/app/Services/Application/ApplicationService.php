@@ -5,6 +5,9 @@ namespace App\Services\Application;
 use App\Models\Application;
 use App\Models\ApplicationMetric;
 use App\Models\ApplicationParty;
+use App\Repositories\Application\ApplicationRepositoryInterface;
+use App\Repositories\ApplicationMetric\ApplicationMetricRepositoryInterface;
+use App\Repositories\ApplicationParty\ApplicationPartyRepositoryInterface;
 use App\Services\Assignment\AssignmentService;
 use App\Enums\ApplicationStatus;
 use Illuminate\Support\Facades\DB;
@@ -14,19 +17,29 @@ class ApplicationService
 {
     protected $assignmentService;
     protected $quoteGenerator;
+    protected $applicationRepository;
+    protected $applicationMetricRepository;
+    protected $applicationPartyRepository;
 
-    public function __construct(AssignmentService $assignmentService, \App\Services\Fee\QuoteGenerator $quoteGenerator)
-    {
+    public function __construct(
+        AssignmentService $assignmentService,
+        \App\Services\Fee\QuoteGenerator $quoteGenerator,
+        ApplicationRepositoryInterface $applicationRepository,
+        ApplicationMetricRepositoryInterface $applicationMetricRepository,
+        ApplicationPartyRepositoryInterface $applicationPartyRepository
+    ) {
         $this->assignmentService = $assignmentService;
         $this->quoteGenerator = $quoteGenerator;
+        $this->applicationRepository = $applicationRepository;
+        $this->applicationMetricRepository = $applicationMetricRepository;
+        $this->applicationPartyRepository = $applicationPartyRepository;
     }
     public function createApplication(array $data): Application
     {
         return DB::transaction(function () use ($data) {
             $user = Auth::user();
-//            dd($user);
 
-            $application = Application::create([
+            $application = $this->applicationRepository->create([
                 'app_type' => $data['app_type'],
                 'title' => $data['title'],
                 'status' => 'DRAFT',
@@ -37,12 +50,12 @@ class ApplicationService
             ]);
 
             // Create default metrics
-            ApplicationMetric::create([
+            $this->applicationMetricRepository->create([
                 'application_id' => $application->id,
             ]);
 
             // Add applicant party
-            ApplicationParty::create([
+            $this->applicationPartyRepository->create([
                 'application_id' => $application->id,
                 'role' => 'APPLICANT',
                 'user_id' => $user->id,
@@ -53,7 +66,7 @@ class ApplicationService
 
             // If applicant is inventor, add inventor party
             if ($application->applicant_is_inventor) {
-                ApplicationParty::create([
+                $this->applicationPartyRepository->create([
                     'application_id' => $application->id,
                     'role' => 'INVENTOR',
                     'user_id' => $user->id,
@@ -70,12 +83,11 @@ class ApplicationService
     public function updateApplication(Application $application, array $data): Application
     {
         return DB::transaction(function () use ($application, $data) {
-            $application->update($data);
+            $this->applicationRepository->update($application, $data);
 
             // Handle Priority Claims
             if (isset($data['priority_claims'])) {
-                $application->priorityClaims()->delete();
-                $application->priorityClaims()->createMany($data['priority_claims']);
+                $this->applicationRepository->syncPriorityClaims($application, $data['priority_claims']);
                 
                 // Update metric: priority_count
                 $this->updateMetrics($application, ['priority_count' => count($data['priority_claims'])]);
@@ -83,8 +95,7 @@ class ApplicationService
 
             // Handle IPC Classes (Patent/Utility)
             if (isset($data['ipc_classes'])) {
-                $application->ipcClasses()->delete();
-                $application->ipcClasses()->createMany($data['ipc_classes']);
+                $this->applicationRepository->syncIpcClasses($application, $data['ipc_classes']);
                 
                 // Update metrics: ipc_groups, is_user_classified
                 $count = count($data['ipc_classes']);
@@ -96,8 +107,7 @@ class ApplicationService
 
             // Handle Locarno Classes (Industrial Design)
             if (isset($data['locarno_classes'])) {
-                $application->locarnoClasses()->delete();
-                $application->locarnoClasses()->createMany($data['locarno_classes']);
+                $this->applicationRepository->syncLocarnoClasses($application, $data['locarno_classes']);
                 
                 // Update metrics: ipc_groups (used for Locarno count too), is_user_classified
                 $count = count($data['locarno_classes']);
@@ -113,7 +123,7 @@ class ApplicationService
 
     public function updateMetrics(Application $application, array $data): ApplicationMetric
     {
-        return ApplicationMetric::updateOrCreate(
+        return $this->applicationMetricRepository->updateOrCreate(
             ['application_id' => $application->id],
             $data
         );
@@ -124,7 +134,7 @@ class ApplicationService
         // 1. Validate Files
         $validationResults = $this->validateFiles($application);
         if (!empty($validationResults)) {
-            $application->update(['file_validation_results' => $validationResults]);
+            $this->applicationRepository->update($application, ['file_validation_results' => $validationResults]);
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'files' => 'Missing required documents: ' . implode(', ', $validationResults)
             ]);
@@ -139,7 +149,7 @@ class ApplicationService
             // 3. Calculate Deadlines
             $deadlines = $this->calculateDeadlines($application);
 
-            $application->update([
+            $this->applicationRepository->update($application, [
                 'status' => ApplicationStatus::SUBMITTED,
                 'filing_date' => now(), // Set filing date on submission
                 'deadlines' => $deadlines,

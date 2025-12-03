@@ -4,11 +4,23 @@ namespace App\Services\File;
 
 use App\Models\Application;
 use App\Models\File;
+use App\Repositories\File\FileRepositoryInterface;
+use App\Repositories\ApplicationMetric\ApplicationMetricRepositoryInterface;
 use Illuminate\Support\Facades\Storage;
 use Imagick;
 
 class FileMetricService
 {
+    protected $fileRepository;
+    protected $applicationMetricRepository;
+
+    public function __construct(
+        FileRepositoryInterface $fileRepository,
+        ApplicationMetricRepositoryInterface $applicationMetricRepository
+    ) {
+        $this->fileRepository = $fileRepository;
+        $this->applicationMetricRepository = $applicationMetricRepository;
+    }
     public function analyze(File $file, ?Application $application = null, ?string $docType = null): array
     {
         // Check if file is PDF
@@ -31,7 +43,7 @@ class FileMetricService
             $metrics['page_count'] = $pageCount;
             
             // Update File model
-            $file->update(['page_count' => $pageCount]);
+            $this->fileRepository->update($file, ['page_count' => $pageCount]);
 
             // Application Specific Metrics
             if ($application && $docType) {
@@ -61,7 +73,7 @@ class FileMetricService
 
     protected function updateApplicationMetrics(Application $application, string $docType, array $fileMetrics, string $filePath)
     {
-        $appMetrics = $application->metrics ?? $application->metrics()->create([]);
+        // $appMetrics = $application->metrics ?? $application->metrics()->create([]); // Removed direct access
         $updates = [];
 
         switch ($docType) {
@@ -97,7 +109,10 @@ class FileMetricService
         }
 
         if (!empty($updates)) {
-            $appMetrics->update($updates);
+            $this->applicationMetricRepository->updateOrCreate(
+                ['application_id' => $application->id],
+                $updates
+            );
         }
     }
 
