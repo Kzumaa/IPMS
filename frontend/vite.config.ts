@@ -8,4 +8,13 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    host: true, // Needed for Docker
+    proxy: {
+      '/api': {
+        target: 'http://laravel-nginx',
+        changeOrigin: true,
+      },
+    },
+  },
 })

@@ -1,14 +1,34 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { loginApplicant } from '../features/auth/authSlice';
+import { loginSchema, type LoginSchema } from '../features/auth/schemas';
 
 const ClientLoginPage: React.FC = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const dispatch = useAppDispatch();
+    const { isLoading, error, isAuthenticated } = useAppSelector((state) => state.auth);
 
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        navigate('/app/patents');
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<LoginSchema>({
+        resolver: zodResolver(loginSchema),
+    });
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate('/app/patents');
+        }
+    }, [isAuthenticated, navigate]);
+
+    const onSubmit = async (data: LoginSchema) => {
+        await dispatch(loginApplicant(data));
     };
 
     return (
@@ -25,11 +45,24 @@ const ClientLoginPage: React.FC = () => {
                                         <h2 className="text-2xl font-bold text-[#111827] dark:text-white">{t('appName')}</h2>
                                     </div>
                                     <h1 className="text-[#111827] dark:text-white tracking-tight text-[32px] font-bold leading-tight text-left pb-3 pt-6">{t('login.welcomeBack')}</h1>
-                                    <form className="flex flex-col gap-4 mt-6" onSubmit={handleLogin}>
+
+                                    {error && (
+                                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                                            <span className="block sm:inline">{error}</span>
+                                        </div>
+                                    )}
+
+                                    <form className="flex flex-col gap-4 mt-6" onSubmit={handleSubmit(onSubmit)}>
                                         <div className="flex flex-wrap items-end gap-4">
                                             <label className="flex flex-col w-full flex-1">
                                                 <p className="text-[#111827] dark:text-gray-300 text-base font-medium leading-normal pb-2">{t('login.emailLabel')}</p>
-                                                <input className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111827] dark:text-white focus:outline-0 focus:ring-2 focus:ring-[#1e40af]/50 border border-[#d1d5db] dark:border-gray-600 bg-white dark:bg-gray-800 focus:border-[#1e40af] h-14 placeholder:text-[#656d86] p-[15px] text-base font-normal leading-normal" placeholder={t('login.emailPlaceholder')} type="email" />
+                                                <input
+                                                    {...register('email')}
+                                                    className={`form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111827] dark:text-white focus:outline-0 focus:ring-2 focus:ring-[#1e40af]/50 border ${errors.email ? 'border-red-500' : 'border-[#d1d5db] dark:border-gray-600'} bg-white dark:bg-gray-800 focus:border-[#1e40af] h-14 placeholder:text-[#656d86] p-[15px] text-base font-normal leading-normal`}
+                                                    placeholder={t('login.emailPlaceholder')}
+                                                    type="email"
+                                                />
+                                                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
                                             </label>
                                         </div>
                                         <div className="flex flex-wrap items-end gap-4">
@@ -39,15 +72,25 @@ const ClientLoginPage: React.FC = () => {
                                                     <p className="text-[#1e40af] text-sm font-normal leading-normal pb-3 pt-1 underline cursor-pointer hover:text-[#1e40af]/80">{t('login.forgotPassword')}</p>
                                                 </div>
                                                 <div className="flex w-full flex-1 items-stretch rounded-lg">
-                                                    <input className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111827] dark:text-white focus:outline-0 focus:ring-2 focus:ring-[#1e40af]/50 border border-[#d1d5db] dark:border-gray-600 bg-white dark:bg-gray-800 focus:border-[#1e40af] h-14 placeholder:text-[#656d86] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal leading-normal" placeholder={t('login.passwordPlaceholder')} type="password" />
+                                                    <input
+                                                        {...register('password')}
+                                                        className={`form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111827] dark:text-white focus:outline-0 focus:ring-2 focus:ring-[#1e40af]/50 border ${errors.password ? 'border-red-500' : 'border-[#d1d5db] dark:border-gray-600'} bg-white dark:bg-gray-800 focus:border-[#1e40af] h-14 placeholder:text-[#656d86] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal leading-normal`}
+                                                        placeholder={t('login.passwordPlaceholder')}
+                                                        type="password"
+                                                    />
                                                     <div className="text-[#656d86] dark:text-gray-400 flex border border-[#d1d5db] dark:border-gray-600 bg-white dark:bg-gray-800 items-center justify-center pr-[15px] rounded-r-lg border-l-0">
                                                         <span className="material-symbols-outlined cursor-pointer">visibility_off</span>
                                                     </div>
                                                 </div>
+                                                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
                                             </label>
                                         </div>
-                                        <button type="submit" className="flex items-center justify-center gap-2 px-6 py-4 h-14 rounded-lg bg-[#1e40af] text-white text-base font-semibold leading-normal mt-4 hover:bg-[#1e40af]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e40af]">
-                                            {t('login.signIn')}
+                                        <button
+                                            type="submit"
+                                            disabled={isLoading}
+                                            className="flex items-center justify-center gap-2 px-6 py-4 h-14 rounded-lg bg-[#1e40af] text-white text-base font-semibold leading-normal mt-4 hover:bg-[#1e40af]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e40af] disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {isLoading ? 'Signing in...' : t('login.signIn')}
                                         </button>
                                     </form>
                                     <div className="flex items-center justify-center gap-2 mt-8">

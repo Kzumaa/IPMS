@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Application;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Services\Application\ApplicationService;
-use App\Enums\ApplicationStatus;
+use App\Services\Examination\FormalityExamService;
+use App\Services\Examination\SubstantiveExamService;
+use App\Services\Decision\DecisionService;
+use App\Services\File\FileMetricService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,10 +22,10 @@ class ApplicationController extends Controller
 
     public function __construct(
         ApplicationService $applicationService,
-        \App\Services\Examination\FormalityExamService $formalityExamService,
-        \App\Services\Examination\SubstantiveExamService $substantiveExamService,
-        \App\Services\Decision\DecisionService $decisionService,
-        \App\Services\File\FileMetricService $fileMetricService
+        FormalityExamService $formalityExamService,
+        SubstantiveExamService $substantiveExamService,
+        DecisionService $decisionService,
+        FileMetricService $fileMetricService
     ) {
         $this->applicationService = $applicationService;
         $this->formalityExamService = $formalityExamService;

@@ -3,8 +3,11 @@ import LandingPage from './pages/LandingPage';
 import ClientLoginPage from './pages/ClientLoginPage';
 import StaffLoginPage from './pages/StaffLoginPage';
 import DashboardLayout from './components/DashboardLayout';
-import PatentsPage from './pages/PatentsPage';
+import DashboardPage from './pages/DashboardPage';
 import ApplicationsPage from './pages/ApplicationsPage';
+import AssetsPage from './pages/AssetsPage';
+import FeesPage from './pages/FeesPage';
+import MessagesPage from './pages/MessagesPage';
 import { ProtectedRoute, PublicRoute } from './components/AuthRoutes';
 
 const router = createBrowserRouter([
@@ -34,15 +37,27 @@ const router = createBrowserRouter([
                 children: [
                     {
                         index: true,
-                        element: <Navigate to="/app/patents" replace />,
+                        element: <Navigate to="/app/dashboard" replace />,
                     },
                     {
-                        path: 'patents',
-                        element: <PatentsPage />,
+                        path: 'dashboard',
+                        element: <DashboardPage />,
                     },
                     {
                         path: 'applications',
                         element: <ApplicationsPage />,
+                    },
+                    {
+                        path: 'assets',
+                        element: <AssetsPage />,
+                    },
+                    {
+                        path: 'fees',
+                        element: <FeesPage />,
+                    },
+                    {
+                        path: 'messages',
+                        element: <MessagesPage />,
                     },
                 ],
             },

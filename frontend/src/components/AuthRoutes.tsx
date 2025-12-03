@@ -11,5 +11,5 @@ export const ProtectedRoute = () => {
 // Public Route Wrapper (redirects to dashboard if already logged in)
 export const PublicRoute = () => {
     const { isAuthenticated } = useAppSelector((state) => state.auth);
-    return !isAuthenticated ? <Outlet /> : <Navigate to="/app/patents" replace />;
+    return !isAuthenticated ? <Outlet /> : <Navigate to="/app/dashboard" replace />;
 };

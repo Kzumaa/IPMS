@@ -1,10 +1,19 @@
-import React from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import TopNavBar from './TopNavBar';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '../store/hooks';
+import { logout } from '../features/auth/authSlice';
 
 const DashboardLayout: React.FC = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const dispatch = useAppDispatch();
+    const location = useLocation();
+
+    const handleLogout = async () => {
+        await dispatch(logout());
+        navigate('/login');
+    };
 
     // Helper to determine active class
     const getNavLinkClass = (isActive: boolean, isPrimary: boolean = false) => {
@@ -15,6 +24,27 @@ const DashboardLayout: React.FC = () => {
             return "flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/30 text-white";
         }
         return "flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors";
+    };
+
+    // Generate breadcrumbs based on path
+    const getBreadcrumbs = () => {
+        const path = location.pathname.split('/').filter(Boolean);
+        // Default breadcrumb
+        const breadcrumbs: { label: string; href?: string; active?: boolean }[] = [{ label: 'App', href: '/app' }];
+
+        if (path.includes('dashboard')) {
+            breadcrumbs.push({ label: 'Dashboard', active: true });
+        } else if (path.includes('applications')) {
+            breadcrumbs.push({ label: 'Applications', active: true });
+        } else if (path.includes('assets')) {
+            breadcrumbs.push({ label: 'IP Assets', active: true });
+        } else if (path.includes('fees')) {
+            breadcrumbs.push({ label: 'Fees', active: true });
+        } else if (path.includes('messages')) {
+            breadcrumbs.push({ label: 'Messages', active: true });
+        }
+
+        return breadcrumbs;
     };
 
     return (
@@ -36,30 +66,24 @@ const DashboardLayout: React.FC = () => {
                             <p className="text-sm font-medium leading-normal">{t('dashboard.nav.dashboard')}</p>
                         </NavLink>
 
-                        <div className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">{t('dashboard.nav.ipAssets')}</div>
-
-                        <NavLink to="/app/patents" className={({ isActive }) => getNavLinkClass(isActive, true)}>
-                            <span className="material-symbols-outlined">topic</span>
-                            <p className="text-sm font-medium leading-normal">{t('dashboard.nav.patents')}</p>
-                        </NavLink>
-                        <NavLink to="/app/trademarks" className={({ isActive }) => getNavLinkClass(isActive)}>
-                            <span className="material-symbols-outlined">copyright</span>
-                            <p className="text-sm font-medium leading-normal">{t('dashboard.nav.trademarks')}</p>
+                        <NavLink to="/app/applications" className={({ isActive }) => getNavLinkClass(isActive)}>
+                            <span className="material-symbols-outlined">description</span>
+                            <p className="text-sm font-medium leading-normal">{t('dashboard.nav.myApplications')}</p>
                         </NavLink>
 
-                        <div className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">{t('dashboard.nav.filings')}</div>
+                        <NavLink to="/app/assets" className={({ isActive }) => getNavLinkClass(isActive)}>
+                            <span className="material-symbols-outlined">verified</span>
+                            <p className="text-sm font-medium leading-normal">{t('dashboard.nav.myIpAssets')}</p>
+                        </NavLink>
 
-                        <NavLink to="/app/applications" className={({ isActive }) => getNavLinkClass(isActive, true)}>
-                            <span className="material-symbols-outlined">file_present</span>
-                            <p className="text-sm font-medium leading-normal">{t('dashboard.nav.applications')}</p>
+                        <NavLink to="/app/fees" className={({ isActive }) => getNavLinkClass(isActive)}>
+                            <span className="material-symbols-outlined">payments</span>
+                            <p className="text-sm font-medium leading-normal">{t('dashboard.nav.feeManagement')}</p>
                         </NavLink>
-                        <NavLink to="/app/tasks" className={({ isActive }) => getNavLinkClass(isActive)}>
-                            <span className="material-symbols-outlined">task_alt</span>
-                            <p className="text-sm font-medium leading-normal">{t('dashboard.nav.tasks')}</p>
-                        </NavLink>
-                        <NavLink to="/app/reports" className={({ isActive }) => getNavLinkClass(isActive)}>
-                            <span className="material-symbols-outlined">assessment</span>
-                            <p className="text-sm font-medium leading-normal">{t('dashboard.nav.reports')}</p>
+
+                        <NavLink to="/app/messages" className={({ isActive }) => getNavLinkClass(isActive)}>
+                            <span className="material-symbols-outlined">mail</span>
+                            <p className="text-sm font-medium leading-normal">{t('dashboard.nav.messages')}</p>
                         </NavLink>
                     </div>
                 </div>
@@ -73,15 +97,16 @@ const DashboardLayout: React.FC = () => {
                             <span className="material-symbols-outlined">settings</span>
                             <p className="text-sm font-medium leading-normal">{t('dashboard.nav.settings')}</p>
                         </a>
-                        <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700/50">
-                            <span className="material-symbols-outlined">help</span>
-                            <p className="text-sm font-medium leading-normal">{t('dashboard.nav.help')}</p>
-                        </a>
+                        <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700/50 w-full text-left">
+                            <span className="material-symbols-outlined">logout</span>
+                            <p className="text-sm font-medium leading-normal">{t('dashboard.nav.logout') || 'Logout'}</p>
+                        </button>
                     </div>
                 </div>
             </aside>
 
-            <main className="flex-1 min-w-0 overflow-auto">
+            <main className="flex-1 min-w-0 overflow-auto flex flex-col">
+                <TopNavBar breadcrumb={getBreadcrumbs()} />
                 <Outlet />
             </main>
         </div>

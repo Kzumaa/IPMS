@@ -53,16 +53,13 @@
         "subtitle": "Enterprise",
         "nav": {
             "dashboard": "Dashboard",
-            "ipAssets": "IP Assets",
-            "patents": "Patents",
-            "trademarks": "Trademarks",
-            "filings": "Filings",
-            "applications": "Applications",
-            "tasks": "Tasks",
-            "reports": "Reports",
+            "myApplications": "My Applications",
+            "myIpAssets": "My IP Assets",
+            "feeManagement": "Fee Management",
+            "messages": "Messages",
             "newFiling": "New Filing",
             "settings": "Settings",
-            "help": "Help"
+            "logout": "Logout"
         }
     }
 }
