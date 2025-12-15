@@ -5,6 +5,8 @@ import StaffLoginPage from './pages/StaffLoginPage';
 import DashboardLayout from './components/DashboardLayout';
 import DashboardPage from './pages/DashboardPage';
 import ApplicationsPage from './pages/ApplicationsPage';
+import NewApplicationPage from './pages/NewApplicationPage';
+import ApplicationDetailPage from './pages/ApplicationDetailPage';
 import AssetsPage from './pages/AssetsPage';
 import FeesPage from './pages/FeesPage';
 import MessagesPage from './pages/MessagesPage';
@@ -46,6 +48,18 @@ const router = createBrowserRouter([
                     {
                         path: 'applications',
                         element: <ApplicationsPage />,
+                    },
+                    {
+                        path: 'applications/new',
+                        element: <NewApplicationPage />,
+                    },
+                    {
+                        path: 'applications/:id',
+                        element: <ApplicationDetailPage />,
+                    },
+                    {
+                        path: 'applications/:id/edit',
+                        element: <NewApplicationPage />,
                     },
                     {
                         path: 'assets',

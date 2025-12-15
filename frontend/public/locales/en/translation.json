@@ -61,5 +61,278 @@
             "settings": "Settings",
             "logout": "Logout"
         }
+    },
+    "application": {
+        "title": "Applications",
+        "pageTitle": "Applications",
+        "pageSubtitle": "Manage your intellectual property applications",
+        "createNew": "New Application",
+        "noApplications": "No applications yet",
+        "noApplicationsDesc": "Start by creating a new application",
+        "loading": "Loading...",
+        "showingRange": "Showing {{from}} - {{to}} of {{total}} applications",
+        "prev": "Previous",
+        "next": "Next",
+        "allStatuses": "All statuses",
+        "allTypes": "All types",
+        "searchPlaceholder": "Search by name, filing number...",
+        "table": {
+            "filingNumber": "Filing No. / Name",
+            "appType": "Type",
+            "filingDate": "Filing Date",
+            "status": "Status",
+            "actions": "Actions"
+        },
+        "detail": {
+            "title": "Application Details",
+            "edit": "Edit",
+            "delete": "Delete",
+            "backToList": "Back to list",
+            "notFound": "Application not found",
+            "loadError": "Could not load application",
+            "basicInfo": "Basic Information",
+            "abstract": "Abstract",
+            "description": "Description",
+            "claims": "Claims",
+            "parties": "Related Parties",
+            "attachments": "Attachments",
+            "noAttachments": "No attachments",
+            "pctApplication": "PCT Application",
+            "priority": "Priority Claim",
+            "createdAt": "Created at",
+            "filingDate": "Filing Date"
+        },
+        "form": {
+            "createTitle": "Create New Application",
+            "editTitle": "Edit Application",
+            "subtitle": "Complete the steps below to submit your IP application",
+            "saveDraft": "Save Draft & Exit",
+            "back": "Back",
+            "next": "Next",
+            "processing": "Processing..."
+        },
+        "steps": {
+            "basicInfo": {
+                "title": "Basic Info",
+                "description": "Type, title, abstract",
+                "sectionTitle": "Basic Information",
+                "appType": "Application Type",
+                "appTypePlaceholder": "Select type...",
+                "inventionTitle": "Invention/Solution Title",
+                "inventionTitlePlaceholder": "Enter invention or solution title",
+                "abstract": "Abstract",
+                "abstractPlaceholder": "Enter a brief summary of the invention...",
+                "abstractHelper": "Brief summary of the invention (max 2000 characters)"
+            },
+            "pct": {
+                "title": "PCT Information",
+                "isPct": "Application under PCT (Patent Cooperation Treaty)",
+                "pctNumber": "PCT Number",
+                "pctNumberPlaceholder": "PCT/VN/2024/...",
+                "pctFilingDate": "PCT Filing Date",
+                "pctPublicationDate": "PCT Publication Date"
+            },
+            "priority": {
+                "title": "Priority Claim",
+                "description": "Fill in if claiming priority from a previous application",
+                "number": "Priority Number",
+                "numberPlaceholder": "Priority number",
+                "date": "Priority Date",
+                "country": "Country Code",
+                "countryPlaceholder": "VN, US, JP...",
+                "countryHelper": "2-letter code"
+            },
+            "descriptionStep": {
+                "title": "Description",
+                "description": "Description and claims",
+                "sectionTitle": "Invention Description",
+                "sectionDesc": "Detailed description of the invention including technical field, prior art, technical essence, detailed embodiment descriptions, and industrial applicability.",
+                "descriptionLabel": "Description Content",
+                "descriptionPlaceholder": "Enter invention description...",
+                "guideTitle": "Description Guide",
+                "guideItems": {
+                    "field": "Technical field where the invention applies",
+                    "priorArt": "Prior art in the field, including known technical solutions",
+                    "essence": "Technical essence of the invention (detailed solution)",
+                    "drawings": "Brief description of drawings (if any)",
+                    "embodiments": "Detailed description of embodiments",
+                    "examples": "Examples and industrial applicability"
+                },
+                "claimsTitle": "Claims",
+                "claimsDesc": "Define the scope of protection. Each claim must be written as a single sentence.",
+                "claimsLabel": "Claims Content",
+                "claimsPlaceholder": "1. First independent claim...\n\n2. Dependent claim according to claim 1, characterized in that...\n\n3. Second independent claim...",
+                "claimsNoteTitle": "Claims Notes",
+                "claimsNotes": {
+                    "independent": "Independent claim: defines the broadest scope of protection",
+                    "dependent": "Dependent claim: narrows scope, adds technical features",
+                    "sentence": "Each claim must be a single sentence",
+                    "language": "Use clear, technically precise language"
+                }
+            },
+            "parties": {
+                "title": "Parties",
+                "description": "Applicant, inventor",
+                "applicants": "Applicants",
+                "applicantsDesc": "Information about the applicant(s) (at least 1 required)",
+                "inventors": "Inventors",
+                "inventorsDesc": "Information about inventor(s) (optional)",
+                "representatives": "IP Representatives",
+                "representativesDesc": "Information about legal representative(s) (optional)",
+                "add": "Add",
+                "noApplicants": "No applicants added",
+                "addApplicant": "Add applicant",
+                "noData": "None added. Click \"Add\" to add.",
+                "partyNumber": "{{type}} #{{number}}",
+                "fields": {
+                    "name": "Full Name",
+                    "namePlaceholder": "Enter full name",
+                    "nameEn": "Name (English)",
+                    "nameEnPlaceholder": "Full name in English",
+                    "address": "Address",
+                    "addressPlaceholder": "Enter full address",
+                    "addressEn": "Address (English)",
+                    "addressEnPlaceholder": "Full address in English",
+                    "nationality": "Nationality",
+                    "nationalityPlaceholder": "Vietnam",
+                    "countryCode": "Country Code",
+                    "countryCodePlaceholder": "VN",
+                    "countryCodeHelper": "2-letter code",
+                    "email": "Email",
+                    "emailPlaceholder": "email@example.com",
+                    "phone": "Phone Number",
+                    "phonePlaceholder": "0123 456 789",
+                    "idNumber": "ID/Passport Number",
+                    "idNumberPlaceholder": "Identity document number",
+                    "idType": "Document Type",
+                    "idTypePlaceholder": "Select document type",
+                    "idTypes": {
+                        "nationalId": "National ID",
+                        "citizenId": "Citizen ID Card",
+                        "passport": "Passport",
+                        "other": "Other"
+                    }
+                }
+            },
+            "attachments": {
+                "title": "Attachments",
+                "description": "Attach documents",
+                "uploadTitle": "Upload Documents",
+                "attachmentType": "Document Type",
+                "descriptionField": "Description (optional)",
+                "descriptionPlaceholder": "Enter document description...",
+                "dropzone": "Drag and drop or click to select file",
+                "dropzoneFormats": "Supported: PDF, DOC, DOCX, JPG, PNG (max 10MB)",
+                "uploading": "Uploading...",
+                "uploadedFiles": "Uploaded Files ({{count}})",
+                "noFiles": "No files uploaded",
+                "requiredDocsTitle": "Required Documents",
+                "requiredDocs": {
+                    "specification": "Specification (required)",
+                    "claims": "Claims (required)",
+                    "abstract": "Abstract (required)",
+                    "drawings": "Drawings (if any)",
+                    "poa": "Power of Attorney (if represented)",
+                    "priority": "Priority document (if claiming priority)"
+                }
+            },
+            "review": {
+                "title": "Review",
+                "description": "Check and submit",
+                "readyToSubmit": "Application is ready to submit",
+                "notReady": "Application is incomplete",
+                "basicInfo": "Basic Information",
+                "parties": "Related Parties",
+                "attachments": "Attachments ({{count}})",
+                "submit": "Submit Application",
+                "submitting": "Processing...",
+                "validation": {
+                    "missingTitle": "Missing invention title",
+                    "missingType": "Type not selected",
+                    "missingDescription": "Missing description",
+                    "missingClaims": "Missing claims",
+                    "missingApplicant": "No applicant added"
+                }
+            }
+        },
+        "appTypes": {
+            "INVENTION": "Invention Patent",
+            "UTILITY_MODEL": "Utility Model",
+            "INDUSTRIAL_DESIGN": "Industrial Design",
+            "TRADEMARK": "Trademark",
+            "GEOGRAPHICAL_INDICATION": "Geographical Indication"
+        },
+        "statuses": {
+            "DRAFT": "Draft",
+            "SUBMITTED": "Submitted",
+            "FORMALITY_EXAMINATION": "Formality Examination",
+            "FORMALITY_REJECTED": "Formality Rejected",
+            "SUBSTANTIVE_EXAMINATION": "Substantive Examination",
+            "PUBLISHED": "Published",
+            "GRANTED": "Granted",
+            "REJECTED": "Rejected",
+            "WITHDRAWN": "Withdrawn",
+            "ABANDONED": "Abandoned"
+        },
+        "partyTypes": {
+            "APPLICANT": "Applicant",
+            "INVENTOR": "Inventor",
+            "REPRESENTATIVE": "Representative",
+            "ASSIGNEE": "Assignee"
+        },
+        "attachmentTypes": {
+            "SPECIFICATION": "Specification",
+            "CLAIMS": "Claims",
+            "ABSTRACT": "Abstract",
+            "DRAWINGS": "Drawings",
+            "POWER_OF_ATTORNEY": "Power of Attorney",
+            "PRIORITY_DOCUMENT": "Priority Document",
+            "ASSIGNMENT": "Assignment",
+            "DECLARATION": "Declaration",
+            "SEARCH_REPORT": "Search Report",
+            "EXAMINATION_REPORT": "Examination Report",
+            "CERTIFICATE": "Certificate",
+            "OTHER": "Other"
+        },
+        "errors": {
+            "loadList": "Could not load application list",
+            "loadDetails": "Could not load application details",
+            "create": "Could not create application",
+            "update": "Could not update application",
+            "delete": "Could not delete application",
+            "submit": "Could not submit application",
+            "addParty": "Could not add party",
+            "deleteParty": "Could not delete party",
+            "uploadAttachment": "Could not upload attachment",
+            "deleteAttachment": "Could not delete attachment"
+        },
+        "confirm": {
+            "delete": "Are you sure you want to delete this application? This action cannot be undone.",
+            "deleteAttachment": "Are you sure you want to delete this document?"
+        }
+    },
+    "common": {
+        "yes": "Yes",
+        "no": "No",
+        "required": "Required",
+        "optional": "Optional",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "view": "View",
+        "close": "Close",
+        "confirm": "Confirm",
+        "error": "Error",
+        "success": "Success",
+        "loading": "Loading...",
+        "noData": "No data"
+    },
+    "validation": {
+        "required": "This field is required",
+        "email": "Invalid email address",
+        "maxLength": "Maximum {{max}} characters",
+        "minLength": "Minimum {{min}} characters",
+        "fileSize": "File size must not exceed {{max}}"
     }
 }

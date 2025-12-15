@@ -1,92 +1,215 @@
-import React from 'react';
-import type { Application } from '../types';
-
-const mockApplications: Application[] = [
-    { refNo: 'PAT-00234', title: 'Quantum Encryption Algorithm', nextDeadline: '2024-08-15', status: 'Granted' },
-    { refNo: 'TM-00567', title: 'Project Phoenix Logo', nextDeadline: '2024-09-01', status: 'Pending' },
-    { refNo: 'PAT-00199', title: 'AI-Powered Diagnostic Tool', nextDeadline: '2024-09-22', status: 'Rejected' },
-    { refNo: 'CR-00812', title: 'User Interface Design System', nextDeadline: '2024-10-05', status: 'Pending' },
-    { refNo: 'PAT-00241', title: 'Sustainable Polymer Compound', nextDeadline: '2024-11-19', status: 'Granted' },
-];
-
-const statusStyles = {
-    Granted: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
-    Pending: "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300",
-    Rejected: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300",
-};
+import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { fetchApplications, deleteApplication, setFilters } from '../features/application/store/applicationSlice';
+import { ApplicationList } from '../features/application/components';
+import { ApplicationStatus, AppType } from '../features/application/types/enums';
 
 const ApplicationsPage: React.FC = () => {
+    const { t } = useTranslation();
+    const dispatch = useAppDispatch();
+    const { applications, loading, error, pagination, filters } = useAppSelector(
+        (state) => state.application
+    );
+
+    useEffect(() => {
+        dispatch(fetchApplications(filters));
+    }, [dispatch, filters]);
+
+    const handleDelete = async (id: number) => {
+        if (window.confirm(t('application.confirm.delete'))) {
+            await dispatch(deleteApplication(id));
+        }
+    };
+
+    const handleStatusFilter = (status: ApplicationStatus | '') => {
+        dispatch(setFilters({
+            ...filters,
+            status: status || undefined,
+            page: 1,
+        }));
+    };
+
+    const handleTypeFilter = (appType: AppType | '') => {
+        dispatch(setFilters({
+            ...filters,
+            app_type: appType || undefined,
+            page: 1,
+        }));
+    };
+
+    const handleSearch = (search: string) => {
+        dispatch(setFilters({
+            ...filters,
+            search: search || undefined,
+            page: 1,
+        }));
+    };
+
+    const handlePageChange = (page: number) => {
+        dispatch(setFilters({
+            ...filters,
+            page,
+        }));
+    };
+
+    // Get status options from translations
+    const statusOptions = Object.keys(ApplicationStatus).map((key) => ({
+        value: key,
+        label: t(`application.statuses.${key}`),
+    }));
+
+    // Get type options from translations
+    const typeOptions = Object.keys(AppType).map((key) => ({
+        value: key,
+        label: t(`application.appTypes.${key}`),
+    }));
+
     return (
         <div className="flex flex-1 flex-col">
-            {/* Main Content */}
             <main className="flex-1 p-6">
-                {/* PageHeading */}
+                {/* Header */}
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                    <div className="flex flex-col">
-                        <h1 className="text-slate-900 dark:text-white text-3xl font-bold leading-tight tracking-tight">Active Applications</h1>
-                        <p className="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal mt-1">Manage and track all submitted intellectual property filings.</p>
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                            {t('application.pageTitle')}
+                        </h1>
+                        <p className="text-slate-500 dark:text-slate-400 mt-1">
+                            {t('application.pageSubtitle')}
+                        </p>
                     </div>
-                    <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-5 bg-[#4338ca] text-white text-sm font-bold leading-normal tracking-wide shadow-sm hover:bg-[#4338ca]/90 focus:outline-none focus:ring-2 focus:ring-[#4338ca]/50 focus:ring-offset-2 dark:focus:ring-offset-background-dark transition-colors">
-                        <span className="material-symbols-outlined mr-2 !text-lg">add_circle</span>
-                        New Filing
-                    </button>
+                    <Link
+                        to="/app/applications/new"
+                        className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                    >
+                        <span className="material-symbols-outlined mr-2 !text-lg">add</span>
+                        {t('application.createNew')}
+                    </Link>
                 </div>
 
-                {/* Data Table Section */}
-                <div className="bg-white dark:bg-[#111521] border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
-                            <thead className="text-xs text-slate-700 dark:text-slate-300 uppercase bg-slate-50 dark:bg-slate-800">
-                                <tr>
-                                    <th className="px-6 py-3" scope="col">Ref No.</th>
-                                    <th className="px-6 py-3" scope="col">Title</th>
-                                    <th className="px-6 py-3" scope="col">Next Deadline</th>
-                                    <th className="px-6 py-3" scope="col">Status</th>
-                                    <th className="px-6 py-3" scope="col">
-                                        <span className="sr-only">Actions</span>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {mockApplications.map((app, index) => (
-                                    <tr key={index} className="bg-white dark:bg-[#111521] border-b dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{app.refNo}</td>
-                                        <td className="px-6 py-4">{app.title}</td>
-                                        <td className="px-6 py-4">{app.nextDeadline}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyles[app.status]}`}>
-                                                {app.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
-                                                <span className="material-symbols-outlined">more_vert</span>
-                                            </button>
-                                        </td>
-                                    </tr>
+                {/* Filters */}
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700 mb-6">
+                    <div className="flex flex-wrap items-center gap-4">
+                        {/* Search */}
+                        <div className="flex-1 min-w-[200px]">
+                            <div className="relative">
+                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                    search
+                                </span>
+                                <input
+                                    type="text"
+                                    placeholder={t('application.searchPlaceholder')}
+                                    value={filters.search || ''}
+                                    onChange={(e) => handleSearch(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Status Filter */}
+                        <div>
+                            <select
+                                value={filters.status || ''}
+                                onChange={(e) => handleStatusFilter(e.target.value as ApplicationStatus | '')}
+                                className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                                <option value="">{t('application.allStatuses')}</option>
+                                {statusOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
                                 ))}
-                            </tbody>
-                        </table>
+                            </select>
+                        </div>
+
+                        {/* Type Filter */}
+                        <div>
+                            <select
+                                value={filters.app_type || ''}
+                                onChange={(e) => handleTypeFilter(e.target.value as AppType | '')}
+                                className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                                <option value="">{t('application.allTypes')}</option>
+                                {typeOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
-                    {/* Pagination */}
-                    <nav aria-label="Table navigation" className="flex items-center justify-between p-4">
-                        <span className="text-sm font-normal text-slate-500 dark:text-slate-400">Showing <span className="font-semibold text-slate-900 dark:text-white">1-5</span> of <span className="font-semibold text-slate-900 dark:text-white">100</span></span>
-                        <ul className="inline-flex items-center -space-x-px">
-                            <li>
-                                <a href="#" className="px-3 py-2 ml-0 leading-tight text-slate-500 bg-white border border-slate-300 rounded-l-lg hover:bg-slate-100 hover:text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white">Previous</a>
-                            </li>
-                            <li>
-                                <a href="#" className="px-3 py-2 leading-tight text-slate-500 bg-white border border-slate-300 hover:bg-slate-100 hover:text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white">1</a>
-                            </li>
-                            <li>
-                                <a href="#" className="px-3 py-2 leading-tight text-slate-500 bg-white border border-slate-300 hover:bg-slate-100 hover:text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white">2</a>
-                            </li>
-                            <li>
-                                <a href="#" className="px-3 py-2 leading-tight text-slate-500 bg-white border border-slate-300 rounded-r-lg hover:bg-slate-100 hover:text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white">Next</a>
-                            </li>
-                        </ul>
-                    </nav>
                 </div>
+
+                {/* Error */}
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                        <div className="flex items-center">
+                            <span className="material-symbols-outlined text-red-600 dark:text-red-400 mr-2">error</span>
+                            <span className="text-red-700 dark:text-red-300">{error}</span>
+                        </div>
+                    </div>
+                )}
+
+                {/* Applications List */}
+                <ApplicationList
+                    applications={applications}
+                    loading={loading}
+                    onDelete={handleDelete}
+                />
+
+                {/* Pagination */}
+                {pagination.total > pagination.perPage && (
+                    <div className="mt-6 flex items-center justify-between">
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                            {t('application.showingRange', {
+                                from: ((pagination.currentPage - 1) * pagination.perPage) + 1,
+                                to: Math.min(pagination.currentPage * pagination.perPage, pagination.total),
+                                total: pagination.total,
+                            })}
+                        </p>
+
+                        <div className="flex items-center space-x-2">
+                            <button
+                                type="button"
+                                onClick={() => handlePageChange(pagination.currentPage - 1)}
+                                disabled={pagination.currentPage <= 1}
+                                className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {t('application.prev')}
+                            </button>
+
+                            {Array.from({ length: pagination.lastPage }, (_, i) => i + 1)
+                                .filter(page => {
+                                    const current = pagination.currentPage;
+                                    return page === 1 || page === pagination.lastPage ||
+                                        (page >= current - 1 && page <= current + 1);
+                                })
+                                .map((page, index, array) => (
+                                    <React.Fragment key={page}>
+                                        {index > 0 && array[index - 1] !== page - 1 && (
+                                            <span className="text-slate-400">...</span>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => handlePageChange(page)}
+                                            className={`px-3 py-2 rounded-lg border transition-colors ${page === pagination.currentPage
+                                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                                    : 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                                }`}
+                                        >
+                                            {page}
+                                        </button>
+                                    </React.Fragment>
+                                ))}
+
+                            <button
+                                type="button"
+                                onClick={() => handlePageChange(pagination.currentPage + 1)}
+                                disabled={pagination.currentPage >= pagination.lastPage}
+                                className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {t('application.next')}
+                            </button>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );

@@ -1,0 +1,338 @@
+{
+    "appName": "Apex IPMS",
+    "landing": {
+        "heroTitle": "Bảo Vệ Sáng Tạo Của Bạn. Quản Lý Danh Mục SHTT Toàn Cầu.",
+        "heroSubtitle": "Nền tảng đáng tin cậy dành cho luật sư sáng chế, các nhóm R&D và doanh nghiệp để theo dõi hồ sơ, đáp ứng thời hạn và bảo vệ tài sản trên toàn thế giới.",
+        "requestDemo": "Yêu Cầu Demo",
+        "whyChoose": "Tại Sao Các Doanh Nghiệp Hàng Đầu Chọn {{appName}}",
+        "features": {
+            "security": {
+                "title": "Bảo Mật Cấp Ngân Hàng",
+                "desc": "Bảo vệ dữ liệu SHTT nhạy cảm của bạn với mã hóa đầu cuối và các giao thức bảo mật mạnh mẽ được các tổ chức tài chính tin tưởng."
+            },
+            "deadline": {
+                "title": "Không Bỏ Lỡ Thời Hạn",
+                "desc": "Tính năng tự động theo dõi và nhắc nhở thông minh đảm bảo bạn luôn đi trước mọi ngày nộp hồ sơ và gia hạn quan trọng."
+            },
+            "global": {
+                "title": "Nhìn Toàn Cảnh Danh Mục",
+                "desc": "Quản lý sáng chế và nhãn hiệu quốc tế từ một bảng điều khiển trực quan duy nhất với cập nhật trạng thái theo thời gian thực."
+            }
+        },
+        "trustedBy": "Được tin tưởng bởi các doanh nghiệp hàng đầu",
+        "nav": {
+            "features": "Tính Năng",
+            "pricing": "Bảng Giá",
+            "about": "Về Chúng Tôi"
+        }
+    },
+    "login": {
+        "welcomeBack": "Chào mừng trở lại",
+        "enterDetails": "Vui lòng nhập thông tin để đăng nhập.",
+        "emailLabel": "Email",
+        "emailPlaceholder": "Nhập email của bạn",
+        "passwordLabel": "Mật khẩu",
+        "passwordPlaceholder": "Nhập mật khẩu",
+        "rememberMe": "Ghi nhớ đăng nhập",
+        "forgotPassword": "Quên mật khẩu?",
+        "signIn": "Đăng Nhập",
+        "dontHaveAccount": "Chưa có tài khoản?",
+        "createAccount": "Tạo tài khoản ngay",
+        "staffPortal": "Cổng Nhân Viên",
+        "clientLogin": "Đăng Nhập Khách Hàng",
+        "staffLoginTitle": "Truy Cập Nội Bộ / Cổng Nhân Viên",
+        "staffIdLabel": "Mã Nhân Viên / Email",
+        "staffIdPlaceholder": "Nhập mã nhân viên hoặc email",
+        "authenticate": "Xác Thực",
+        "needHelp": "Cần hỗ trợ truy cập? Liên hệ Bộ phận IT.",
+        "protectMatters": "Bảo Vệ Điều Quan Trọng.",
+        "protectDesc": "Bảo mật SHTT của bạn với cơ sở hạ tầng đẳng cấp thế giới và quản lý toàn bộ danh mục sở hữu trí tuệ tại một nơi."
+    },
+    "dashboard": {
+        "title": "IPMS Pro",
+        "subtitle": "Enterprise",
+        "nav": {
+            "dashboard": "Tổng Quan",
+            "myApplications": "Đơn Của Tôi",
+            "myIpAssets": "Tài Sản SHTT",
+            "feeManagement": "Quản Lý Phí",
+            "messages": "Tin Nhắn",
+            "newFiling": "Nộp Đơn Mới",
+            "settings": "Cài Đặt",
+            "logout": "Đăng Xuất"
+        }
+    },
+    "application": {
+        "title": "Đơn đăng ký",
+        "pageTitle": "Đơn đăng ký",
+        "pageSubtitle": "Quản lý các đơn đăng ký sở hữu công nghiệp của bạn",
+        "createNew": "Tạo đơn mới",
+        "noApplications": "Chưa có đơn đăng ký nào",
+        "noApplicationsDesc": "Bắt đầu bằng việc tạo đơn đăng ký mới",
+        "loading": "Đang tải...",
+        "showingRange": "Hiển thị {{from}} - {{to}} của {{total}} đơn",
+        "prev": "Trước",
+        "next": "Sau",
+        "allStatuses": "Tất cả trạng thái",
+        "allTypes": "Tất cả loại đơn",
+        "searchPlaceholder": "Tìm kiếm theo tên, số đơn...",
+        "table": {
+            "filingNumber": "Số đơn / Tên",
+            "appType": "Loại đơn",
+            "filingDate": "Ngày nộp",
+            "status": "Trạng thái",
+            "actions": "Hành động"
+        },
+        "detail": {
+            "title": "Chi tiết đơn",
+            "edit": "Chỉnh sửa",
+            "delete": "Xóa",
+            "backToList": "Quay lại danh sách",
+            "notFound": "Không tìm thấy đơn",
+            "loadError": "Không thể tải thông tin đơn",
+            "basicInfo": "Thông tin cơ bản",
+            "abstract": "Tóm tắt",
+            "description": "Bản mô tả",
+            "claims": "Yêu cầu bảo hộ",
+            "parties": "Các bên liên quan",
+            "attachments": "Tài liệu đính kèm",
+            "noAttachments": "Chưa có tài liệu đính kèm",
+            "pctApplication": "Đơn PCT",
+            "priority": "Quyền ưu tiên",
+            "createdAt": "Ngày tạo",
+            "filingDate": "Ngày nộp"
+        },
+        "form": {
+            "createTitle": "Tạo đơn đăng ký mới",
+            "editTitle": "Chỉnh sửa đơn đăng ký",
+            "subtitle": "Hoàn thành các bước dưới đây để nộp đơn đăng ký sở hữu công nghiệp",
+            "saveDraft": "Lưu nháp & Thoát",
+            "back": "Quay lại",
+            "next": "Tiếp theo",
+            "processing": "Đang xử lý..."
+        },
+        "steps": {
+            "basicInfo": {
+                "title": "Thông tin cơ bản",
+                "description": "Loại đơn, tên, tóm tắt",
+                "sectionTitle": "Thông tin cơ bản",
+                "appType": "Loại đơn",
+                "appTypePlaceholder": "Chọn loại đơn...",
+                "inventionTitle": "Tên sáng chế / Giải pháp",
+                "inventionTitlePlaceholder": "Nhập tên sáng chế hoặc giải pháp",
+                "abstract": "Tóm tắt",
+                "abstractPlaceholder": "Nhập tóm tắt nội dung sáng chế...",
+                "abstractHelper": "Tóm tắt ngắn gọn về sáng chế (không quá 2000 ký tự)"
+            },
+            "pct": {
+                "title": "Thông tin PCT",
+                "isPct": "Đơn theo hệ thống PCT (Patent Cooperation Treaty)",
+                "pctNumber": "Số PCT",
+                "pctNumberPlaceholder": "PCT/VN/2024/...",
+                "pctFilingDate": "Ngày nộp đơn PCT",
+                "pctPublicationDate": "Ngày công bố PCT"
+            },
+            "priority": {
+                "title": "Yêu cầu quyền ưu tiên",
+                "description": "Điền thông tin nếu bạn yêu cầu quyền ưu tiên từ đơn đã nộp trước đó",
+                "number": "Số đơn ưu tiên",
+                "numberPlaceholder": "Số đơn ưu tiên",
+                "date": "Ngày ưu tiên",
+                "country": "Mã quốc gia",
+                "countryPlaceholder": "VN, US, JP...",
+                "countryHelper": "Mã 2 ký tự"
+            },
+            "descriptionStep": {
+                "title": "Bản mô tả",
+                "description": "Mô tả và yêu cầu bảo hộ",
+                "sectionTitle": "Bản mô tả sáng chế",
+                "sectionDesc": "Mô tả chi tiết về sáng chế, bao gồm lĩnh vực kỹ thuật, tình trạng kỹ thuật, bản chất kỹ thuật, mô tả chi tiết các phương án thực hiện và ứng dụng công nghiệp.",
+                "descriptionLabel": "Nội dung bản mô tả",
+                "descriptionPlaceholder": "Nhập nội dung bản mô tả sáng chế...",
+                "guideTitle": "Hướng dẫn viết bản mô tả",
+                "guideItems": {
+                    "field": "Lĩnh vực kỹ thuật mà sáng chế được áp dụng",
+                    "priorArt": "Tình trạng kỹ thuật thuộc lĩnh vực nói trên, bao gồm các giải pháp kỹ thuật đã biết",
+                    "essence": "Bản chất kỹ thuật của sáng chế (mô tả chi tiết giải pháp kỹ thuật)",
+                    "drawings": "Mô tả vắn tắt các hình vẽ (nếu có)",
+                    "embodiments": "Mô tả chi tiết các phương án thực hiện sáng chế",
+                    "examples": "Ví dụ thực hiện sáng chế và khả năng áp dụng công nghiệp"
+                },
+                "claimsTitle": "Yêu cầu bảo hộ",
+                "claimsDesc": "Xác định phạm vi bảo hộ của sáng chế. Mỗi điểm yêu cầu bảo hộ phải được viết thành một câu.",
+                "claimsLabel": "Nội dung yêu cầu bảo hộ",
+                "claimsPlaceholder": "1. Điểm yêu cầu bảo hộ độc lập đầu tiên...\n\n2. Điểm yêu cầu bảo hộ phụ thuộc theo điểm 1, đặc trưng ở chỗ...\n\n3. Điểm yêu cầu bảo hộ độc lập thứ hai...",
+                "claimsNoteTitle": "Lưu ý về yêu cầu bảo hộ",
+                "claimsNotes": {
+                    "independent": "Điểm yêu cầu bảo hộ độc lập: xác định phạm vi bảo hộ rộng nhất",
+                    "dependent": "Điểm yêu cầu bảo hộ phụ thuộc: thu hẹp phạm vi, bổ sung đặc điểm kỹ thuật",
+                    "sentence": "Mỗi điểm phải được viết thành một câu duy nhất",
+                    "language": "Sử dụng ngôn ngữ rõ ràng, chính xác về mặt kỹ thuật"
+                }
+            },
+            "parties": {
+                "title": "Các bên",
+                "description": "Người nộp đơn, tác giả",
+                "applicants": "Người nộp đơn",
+                "applicantsDesc": "Thông tin về người/tổ chức nộp đơn đăng ký (bắt buộc ít nhất 1)",
+                "inventors": "Tác giả sáng chế",
+                "inventorsDesc": "Thông tin về tác giả/nhà sáng chế (không bắt buộc)",
+                "representatives": "Đại diện sở hữu công nghiệp",
+                "representativesDesc": "Thông tin về đại diện pháp lý (không bắt buộc)",
+                "add": "Thêm",
+                "noApplicants": "Chưa có người nộp đơn",
+                "addApplicant": "Thêm người nộp đơn",
+                "noData": "Chưa có. Nhấn \"Thêm\" để bổ sung.",
+                "partyNumber": "{{type}} #{{number}}",
+                "fields": {
+                    "name": "Họ và tên",
+                    "namePlaceholder": "Nhập họ và tên",
+                    "nameEn": "Tên (tiếng Anh)",
+                    "nameEnPlaceholder": "Full name in English",
+                    "address": "Địa chỉ",
+                    "addressPlaceholder": "Nhập địa chỉ đầy đủ",
+                    "addressEn": "Địa chỉ (tiếng Anh)",
+                    "addressEnPlaceholder": "Full address in English",
+                    "nationality": "Quốc tịch",
+                    "nationalityPlaceholder": "Việt Nam",
+                    "countryCode": "Mã quốc gia",
+                    "countryCodePlaceholder": "VN",
+                    "countryCodeHelper": "Mã 2 ký tự",
+                    "email": "Email",
+                    "emailPlaceholder": "email@example.com",
+                    "phone": "Số điện thoại",
+                    "phonePlaceholder": "0123 456 789",
+                    "idNumber": "Số CMND/CCCD/Hộ chiếu",
+                    "idNumberPlaceholder": "Số giấy tờ tùy thân",
+                    "idType": "Loại giấy tờ",
+                    "idTypePlaceholder": "Chọn loại giấy tờ",
+                    "idTypes": {
+                        "nationalId": "CMND",
+                        "citizenId": "Căn cước công dân",
+                        "passport": "Hộ chiếu",
+                        "other": "Khác"
+                    }
+                }
+            },
+            "attachments": {
+                "title": "Tài liệu",
+                "description": "Đính kèm tài liệu",
+                "uploadTitle": "Tải lên tài liệu",
+                "attachmentType": "Loại tài liệu",
+                "descriptionField": "Mô tả (không bắt buộc)",
+                "descriptionPlaceholder": "Nhập mô tả tài liệu...",
+                "dropzone": "Kéo thả hoặc nhấn để chọn file",
+                "dropzoneFormats": "Hỗ trợ: PDF, DOC, DOCX, JPG, PNG (tối đa 10MB)",
+                "uploading": "Đang tải lên...",
+                "uploadedFiles": "Tài liệu đã tải lên ({{count}})",
+                "noFiles": "Chưa có tài liệu nào",
+                "requiredDocsTitle": "Tài liệu cần thiết",
+                "requiredDocs": {
+                    "specification": "Bản mô tả sáng chế (bắt buộc)",
+                    "claims": "Yêu cầu bảo hộ (bắt buộc)",
+                    "abstract": "Bản tóm tắt (bắt buộc)",
+                    "drawings": "Bản vẽ (nếu có)",
+                    "poa": "Giấy ủy quyền (nếu có đại diện)",
+                    "priority": "Tài liệu ưu tiên (nếu yêu cầu quyền ưu tiên)"
+                }
+            },
+            "review": {
+                "title": "Xem lại",
+                "description": "Kiểm tra và nộp đơn",
+                "readyToSubmit": "Đơn đã sẵn sàng để nộp",
+                "notReady": "Đơn chưa hoàn thiện",
+                "basicInfo": "Thông tin cơ bản",
+                "parties": "Các bên liên quan",
+                "attachments": "Tài liệu đính kèm ({{count}})",
+                "submit": "Nộp đơn",
+                "submitting": "Đang xử lý...",
+                "validation": {
+                    "missingTitle": "Thiếu tên sáng chế",
+                    "missingType": "Chưa chọn loại đơn",
+                    "missingDescription": "Thiếu bản mô tả",
+                    "missingClaims": "Thiếu yêu cầu bảo hộ",
+                    "missingApplicant": "Chưa có người nộp đơn"
+                }
+            }
+        },
+        "appTypes": {
+            "INVENTION": "Sáng chế",
+            "UTILITY_MODEL": "Giải pháp hữu ích",
+            "INDUSTRIAL_DESIGN": "Kiểu dáng công nghiệp",
+            "TRADEMARK": "Nhãn hiệu",
+            "GEOGRAPHICAL_INDICATION": "Chỉ dẫn địa lý"
+        },
+        "statuses": {
+            "DRAFT": "Bản nháp",
+            "SUBMITTED": "Đã nộp",
+            "FORMALITY_EXAMINATION": "Thẩm định hình thức",
+            "FORMALITY_REJECTED": "Từ chối hình thức",
+            "SUBSTANTIVE_EXAMINATION": "Thẩm định nội dung",
+            "PUBLISHED": "Đã công bố",
+            "GRANTED": "Đã cấp bằng",
+            "REJECTED": "Từ chối",
+            "WITHDRAWN": "Đã rút",
+            "ABANDONED": "Bỏ đơn"
+        },
+        "partyTypes": {
+            "APPLICANT": "Người nộp đơn",
+            "INVENTOR": "Tác giả/Nhà sáng chế",
+            "REPRESENTATIVE": "Đại diện",
+            "ASSIGNEE": "Người được chuyển nhượng"
+        },
+        "attachmentTypes": {
+            "SPECIFICATION": "Bản mô tả",
+            "CLAIMS": "Yêu cầu bảo hộ",
+            "ABSTRACT": "Tóm tắt",
+            "DRAWINGS": "Bản vẽ",
+            "POWER_OF_ATTORNEY": "Giấy ủy quyền",
+            "PRIORITY_DOCUMENT": "Tài liệu ưu tiên",
+            "ASSIGNMENT": "Văn bản chuyển nhượng",
+            "DECLARATION": "Tờ khai",
+            "SEARCH_REPORT": "Báo cáo tra cứu",
+            "EXAMINATION_REPORT": "Báo cáo thẩm định",
+            "CERTIFICATE": "Bằng/Giấy chứng nhận",
+            "OTHER": "Tài liệu khác"
+        },
+        "errors": {
+            "loadList": "Không thể tải danh sách đơn",
+            "loadDetails": "Không thể tải thông tin đơn",
+            "create": "Không thể tạo đơn",
+            "update": "Không thể cập nhật đơn",
+            "delete": "Không thể xóa đơn",
+            "submit": "Không thể nộp đơn",
+            "addParty": "Không thể thêm bên liên quan",
+            "deleteParty": "Không thể xóa bên liên quan",
+            "uploadAttachment": "Không thể tải lên tài liệu",
+            "deleteAttachment": "Không thể xóa tài liệu"
+        },
+        "confirm": {
+            "delete": "Bạn có chắc chắn muốn xóa đơn này? Hành động này không thể hoàn tác.",
+            "deleteAttachment": "Bạn có chắc chắn muốn xóa tài liệu này?"
+        }
+    },
+    "common": {
+        "yes": "Có",
+        "no": "Không",
+        "required": "Bắt buộc",
+        "optional": "Không bắt buộc",
+        "save": "Lưu",
+        "cancel": "Hủy",
+        "delete": "Xóa",
+        "edit": "Chỉnh sửa",
+        "view": "Xem",
+        "close": "Đóng",
+        "confirm": "Xác nhận",
+        "error": "Lỗi",
+        "success": "Thành công",
+        "loading": "Đang tải...",
+        "noData": "Không có dữ liệu"
+    },
+    "validation": {
+        "required": "Trường này là bắt buộc",
+        "email": "Email không hợp lệ",
+        "maxLength": "Tối đa {{max}} ký tự",
+        "minLength": "Tối thiểu {{min}} ký tự",
+        "fileSize": "File không được quá {{max}}"
+    }
+}
