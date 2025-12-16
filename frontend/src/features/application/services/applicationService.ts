@@ -13,8 +13,42 @@ import type {
     PaginatedResponse,
     ApiResponse,
 } from '../types/applicationTypes';
+import type { AttachmentType } from '../types/enums';
 
 const BASE_URL = '/applications';
+
+// Mapping frontend attachment types to backend doc_type values
+const ATTACHMENT_TYPE_TO_BACKEND: Record<string, string> = {
+    'SPECIFICATION': 'DESCRIPTION',
+    'CLAIMS': 'CLAIMS',
+    'ABSTRACT': 'ABSTRACT',
+    'DRAWINGS': 'DRAWINGS',
+    'POWER_OF_ATTORNEY': 'POA',
+    'PRIORITY_DOCUMENT': 'PRIORITY_DOC',
+    'ASSIGNMENT': 'OTHER',
+    'DECLARATION': 'FORM',
+    'SEARCH_REPORT': 'OTHER',
+    'EXAMINATION_REPORT': 'OTHER',
+    'CERTIFICATE': 'CERTIFICATE',
+    'OTHER': 'OTHER',
+};
+
+// Transform frontend party DTO to backend format
+function transformPartyToBackend(data: CreatePartyDTO) {
+    return {
+        role: data.party_type,
+        snapshot_name: data.name,
+        snapshot_address: data.address,
+        snapshot_email: data.email || null,
+        nationality: data.nationality || null,
+        is_primary: data.is_primary ?? false,
+    };
+}
+
+// Transform frontend attachment type to backend doc_type
+function transformAttachmentType(attachmentType: AttachmentType): string {
+    return ATTACHMENT_TYPE_TO_BACKEND[attachmentType] || 'OTHER';
+}
 
 export const applicationService = {
     // Application CRUD
@@ -61,12 +95,22 @@ export const applicationService = {
     },
 
     async addParty(applicationId: number, data: CreatePartyDTO): Promise<ApiResponse<ApplicationParty>> {
-        const response = await axiosClient.post(`${BASE_URL}/${applicationId}/parties`, data);
+        const backendData = transformPartyToBackend(data);
+        const response = await axiosClient.post(`${BASE_URL}/${applicationId}/parties`, backendData);
         return response.data;
     },
 
     async updateParty(applicationId: number, partyId: number, data: Partial<CreatePartyDTO>): Promise<ApiResponse<ApplicationParty>> {
-        const response = await axiosClient.put(`${BASE_URL}/${applicationId}/parties/${partyId}`, data);
+        // Transform only provided fields
+        const backendData: Record<string, unknown> = {};
+        if (data.party_type !== undefined) backendData.role = data.party_type;
+        if (data.name !== undefined) backendData.snapshot_name = data.name;
+        if (data.address !== undefined) backendData.snapshot_address = data.address;
+        if (data.email !== undefined) backendData.snapshot_email = data.email;
+        if (data.nationality !== undefined) backendData.nationality = data.nationality;
+        if (data.is_primary !== undefined) backendData.is_primary = data.is_primary;
+
+        const response = await axiosClient.put(`${BASE_URL}/${applicationId}/parties/${partyId}`, backendData);
         return response.data;
     },
 
@@ -83,9 +127,10 @@ export const applicationService = {
     async uploadAttachment(applicationId: number, data: UploadAttachmentDTO): Promise<ApiResponse<ApplicationAttachment>> {
         const formData = new FormData();
         formData.append('file', data.file);
-        formData.append('attachment_type', data.attachment_type);
+        // Transform attachment_type to backend doc_type
+        formData.append('doc_type', transformAttachmentType(data.attachment_type));
         if (data.description) {
-            formData.append('description', data.description);
+            formData.append('notes', data.description); // Backend uses 'notes' instead of 'description'
         }
 
         const response = await axiosClient.post(`${BASE_URL}/${applicationId}/attachments`, formData, {

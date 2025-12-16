@@ -9,7 +9,7 @@ use App\Repositories\Application\ApplicationRepositoryInterface;
 use App\Repositories\ApplicationMetric\ApplicationMetricRepositoryInterface;
 use App\Repositories\ApplicationParty\ApplicationPartyRepositoryInterface;
 use App\Services\Assignment\AssignmentService;
-use App\Enums\ApplicationStatus;
+use App\Services\Fee\QuoteGenerator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,7 +23,7 @@ class ApplicationService
 
     public function __construct(
         AssignmentService $assignmentService,
-        \App\Services\Fee\QuoteGenerator $quoteGenerator,
+        QuoteGenerator $quoteGenerator,
         ApplicationRepositoryInterface $applicationRepository,
         ApplicationMetricRepositoryInterface $applicationMetricRepository,
         ApplicationPartyRepositoryInterface $applicationPartyRepository

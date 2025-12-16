@@ -5,9 +5,8 @@ export interface Application {
     filing_number: string | null;
     app_type: AppType;
     title: string;
-    abstract: string | null;
-    description: string | null;
-    claims: string | null;
+    // Note: abstract, description, claims are stored as file attachments
+    // Use attachments with doc_type: ABSTRACT, DESCRIPTION, CLAIMS
     status: ApplicationStatus;
     filing_date: string | null;
     priority_date: string | null;
@@ -98,9 +97,8 @@ export interface User {
 export interface CreateApplicationDTO {
     app_type: AppType;
     title: string;
-    abstract?: string;
-    description?: string;
-    claims?: string;
+    // Note: abstract, description, claims are uploaded as attachments
+    // Use uploadAttachment() with doc_type: ABSTRACT, DESCRIPTION, CLAIMS
     is_pct?: boolean;
     pct_number?: string;
     pct_filing_date?: string;
@@ -108,6 +106,7 @@ export interface CreateApplicationDTO {
     priority_date?: string;
     priority_number?: string;
     priority_country?: string;
+    applicant_is_inventor?: boolean;
 }
 
 export interface UpdateApplicationDTO extends Partial<CreateApplicationDTO> {

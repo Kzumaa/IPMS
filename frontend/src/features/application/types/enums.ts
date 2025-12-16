@@ -1,10 +1,7 @@
-// App Types
 export const AppType = {
-    INVENTION: 'INVENTION',
-    UTILITY_MODEL: 'UTILITY_MODEL',
+    PATENT: 'PATENT',
+    UTILITY: 'UTILITY',
     INDUSTRIAL_DESIGN: 'INDUSTRIAL_DESIGN',
-    TRADEMARK: 'TRADEMARK',
-    GEOGRAPHICAL_INDICATION: 'GEOGRAPHICAL_INDICATION',
 } as const;
 
 export type AppType = typeof AppType[keyof typeof AppType];
@@ -55,11 +52,9 @@ export type AttachmentType = typeof AttachmentType[keyof typeof AttachmentType];
 
 // Display mappings
 export const AppTypeLabels: Record<AppType, string> = {
-    [AppType.INVENTION]: 'Sáng chế',
-    [AppType.UTILITY_MODEL]: 'Giải pháp hữu ích',
+    [AppType.PATENT]: 'Sáng chế',
+    [AppType.UTILITY]: 'Giải pháp hữu ích',
     [AppType.INDUSTRIAL_DESIGN]: 'Kiểu dáng công nghiệp',
-    [AppType.TRADEMARK]: 'Nhãn hiệu',
-    [AppType.GEOGRAPHICAL_INDICATION]: 'Chỉ dẫn địa lý',
 };
 
 export const ApplicationStatusLabels: Record<ApplicationStatus, string> = {

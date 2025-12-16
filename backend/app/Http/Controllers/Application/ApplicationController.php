@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Application;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ApplicationResource;
 use App\Models\Application;
 use App\Services\Application\ApplicationService;
 use App\Services\Examination\FormalityExamService;
@@ -35,6 +36,49 @@ class ApplicationController extends Controller
         $this->fileMetricService = $fileMetricService;
     }
 
+    public function index(Request $request)
+    {
+        $validated = $request->validate([
+            'status' => 'nullable|string',
+            'app_type' => 'nullable|string|in:PATENT,UTILITY,INDUSTRIAL_DESIGN',
+            'search' => 'nullable|string|max:255',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $query = Application::with(['metrics', 'parties'])
+            ->where('created_by', Auth::id());
+
+        if (!empty($validated['status'])) {
+            $query->where('status', $validated['status']);
+        }
+
+        if (!empty($validated['app_type'])) {
+            $query->where('app_type', $validated['app_type']);
+        }
+
+        if (!empty($validated['search'])) {
+            $search = $validated['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'ILIKE', "%{$search}%")
+                  ->orWhere('app_no', 'ILIKE', "%{$search}%");
+            });
+        }
+
+        $perPage = $validated['per_page'] ?? 10;
+        $applications = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        return response()->json([
+            'data' => ApplicationResource::collection($applications->items()),
+            'meta' => [
+                'current_page' => $applications->currentPage(),
+                'last_page' => $applications->lastPage(),
+                'per_page' => $applications->perPage(),
+                'total' => $applications->total(),
+            ],
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -47,14 +91,14 @@ class ApplicationController extends Controller
 
         $application = $this->applicationService->createApplication($validated);
 
-        return response()->json($application, 201);
+        return response()->json(['data' => new ApplicationResource($application)], 201);
     }
 
     public function show($id)
     {
         $application = Application::with(['metrics', 'parties', 'payments.receiptFile', 'attachments.file'])->findOrFail($id);
         $this->authorize('view', $application);
-        return response()->json($application);
+        return response()->json(['data' => new ApplicationResource($application)]);
     }
 
     public function update(Request $request, $id)
@@ -84,6 +128,20 @@ class ApplicationController extends Controller
         $application = $this->applicationService->updateApplication($application, $validated);
 
         return response()->json($application);
+    }
+
+    public function destroy($id)
+    {
+        $application = Application::findOrFail($id);
+        $this->authorize('update', $application);
+
+        if ($application->status !== ApplicationStatus::DRAFT) {
+            return response()->json(['message' => 'Only DRAFT applications can be deleted.'], 400);
+        }
+
+        $application->delete();
+
+        return response()->json(['message' => 'Application deleted successfully.'], 200);
     }
 
     public function updateMetrics(Request $request, $id)

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Application;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ApplicationAttachmentResource;
 use App\Models\Application;
 use App\Models\ApplicationAttachment;
 use App\Services\File\FileService;
@@ -15,6 +16,20 @@ class ApplicationAttachmentController extends Controller
     public function __construct(FileService $fileService)
     {
         $this->fileService = $fileService;
+    }
+
+    public function index($applicationId)
+    {
+        $application = Application::findOrFail($applicationId);
+        $this->authorize('view', $application);
+
+        $attachments = $application->attachments()
+            ->with('file')
+            ->where('is_current', true)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json(['data' => ApplicationAttachmentResource::collection($attachments)]);
     }
 
     public function store(Request $request, $id)
@@ -47,6 +62,46 @@ class ApplicationAttachmentController extends Controller
             'notes' => $validated['notes'] ?? null,
         ]);
 
-        return response()->json($attachment->load('file'), 201);
+        return response()->json(['data' => new ApplicationAttachmentResource($attachment->load('file'))], 201);
+    }
+
+    public function destroy($applicationId, $attachmentId)
+    {
+        $application = Application::findOrFail($applicationId);
+        $this->authorize('update', $application);
+
+        $attachment = ApplicationAttachment::where('application_id', $applicationId)
+            ->where('id', $attachmentId)
+            ->firstOrFail();
+
+        $attachment->delete();
+
+        return response()->json(['message' => 'Attachment deleted successfully.'], 200);
+    }
+
+    public function download($applicationId, $attachmentId)
+    {
+        $application = Application::findOrFail($applicationId);
+        $this->authorize('view', $application);
+
+        $attachment = ApplicationAttachment::with('file')
+            ->where('application_id', $applicationId)
+            ->where('id', $attachmentId)
+            ->firstOrFail();
+
+        if (!$attachment->file) {
+            return response()->json(['message' => 'File not found.'], 404);
+        }
+
+        // Return the file URL for download (frontend will handle the download)
+        // If using presigned URLs, generate one here
+        return response()->json([
+            'data' => [
+                'url' => $attachment->file->url,
+                'filename' => $attachment->file->filename,
+                'mime_type' => $attachment->file->mime,
+                'size' => $attachment->file->size_bytes,
+            ]
+        ]);
     }
 }
