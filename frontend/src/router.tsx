@@ -1,8 +1,10 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import ClientLoginPage from './pages/ClientLoginPage';
+import RegisterPage from './pages/RegisterPage';
 import StaffLoginPage from './pages/StaffLoginPage';
 import DashboardLayout from './components/DashboardLayout';
+import StaffLayout from './components/StaffLayout';
 import DashboardPage from './pages/DashboardPage';
 import ApplicationsPage from './pages/ApplicationsPage';
 import NewApplicationPage from './pages/NewApplicationPage';
@@ -10,6 +12,10 @@ import ApplicationDetailPage from './pages/ApplicationDetailPage';
 import AssetsPage from './pages/AssetsPage';
 import FeesPage from './pages/FeesPage';
 import MessagesPage from './pages/MessagesPage';
+import StaffDashboardPage from './pages/staff/StaffDashboardPage';
+import StaffApplicationsPage from './pages/staff/StaffApplicationsPage';
+import StaffApplicationDetailPage from './pages/staff/StaffApplicationDetailPage';
+import StaffReportsPage from './pages/staff/StaffReportsPage';
 import { ProtectedRoute, PublicRoute } from './components/AuthRoutes';
 
 const router = createBrowserRouter([
@@ -25,6 +31,10 @@ const router = createBrowserRouter([
                 element: <ClientLoginPage />,
             },
             {
+                path: '/register',
+                element: <RegisterPage />,
+            },
+            {
                 path: '/staff-login',
                 element: <StaffLoginPage />,
             },
@@ -33,6 +43,36 @@ const router = createBrowserRouter([
     {
         element: <ProtectedRoute />,
         children: [
+            {
+                path: '/staff',
+                element: <StaffLayout />,
+                children: [
+                    {
+                        index: true,
+                        element: <Navigate to="/staff/dashboard" replace />,
+                    },
+                    {
+                        path: 'dashboard',
+                        element: <StaffDashboardPage />,
+                    },
+                    {
+                        path: 'applications',
+                        element: <StaffApplicationsPage />,
+                    },
+                    {
+                        path: 'applications/assigned',
+                        element: <StaffApplicationsPage assignedOnly={true} />,
+                    },
+                    {
+                        path: 'applications/:id',
+                        element: <StaffApplicationDetailPage />,
+                    },
+                    {
+                        path: 'reports',
+                        element: <StaffReportsPage />,
+                    },
+                ],
+            },
             {
                 path: '/app',
                 element: <DashboardLayout />,

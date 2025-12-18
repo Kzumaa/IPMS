@@ -95,7 +95,7 @@ const ClientLoginPage: React.FC = () => {
                                     </form>
                                     <div className="flex items-center justify-center gap-2 mt-8">
                                         <p className="text-[#656d86] dark:text-gray-400 text-sm font-normal leading-normal">{t('login.dontHaveAccount')}</p>
-                                        <a className="text-[#1e40af] text-sm font-semibold leading-normal underline" href="#">{t('login.createAccount')}</a>
+                                        <a className="text-[#1e40af] text-sm font-semibold leading-normal underline cursor-pointer" onClick={() => navigate('/register')}>{t('login.createAccount')}</a>
                                     </div>
                                 </div>
                             </div>

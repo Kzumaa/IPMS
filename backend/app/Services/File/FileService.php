@@ -14,8 +14,11 @@ class FileService
     {
         $hash = hash_file('sha256', $uploadedFile->path());
         
-        // Check if file already exists by hash to avoid duplicates (optional optimization)
-        // For now, we'll always upload new files but could implement deduplication later.
+        // Check if file already exists by hash - reuse it to avoid duplicates
+        $existingFile = File::where('sha256', $hash)->first();
+        if ($existingFile) {
+            return $existingFile;
+        }
 
         $uuid = Str::uuid();
         $extension = $uploadedFile->getClientOriginalExtension();

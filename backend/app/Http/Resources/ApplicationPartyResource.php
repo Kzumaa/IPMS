@@ -19,9 +19,7 @@ class ApplicationPartyResource extends JsonResource
             'application_id' => $this->application_id,
             'party_type' => $this->role, // Map 'role' to 'party_type'
             'name' => $this->snapshot_name ?? $this->user?->name,
-            'name_en' => null,
             'address' => $this->snapshot_address,
-            'address_en' => null,
             'nationality' => $this->nationality,
             'country_code' => null,
             'email' => $this->snapshot_email ?? $this->user?->email,

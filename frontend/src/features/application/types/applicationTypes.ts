@@ -25,6 +25,7 @@ export interface Application {
     attachments?: ApplicationAttachment[];
     protection_titles?: ProtectionTitle[];
     fee_quotes?: FeeQuote[];
+    metrics?: ApplicationMetric;
     applicant?: User;
 }
 
@@ -33,9 +34,7 @@ export interface ApplicationParty {
     application_id: number;
     party_type: PartyType;
     name: string;
-    name_en: string | null;
     address: string;
-    address_en: string | null;
     nationality: string | null;
     country_code: string | null;
     email: string | null;
@@ -74,17 +73,43 @@ export interface ProtectionTitle {
     updated_at: string;
 }
 
+export interface FeeQuoteLine {
+    id: number;
+    fee_quote_id: number;
+    fee_code: string;
+    label: string;
+    units: number;
+    unit_price: number;
+    amount: number;
+    source: 'AUTO' | 'MANUAL';
+}
+
 export interface FeeQuote {
     id: number;
     application_id: number;
-    fee_type: string;
-    amount: number;
+    version: number;
     currency: string;
-    due_date: string | null;
-    paid_date: string | null;
-    status: 'PENDING' | 'PAID' | 'OVERDUE' | 'WAIVED';
+    total_amount: number;
+    status: 'DRAFT' | 'FINAL' | 'PAID';
+    generated_at: string;
+    law_version: string;
+    lines: FeeQuoteLine[];
     created_at: string;
     updated_at: string;
+}
+
+export interface ApplicationMetric {
+    application_id: number;
+    description_pages?: number | null;
+    claims_independent?: number | null;
+    claims_total?: number | null;
+    drawings_images?: number | null;
+    ipc_groups?: number | null;
+    id_variants?: number | null;
+    id_images_per_variant?: number | null;
+    has_priority?: boolean;
+    priority_count?: number | null;
+    is_user_classified?: boolean;
 }
 
 export interface User {
@@ -116,9 +141,7 @@ export interface UpdateApplicationDTO extends Partial<CreateApplicationDTO> {
 export interface CreatePartyDTO {
     party_type: PartyType;
     name: string;
-    name_en?: string;
     address: string;
-    address_en?: string;
     nationality?: string;
     country_code?: string;
     email?: string;

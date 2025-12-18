@@ -8,8 +8,19 @@ export const ProtectedRoute = () => {
     return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
-// Public Route Wrapper (redirects to dashboard if already logged in)
+// Public Route Wrapper (redirects to appropriate dashboard if already logged in)
 export const PublicRoute = () => {
-    const { isAuthenticated } = useAppSelector((state) => state.auth);
-    return !isAuthenticated ? <Outlet /> : <Navigate to="/app/dashboard" replace />;
+    const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+
+    if (!isAuthenticated) {
+        return <Outlet />;
+    }
+
+    // Redirect based on user role
+    if (user?.role === 'staff') {
+        return <Navigate to="/staff/dashboard" replace />;
+    }
+
+    // Default to applicant dashboard
+    return <Navigate to="/app/dashboard" replace />;
 };

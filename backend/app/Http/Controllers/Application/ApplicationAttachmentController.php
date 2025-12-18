@@ -8,6 +8,7 @@ use App\Models\Application;
 use App\Models\ApplicationAttachment;
 use App\Services\File\FileService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ApplicationAttachmentController extends Controller
 {
@@ -70,11 +71,33 @@ class ApplicationAttachmentController extends Controller
         $application = Application::findOrFail($applicationId);
         $this->authorize('update', $application);
 
-        $attachment = ApplicationAttachment::where('application_id', $applicationId)
+        $attachment = ApplicationAttachment::with('file')
+            ->where('application_id', $applicationId)
             ->where('id', $attachmentId)
             ->firstOrFail();
 
+        $fileId = $attachment->file_id;
+        $file = $attachment->file;
+
+        // Delete the attachment record
         $attachment->delete();
+
+        // Check if any other attachments reference this file
+        $otherReferences = ApplicationAttachment::where('file_id', $fileId)->exists();
+
+        if (!$otherReferences && $file) {
+            // Delete the physical file from storage
+            try {
+                $disk = strtolower($file->storage);
+                Storage::disk($disk)->delete($file->object_key);
+            } catch (\Exception $e) {
+                // Log the error but don't fail the request
+                \Log::warning("Failed to delete file from storage: {$file->object_key}", ['error' => $e->getMessage()]);
+            }
+
+            // Delete the File record from database
+            $file->delete();
+        }
 
         return response()->json(['message' => 'Attachment deleted successfully.'], 200);
     }

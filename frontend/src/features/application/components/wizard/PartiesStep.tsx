@@ -77,14 +77,6 @@ const PartyCard: React.FC<PartyCardProps> = ({ index, partyType, onRemove, canRe
                             error={fieldErrors?.name}
                         />
 
-                        <FormInput
-                            label={t('application.steps.parties.fields.nameEn')}
-                            name={`${partyType}.${index}.name_en`}
-                            placeholder={t('application.steps.parties.fields.nameEnPlaceholder')}
-                            register={register(`${partyType}.${index}.name_en` as keyof PartiesFormData)}
-                            error={fieldErrors?.name_en}
-                        />
-
                         <div className="md:col-span-2">
                             <FormInput
                                 label={t('application.steps.parties.fields.address')}
@@ -93,16 +85,6 @@ const PartyCard: React.FC<PartyCardProps> = ({ index, partyType, onRemove, canRe
                                 required
                                 register={register(`${partyType}.${index}.address` as keyof PartiesFormData)}
                                 error={fieldErrors?.address}
-                            />
-                        </div>
-
-                        <div className="md:col-span-2">
-                            <FormInput
-                                label={t('application.steps.parties.fields.addressEn')}
-                                name={`${partyType}.${index}.address_en`}
-                                placeholder={t('application.steps.parties.fields.addressEnPlaceholder')}
-                                register={register(`${partyType}.${index}.address_en` as keyof PartiesFormData)}
-                                error={fieldErrors?.address_en}
                             />
                         </div>
 
@@ -198,9 +180,7 @@ const PartiesStep: React.FC = () => {
     const defaultParty: PartyFormData = {
         party_type: PartyType.APPLICANT,
         name: '',
-        name_en: null,
         address: '',
-        address_en: null,
         nationality: 'Việt Nam',
         country_code: 'VN',
         email: null,

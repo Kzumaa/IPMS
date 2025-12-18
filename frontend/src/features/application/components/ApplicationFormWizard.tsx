@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +7,6 @@ import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import {
     StepIndicator,
     BasicInfoStep,
-    DescriptionStep,
     PartiesStep,
     AttachmentsStep,
     ReviewStep,
@@ -22,8 +21,8 @@ import {
     setFormStep,
     clearCurrentApplication,
 } from '../store/applicationSlice';
-import { basicInfoSchema, descriptionSchema, partiesSchema } from '../schemas/applicationSchemas';
-import type { BasicInfoFormData, DescriptionFormData, PartiesFormData } from '../schemas/applicationSchemas';
+import { basicInfoSchema, partiesSchema } from '../schemas/applicationSchemas';
+import type { BasicInfoFormData, PartiesFormData } from '../schemas/applicationSchemas';
 import { PartyType, AttachmentType } from '../types/enums';
 import type { Application, CreatePartyDTO } from '../types/applicationTypes';
 
@@ -34,10 +33,9 @@ interface ApplicationFormWizardProps {
 
 const STEPS = [
     { id: 1, titleKey: 'application.steps.basicInfo.title', descriptionKey: 'application.steps.basicInfo.description' },
-    { id: 2, titleKey: 'application.steps.descriptionStep.title', descriptionKey: 'application.steps.descriptionStep.description' },
-    { id: 3, titleKey: 'application.steps.parties.title', descriptionKey: 'application.steps.parties.description' },
-    { id: 4, titleKey: 'application.steps.attachments.title', descriptionKey: 'application.steps.attachments.description' },
-    { id: 5, titleKey: 'application.steps.review.title', descriptionKey: 'application.steps.review.description' },
+    { id: 2, titleKey: 'application.steps.parties.title', descriptionKey: 'application.steps.parties.description' },
+    { id: 3, titleKey: 'application.steps.attachments.title', descriptionKey: 'application.steps.attachments.description' },
+    { id: 4, titleKey: 'application.steps.review.title', descriptionKey: 'application.steps.review.description' },
 ];
 
 const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
@@ -50,9 +48,25 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
     const { currentApplication, parties, attachments, loading, error, formStep } = useAppSelector(
         (state) => state.application
     );
+    const { user } = useAppSelector((state) => state.auth);
 
     const [currentStep, setCurrentStep] = useState(formStep || 1);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Create default applicant from logged-in user data
+    const defaultApplicantFromUser = useMemo(() => ({
+        party_type: PartyType.APPLICANT,
+        name: user?.is_org ? (user?.org_name || '') : (user?.full_name || ''),
+        address: user?.address || '',
+        nationality: 'Việt Nam',
+        country_code: user?.country || 'VN',
+        email: user?.email || null,
+        phone: user?.phone || null,
+        id_number: user?.citizen_id || null,
+        id_type: user?.citizen_id ? 'CCCD' : null,
+        is_primary: true,
+        share_percentage: null,
+    }), [user]);
 
     // Form methods for each step
     const basicInfoMethods = useForm<BasicInfoFormData>({
@@ -60,7 +74,6 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
         defaultValues: {
             app_type: initialData?.app_type || undefined,
             title: initialData?.title || '',
-            abstract: initialData?.abstract || '',
             is_pct: initialData?.is_pct || false,
             pct_number: initialData?.pct_number || '',
             pct_filing_date: initialData?.pct_filing_date || '',
@@ -68,14 +81,6 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
             priority_date: initialData?.priority_date || '',
             priority_number: initialData?.priority_number || '',
             priority_country: initialData?.priority_country || '',
-        },
-    });
-
-    const descriptionMethods = useForm<DescriptionFormData>({
-        resolver: zodResolver(descriptionSchema),
-        defaultValues: {
-            description: initialData?.description || '',
-            claims: initialData?.claims || '',
         },
     });
 
@@ -87,21 +92,7 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                     ...p,
                     is_primary: p.is_primary ?? false,
                 }))
-                : [{
-                    party_type: PartyType.APPLICANT,
-                    name: '',
-                    name_en: null,
-                    address: '',
-                    address_en: null,
-                    nationality: 'Việt Nam',
-                    country_code: 'VN',
-                    email: null,
-                    phone: null,
-                    id_number: null,
-                    id_type: null,
-                    is_primary: true,
-                    share_percentage: null,
-                }],
+                : [defaultApplicantFromUser],
             inventors: parties.filter(p => p.party_type === 'INVENTOR').map(p => ({
                 ...p,
                 is_primary: p.is_primary ?? false,
@@ -126,6 +117,7 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
 
     const handleNext = async () => {
         let isValid = false;
+        let hasApiError = false;
 
         switch (currentStep) {
             case 1:
@@ -135,7 +127,6 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                     // Convert null to undefined for API compatibility
                     const cleanData = {
                         ...data,
-                        abstract: data.abstract || undefined,
                         pct_number: data.pct_number || undefined,
                         pct_filing_date: data.pct_filing_date || undefined,
                         pct_publication_date: data.pct_publication_date || undefined,
@@ -144,20 +135,15 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                         priority_country: data.priority_country || undefined,
                     };
                     if (currentApplication?.id) {
-                        await dispatch(updateApplication({ id: currentApplication.id, data: cleanData }));
+                        const result = await dispatch(updateApplication({ id: currentApplication.id, data: cleanData }));
+                        hasApiError = updateApplication.rejected.match(result);
                     } else {
-                        await dispatch(createApplication(cleanData));
+                        const result = await dispatch(createApplication(cleanData));
+                        hasApiError = createApplication.rejected.match(result);
                     }
                 }
                 break;
             case 2:
-                isValid = await descriptionMethods.trigger();
-                if (isValid && currentApplication?.id) {
-                    const data = descriptionMethods.getValues();
-                    await dispatch(updateApplication({ id: currentApplication.id, data }));
-                }
-                break;
-            case 3:
                 isValid = await partiesMethods.trigger();
                 if (isValid && currentApplication?.id) {
                     // Save parties
@@ -171,22 +157,32 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                     for (const party of allParties) {
                         const partyWithId = party as { id?: number } & typeof party;
                         if (!partyWithId.id) {
-                            await dispatch(addParty({
+                            const result = await dispatch(addParty({
                                 applicationId: currentApplication.id,
                                 data: party as CreatePartyDTO,
                             }));
+                            if (addParty.rejected.match(result)) {
+                                hasApiError = true;
+                                break; // Stop on first error
+                            }
                         }
                     }
                 }
                 break;
-            case 4:
-                isValid = true; // Attachments are optional, always valid
+            case 3:
+                // Check if metrics have been saved (required for fee calculation)
+                if (!currentApplication?.metrics) {
+                    alert(t('application.steps.attachments.metricsMustBeSaved'));
+                    isValid = false;
+                } else {
+                    isValid = true;
+                }
                 break;
             default:
                 isValid = true;
         }
 
-        if (isValid && currentStep < STEPS.length) {
+        if (isValid && !hasApiError && currentStep < STEPS.length) {
             setCurrentStep(currentStep + 1);
         }
     };
@@ -242,7 +238,6 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                 const data = basicInfoMethods.getValues();
                 const cleanData = {
                     ...data,
-                    abstract: data.abstract || undefined,
                     pct_number: data.pct_number || undefined,
                     pct_filing_date: data.pct_filing_date || undefined,
                     pct_publication_date: data.pct_publication_date || undefined,
@@ -271,34 +266,42 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                 );
             case 2:
                 return (
-                    <FormProvider {...descriptionMethods}>
-                        <DescriptionStep />
-                    </FormProvider>
-                );
-            case 3:
-                return (
                     <FormProvider {...partiesMethods}>
                         <PartiesStep />
                     </FormProvider>
                 );
-            case 4:
+            case 3: {
+                // Get contextual info for conditional document requirements
+                const basicInfo = basicInfoMethods.getValues();
+                const hasPriorityClaim = !!(basicInfo.priority_number || basicInfo.priority_date);
+                const hasRepresentative = (partiesMethods.getValues().representatives || []).length > 0;
+
                 return (
                     <AttachmentsStep
                         attachments={attachments}
                         onUpload={handleUploadAttachment}
                         onDelete={handleDeleteAttachment}
                         isLoading={loading}
+                        isPct={basicInfo.is_pct}
+                        hasPriorityClaim={hasPriorityClaim}
+                        hasRepresentative={hasRepresentative}
+                        appType={basicInfo.app_type}
+                        applicationId={currentApplication?.id}
+                        existingMetrics={currentApplication?.metrics}
                     />
                 );
-            case 5:
+            }
+            case 4: {
+                const reviewApplication = {
+                    ...currentApplication,
+                    ...basicInfoMethods.getValues(),
+                };
+                console.log('[ApplicationFormWizard] ReviewStep - currentApplication.metrics:', currentApplication?.metrics);
+                console.log('[ApplicationFormWizard] ReviewStep - reviewApplication.metrics:', reviewApplication.metrics);
                 return (
                     <FormProvider {...basicInfoMethods}>
                         <ReviewStep
-                            application={{
-                                ...basicInfoMethods.getValues(),
-                                ...descriptionMethods.getValues(),
-                                ...currentApplication,
-                            }}
+                            application={reviewApplication}
                             parties={parties}
                             attachments={attachments}
                             onSubmit={handleSubmit}
@@ -306,6 +309,7 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                         />
                     </FormProvider>
                 );
+            }
             default:
                 return null;
         }

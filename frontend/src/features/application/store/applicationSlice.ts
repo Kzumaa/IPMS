@@ -7,6 +7,7 @@ import type {
     ApplicationAttachment,
     ProtectionTitle,
     FeeQuote,
+    ApplicationMetric,
     CreateApplicationDTO,
     CreatePartyDTO,
     CreateProtectionTitleDTO,
@@ -293,6 +294,24 @@ export const calculateFees = createAsyncThunk(
     }
 );
 
+// Metrics Thunks
+export const saveMetrics = createAsyncThunk(
+    'application/saveMetrics',
+    async (
+        { applicationId, data }: { applicationId: number; data: Partial<ApplicationMetric> },
+        { rejectWithValue }
+    ) => {
+        try {
+            const response = await applicationService.saveMetrics(applicationId, data);
+            console.log("Response of metrics saving", response)
+            return response;
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } }; message?: string };
+            return rejectWithValue(err.response?.data?.message || 'Failed to save metrics');
+        }
+    }
+);
+
 export const applicationSlice = createSlice({
     name: 'application',
     initialState,
@@ -439,20 +458,56 @@ export const applicationSlice = createSlice({
                 state.error = action.payload as string;
             })
             // Parties
+            .addCase(fetchParties.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
             .addCase(fetchParties.fulfilled, (state, action) => {
+                state.loading = false;
                 state.parties = action.payload;
             })
+            .addCase(fetchParties.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(addParty.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
             .addCase(addParty.fulfilled, (state, action) => {
+                state.loading = false;
                 state.parties.push(action.payload);
             })
+            .addCase(addParty.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(updateParty.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
             .addCase(updateParty.fulfilled, (state, action) => {
+                state.loading = false;
                 const index = state.parties.findIndex(p => p.id === action.payload.id);
                 if (index !== -1) {
                     state.parties[index] = action.payload;
                 }
             })
+            .addCase(updateParty.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(deleteParty.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
             .addCase(deleteParty.fulfilled, (state, action) => {
+                state.loading = false;
                 state.parties = state.parties.filter(p => p.id !== action.payload);
+            })
+            .addCase(deleteParty.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
             })
             // Attachments
             .addCase(fetchAttachments.fulfilled, (state, action) => {
@@ -479,7 +534,14 @@ export const applicationSlice = createSlice({
                 state.feeQuotes = action.payload;
             })
             .addCase(calculateFees.fulfilled, (state, action) => {
-                state.feeQuotes = action.payload;
+                // calculateFees returns a single FeeQuote, add it to the array
+                state.feeQuotes = [action.payload];
+            })
+            // Metrics
+            .addCase(saveMetrics.fulfilled, (state, action) => {
+                if (state.currentApplication) {
+                    state.currentApplication.metrics = action.payload;
+                }
             });
     },
 });

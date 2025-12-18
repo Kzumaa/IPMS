@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const mockMessages = [
     { id: 1, subject: 'Filing Receipt for PAT-00234', from: 'IP Office', date: '2024-02-20', status: 'Unread' },
@@ -7,12 +8,13 @@ const mockMessages = [
 ];
 
 const MessagesPage: React.FC = () => {
+    const { t } = useTranslation();
     return (
         <div className="flex flex-1 flex-col p-6">
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <div className="flex flex-col">
-                    <h1 className="text-slate-900 dark:text-white text-3xl font-bold leading-tight tracking-tight">Messages</h1>
-                    <p className="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal mt-1">Communications from the IP Office and system notifications.</p>
+                    <h1 className="text-slate-900 dark:text-white text-3xl font-bold leading-tight tracking-tight">{t('messages.title')}</h1>
+                    <p className="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal mt-1">{t('messages.subtitle')}</p>
                 </div>
             </div>
 
@@ -26,7 +28,7 @@ const MessagesPage: React.FC = () => {
                                     <h4 className={`text-sm font-medium ${msg.status === 'Unread' ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300'}`}>
                                         {msg.subject}
                                     </h4>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">From: {msg.from}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{t('messages.from')}: {msg.from}</p>
                                 </div>
                             </div>
                             <span className="text-xs text-slate-400">{msg.date}</span>

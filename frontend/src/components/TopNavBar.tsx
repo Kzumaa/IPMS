@@ -1,4 +1,5 @@
 import React from 'react';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface TopNavBarProps {
     breadcrumb: {
@@ -35,6 +36,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ breadcrumb }) => {
                     </label>
                 </div>
                 <div className="flex items-center gap-2">
+                    <LanguageSwitcher />
                     <button className="relative flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors">
                         <span className="material-symbols-outlined">notifications</span>
                         <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-red-500"></span>

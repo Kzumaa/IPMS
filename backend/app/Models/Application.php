@@ -87,4 +87,9 @@ class Application extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function feeQuotes(): HasMany
+    {
+        return $this->hasMany(FeeQuote::class);
+    }
 }

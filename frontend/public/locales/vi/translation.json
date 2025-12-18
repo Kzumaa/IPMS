@@ -48,6 +48,37 @@
         "protectMatters": "Bảo Vệ Điều Quan Trọng.",
         "protectDesc": "Bảo mật SHTT của bạn với cơ sở hạ tầng đẳng cấp thế giới và quản lý toàn bộ danh mục sở hữu trí tuệ tại một nơi."
     },
+    "register": {
+        "title": "Tạo Tài Khoản",
+        "subtitle": "Tham gia với chúng tôi để bảo vệ và quản lý sở hữu trí tuệ của bạn",
+        "individual": "Cá nhân",
+        "organization": "Tổ chức",
+        "fullName": "Họ và tên",
+        "fullNamePlaceholder": "Nhập họ và tên đầy đủ",
+        "orgName": "Tên tổ chức",
+        "orgNamePlaceholder": "Nhập tên tổ chức",
+        "orgNameOptional": "Tên tổ chức (Không bắt buộc)",
+        "email": "Địa chỉ Email",
+        "emailPlaceholder": "email@example.com",
+        "phone": "Số điện thoại (Không bắt buộc)",
+        "phonePlaceholder": "+84 123 456 789",
+        "citizenId": "CMND / CCCD / Hộ chiếu (Không bắt buộc)",
+        "citizenIdPlaceholder": "Nhập số CMND/CCCD hoặc hộ chiếu",
+        "address": "Địa chỉ (Không bắt buộc)",
+        "addressPlaceholder": "Nhập địa chỉ của bạn",
+        "country": "Mã quốc gia (Không bắt buộc)",
+        "countryPlaceholder": "VN",
+        "password": "Mật khẩu",
+        "passwordPlaceholder": "Tối thiểu 8 ký tự",
+        "confirmPassword": "Xác nhận mật khẩu",
+        "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
+        "createAccount": "Tạo tài khoản",
+        "registering": "Đang tạo tài khoản...",
+        "alreadyHaveAccount": "Đã có tài khoản?",
+        "signIn": "Đăng nhập",
+        "startProtecting": "Bắt Đầu Bảo Vệ Sáng Tạo Của Bạn",
+        "startProtectingDesc": "Tham gia cùng hàng ngàn nhà sáng tạo và doanh nghiệp tin tưởng chúng tôi bảo vệ sở hữu trí tuệ của họ trên toàn thế giới."
+    },
     "dashboard": {
         "title": "IPMS Pro",
         "subtitle": "Enterprise",
@@ -122,7 +153,9 @@
                 "inventionTitlePlaceholder": "Nhập tên sáng chế hoặc giải pháp",
                 "abstract": "Tóm tắt",
                 "abstractPlaceholder": "Nhập tóm tắt nội dung sáng chế...",
-                "abstractHelper": "Tóm tắt ngắn gọn về sáng chế (không quá 2000 ký tự)"
+                "abstractHelper": "Tóm tắt ngắn gọn về sáng chế (không quá 2000 ký tự)",
+                "documentsNote": "Tài liệu cần thiết",
+                "documentsNoteDesc": "Tóm tắt, bản mô tả và yêu cầu bảo hộ sẽ được tải lên dưới dạng file ở bước Tài liệu."
             },
             "pct": {
                 "title": "Thông tin PCT",
@@ -187,12 +220,8 @@
                 "fields": {
                     "name": "Họ và tên",
                     "namePlaceholder": "Nhập họ và tên",
-                    "nameEn": "Tên (tiếng Anh)",
-                    "nameEnPlaceholder": "Full name in English",
                     "address": "Địa chỉ",
                     "addressPlaceholder": "Nhập địa chỉ đầy đủ",
-                    "addressEn": "Địa chỉ (tiếng Anh)",
-                    "addressEnPlaceholder": "Full address in English",
                     "nationality": "Quốc tịch",
                     "nationalityPlaceholder": "Việt Nam",
                     "countryCode": "Mã quốc gia",
@@ -227,13 +256,34 @@
                 "uploadedFiles": "Tài liệu đã tải lên ({{count}})",
                 "noFiles": "Chưa có tài liệu nào",
                 "requiredDocsTitle": "Tài liệu cần thiết",
+                "missingCount": "còn thiếu {{count}}",
+                "conditionPriority": "bắt buộc - có yêu cầu ưu tiên",
+                "conditionPoa": "bắt buộc - có đại diện",
                 "requiredDocs": {
                     "specification": "Bản mô tả sáng chế (bắt buộc)",
                     "claims": "Yêu cầu bảo hộ (bắt buộc)",
                     "abstract": "Bản tóm tắt (bắt buộc)",
-                    "drawings": "Bản vẽ (nếu có)",
-                    "poa": "Giấy ủy quyền (nếu có đại diện)",
-                    "priority": "Tài liệu ưu tiên (nếu yêu cầu quyền ưu tiên)"
+                    "drawings": "Bản vẽ (không bắt buộc)",
+                    "poa": "Giấy ủy quyền",
+                    "priority": "Tài liệu ưu tiên"
+                },
+                "metricsTitle": "Chỉ số đơn",
+                "metricsDescription": "Nhập thông tin để tính phí",
+                "metricsHelper": "Vui lòng kiểm tra bản mô tả và yêu cầu bảo hộ đã tải lên để nhập số trang và số yêu cầu chính xác.",
+                "metricsPlaceholder": "Nhập số từ tài liệu",
+                "saveMetrics": "Lưu chỉ số",
+                "metricsSaved": "Đã lưu chỉ số ✓",
+                "metricsNotSaved": "Chưa lưu chỉ số",
+                "metricsMustBeSaved": "Vui lòng điền và lưu chỉ số đơn trước khi chuyển sang bước xem lại. Chỉ số đơn là bắt buộc để tính phí.",
+                "fields": {
+                    "descriptionPages": "Số trang bản mô tả",
+                    "independentClaims": "Số yêu cầu bảo hộ độc lập",
+                    "totalClaims": "Tổng số yêu cầu bảo hộ",
+                    "drawingImages": "Số hình vẽ",
+                    "ipcGroups": "Số nhóm IPC",
+                    "variants": "Số biến thể kiểu dáng",
+                    "imagesPerVariant": "Số hình mỗi biến thể",
+                    "userClassified": "Người nộp đơn cung cấp phân loại"
                 }
             },
             "review": {
@@ -244,23 +294,41 @@
                 "basicInfo": "Thông tin cơ bản",
                 "parties": "Các bên liên quan",
                 "attachments": "Tài liệu đính kèm ({{count}})",
+                "metricsSection": "Chỉ số đơn",
+                "metricsComplete": "Đã có chỉ số ✓",
+                "metricsMissing": "Chưa có chỉ số",
+                "feeSection": "Tính phí",
+                "calculateFees": "Tính phí",
+                "recalculateFees": "Tính lại phí",
+                "calculating": "Đang tính...",
+                "feesCalculated": "Đã tính phí ✓",
+                "feesNotCalculated": "Vui lòng tính phí",
+                "totalFee": "Tổng phí",
+                "feeBreakdown": "Chi tiết phí",
+                "feeDescription": "Mô tả",
+                "units": "Đơn vị",
+                "unitPrice": "Đơn giá",
+                "amount": "Thành tiền",
                 "submit": "Nộp đơn",
                 "submitting": "Đang xử lý...",
                 "validation": {
                     "missingTitle": "Thiếu tên sáng chế",
                     "missingType": "Chưa chọn loại đơn",
-                    "missingDescription": "Thiếu bản mô tả",
-                    "missingClaims": "Thiếu yêu cầu bảo hộ",
-                    "missingApplicant": "Chưa có người nộp đơn"
+                    "missingSpecification": "Thiếu tài liệu bản mô tả",
+                    "missingClaims": "Thiếu tài liệu yêu cầu bảo hộ",
+                    "missingAbstract": "Thiếu tài liệu bản tóm tắt",
+                    "missingApplicant": "Chưa có người nộp đơn",
+                    "missingPriorityDoc": "Thiếu tài liệu ưu tiên (bắt buộc khi yêu cầu quyền ưu tiên)",
+                    "missingPOA": "Thiếu giấy ủy quyền (bắt buộc khi có đại diện)",
+                    "missingMetrics": "Chưa nhập chỉ số đơn",
+                    "missingFees": "Chưa tính phí"
                 }
             }
         },
         "appTypes": {
-            "INVENTION": "Sáng chế",
-            "UTILITY_MODEL": "Giải pháp hữu ích",
-            "INDUSTRIAL_DESIGN": "Kiểu dáng công nghiệp",
-            "TRADEMARK": "Nhãn hiệu",
-            "GEOGRAPHICAL_INDICATION": "Chỉ dẫn địa lý"
+            "PATENT": "Sáng chế",
+            "UTILITY": "Giải pháp hữu ích",
+            "INDUSTRIAL_DESIGN": "Kiểu dáng công nghiệp"
         },
         "statuses": {
             "DRAFT": "Bản nháp",
@@ -281,18 +349,22 @@
             "ASSIGNEE": "Người được chuyển nhượng"
         },
         "attachmentTypes": {
-            "SPECIFICATION": "Bản mô tả",
+            "FORM": "Tờ khai",
+            "DESCRIPTION": "Bản mô tả",
             "CLAIMS": "Yêu cầu bảo hộ",
             "ABSTRACT": "Tóm tắt",
             "DRAWINGS": "Bản vẽ",
-            "POWER_OF_ATTORNEY": "Giấy ủy quyền",
-            "PRIORITY_DOCUMENT": "Tài liệu ưu tiên",
-            "ASSIGNMENT": "Văn bản chuyển nhượng",
-            "DECLARATION": "Tờ khai",
-            "SEARCH_REPORT": "Báo cáo tra cứu",
-            "EXAMINATION_REPORT": "Báo cáo thẩm định",
-            "CERTIFICATE": "Bằng/Giấy chứng nhận",
-            "OTHER": "Tài liệu khác"
+            "ID_DESCRIPTION": "Mô tả kiểu dáng",
+            "ID_PHOTOS_SET": "Bộ ảnh kiểu dáng",
+            "PRIORITY_DOC": "Tài liệu ưu tiên",
+            "POA": "Giấy ủy quyền",
+            "PAYMENT_RECEIPT": "Biên lai thanh toán",
+            "TRANSLATION": "Bản dịch",
+            "OTHER": "Tài liệu khác",
+            "OFFICIAL_NOTICE": "Thông báo chính thức",
+            "GAZETTE": "Công báo",
+            "DECISION": "Quyết định",
+            "CERTIFICATE": "Bằng/Giấy chứng nhận"
         },
         "errors": {
             "loadList": "Không thể tải danh sách đơn",
@@ -308,7 +380,8 @@
         },
         "confirm": {
             "delete": "Bạn có chắc chắn muốn xóa đơn này? Hành động này không thể hoàn tác.",
-            "deleteAttachment": "Bạn có chắc chắn muốn xóa tài liệu này?"
+            "deleteAttachment": "Bạn có chắc chắn muốn xóa tài liệu này?",
+            "deleteAttachmentTitle": "Xóa Tài Liệu"
         }
     },
     "common": {
@@ -323,10 +396,87 @@
         "view": "Xem",
         "close": "Đóng",
         "confirm": "Xác nhận",
+        "download": "Tải xuống",
         "error": "Lỗi",
         "success": "Thành công",
         "loading": "Đang tải...",
         "noData": "Không có dữ liệu"
+    },
+    "pdfViewer": {
+        "loadError": "Không thể tải PDF",
+        "loadErrorDesc": "Không thể tải PDF trong trình duyệt của bạn.",
+        "downloadInstead": "Tải xuống tệp",
+        "download": "Tải xuống",
+        "noJavaScript": "Cần JavaScript để xem tài liệu này.",
+        "previewNotAvailable": "Không có bản xem trước cho loại tệp này"
+    },
+    "staff": {
+        "dashboard": {
+            "title": "Bảng điều khiển nhân viên",
+            "totalApplications": "Tổng số đơn",
+            "assignedToMe": "Đơn được giao",
+            "pendingFormalityExam": "Chờ thẩm định hình thức",
+            "pendingSubstantiveExam": "Chờ thẩm định nội dung",
+            "applicationsByStatus": "Đơn theo trạng thái",
+            "applicationsByType": "Đơn theo loại",
+            "quickActions": "Thao tác nhanh",
+            "allApplications": "Tất cả đơn",
+            "allApplicationsDesc": "Xem tất cả đơn trong hệ thống",
+            "myApplications": "Đơn của tôi",
+            "myApplicationsDesc": "Xem đơn được giao cho tôi",
+            "reports": "Báo cáo",
+            "reportsDesc": "Tạo và xem báo cáo",
+            "loadingDashboard": "Đang tải bảng điều khiển...",
+            "error": "Lỗi: {{error}}"
+        },
+        "applications": {
+            "title": "Tất cả đơn đăng ký",
+            "myAssigned": "Đơn được giao cho tôi",
+            "subtitle": "Tất cả đơn trong hệ thống",
+            "myAssignedSubtitle": "Đơn được giao cho bạn để thẩm định",
+            "searchPlaceholder": "Tìm kiếm theo số đơn hoặc tên...",
+            "allStatuses": "Tất cả trạng thái",
+            "allTypes": "Tất cả loại",
+            "loadingApplications": "Đang tải đơn...",
+            "applicationNumber": "Số đơn",
+            "columnTitle": "Tên",
+            "type": "Loại",
+            "status": "Trạng thái",
+            "filingDate": "Ngày nộp",
+            "actions": "Hành động",
+            "viewDetails": "Xem chi tiết",
+            "showing": "Hiển thị {{count}} trong {{total}} đơn",
+            "previous": "Trước",
+            "next": "Sau",
+            "page": "Trang {{current}} / {{total}}"
+        },
+        "examination": {
+            "title": "Bảng thẩm định",
+            "noActions": "Không có thao tác thẩm định cho trạng thái hiện tại.",
+            "formalityExamination": "Thẩm định hình thức",
+            "substantiveExamination": "Thẩm định nội dung",
+            "issueDecision": "Ra quyết định",
+            "result": "Kết quả",
+            "notes": "Ghi chú",
+            "notesPlaceholder": "Nhập ghi chú thẩm định...",
+            "pass": "Đạt",
+            "fail": "Không đạt",
+            "acceptable": "Chấp nhận",
+            "objection": "Phản đối",
+            "rejected": "Từ chối",
+            "grant": "Cấp bằng",
+            "refuse": "Từ chối",
+            "completeFormalityExamination": "Hoàn thành thẩm định hình thức",
+            "completeSubstantiveExamination": "Hoàn thành thẩm định nội dung",
+            "issueDecisionButton": "Ra quyết định",
+            "submitting": "Đang gửi...",
+            "decision": "Quyết định"
+        }
+    },
+    "messages": {
+        "title": "Tin nhắn",
+        "subtitle": "Thông báo từ Cục Sở hữu trí tuệ và hệ thống.",
+        "from": "Từ"
     },
     "validation": {
         "required": "Trường này là bắt buộc",

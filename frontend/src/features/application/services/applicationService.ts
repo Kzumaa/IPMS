@@ -5,6 +5,7 @@ import type {
     ApplicationAttachment,
     ProtectionTitle,
     FeeQuote,
+    ApplicationMetric,
     CreateApplicationDTO,
     CreatePartyDTO,
     CreateProtectionTitleDTO,
@@ -13,25 +14,8 @@ import type {
     PaginatedResponse,
     ApiResponse,
 } from '../types/applicationTypes';
-import type { AttachmentType } from '../types/enums';
 
 const BASE_URL = '/applications';
-
-// Mapping frontend attachment types to backend doc_type values
-const ATTACHMENT_TYPE_TO_BACKEND: Record<string, string> = {
-    'SPECIFICATION': 'DESCRIPTION',
-    'CLAIMS': 'CLAIMS',
-    'ABSTRACT': 'ABSTRACT',
-    'DRAWINGS': 'DRAWINGS',
-    'POWER_OF_ATTORNEY': 'POA',
-    'PRIORITY_DOCUMENT': 'PRIORITY_DOC',
-    'ASSIGNMENT': 'OTHER',
-    'DECLARATION': 'FORM',
-    'SEARCH_REPORT': 'OTHER',
-    'EXAMINATION_REPORT': 'OTHER',
-    'CERTIFICATE': 'CERTIFICATE',
-    'OTHER': 'OTHER',
-};
 
 // Transform frontend party DTO to backend format
 function transformPartyToBackend(data: CreatePartyDTO) {
@@ -40,14 +24,10 @@ function transformPartyToBackend(data: CreatePartyDTO) {
         snapshot_name: data.name,
         snapshot_address: data.address,
         snapshot_email: data.email || null,
-        nationality: data.nationality || null,
+        // Backend expects 2-character country code for nationality field
+        nationality: data.country_code || null,
         is_primary: data.is_primary ?? false,
     };
-}
-
-// Transform frontend attachment type to backend doc_type
-function transformAttachmentType(attachmentType: AttachmentType): string {
-    return ATTACHMENT_TYPE_TO_BACKEND[attachmentType] || 'OTHER';
 }
 
 export const applicationService = {
@@ -107,7 +87,8 @@ export const applicationService = {
         if (data.name !== undefined) backendData.snapshot_name = data.name;
         if (data.address !== undefined) backendData.snapshot_address = data.address;
         if (data.email !== undefined) backendData.snapshot_email = data.email;
-        if (data.nationality !== undefined) backendData.nationality = data.nationality;
+        // Backend expects 2-character country code for nationality field
+        if (data.country_code !== undefined) backendData.nationality = data.country_code;
         if (data.is_primary !== undefined) backendData.is_primary = data.is_primary;
 
         const response = await axiosClient.put(`${BASE_URL}/${applicationId}/parties/${partyId}`, backendData);
@@ -127,8 +108,8 @@ export const applicationService = {
     async uploadAttachment(applicationId: number, data: UploadAttachmentDTO): Promise<ApiResponse<ApplicationAttachment>> {
         const formData = new FormData();
         formData.append('file', data.file);
-        // Transform attachment_type to backend doc_type
-        formData.append('doc_type', transformAttachmentType(data.attachment_type));
+        // Frontend now uses backend-compatible attachment types directly
+        formData.append('doc_type', data.attachment_type);
         if (data.description) {
             formData.append('notes', data.description); // Backend uses 'notes' instead of 'description'
         }
@@ -173,8 +154,17 @@ export const applicationService = {
         return response.data;
     },
 
-    async calculateFees(applicationId: number): Promise<ApiResponse<FeeQuote[]>> {
-        const response = await axiosClient.post(`${BASE_URL}/${applicationId}/calculate-fees`);
+    async calculateFees(applicationId: number, lawVersion: string = 'TT263-2016', currency: string = 'VND'): Promise<ApiResponse<FeeQuote>> {
+        const response = await axiosClient.post(`${BASE_URL}/${applicationId}/calculate-fees`, {
+            law_version: lawVersion,
+            currency: currency,
+        });
+        return response.data;
+    },
+
+    // Metrics
+    async saveMetrics(applicationId: number, data: Partial<ApplicationMetric>): Promise<ApplicationMetric> {
+        const response = await axiosClient.put(`${BASE_URL}/${applicationId}/metrics`, data);
         return response.data;
     },
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { FormInput, FormSelect, FormTextarea, FormCheckbox } from '../forms';
+import { FormInput, FormSelect, FormCheckbox } from '../forms';
 import { AppType } from '../../types/enums';
 import type { BasicInfoFormData } from '../../schemas/applicationSchemas';
 
@@ -14,7 +14,6 @@ const BasicInfoStep: React.FC = () => {
     } = useFormContext<BasicInfoFormData>();
 
     const isPct = watch('is_pct');
-    const abstractValue = watch('abstract') || '';
 
     // Get app type options from translations
     const appTypeOptions = Object.keys(AppType).map((key) => ({
@@ -53,18 +52,21 @@ const BasicInfoStep: React.FC = () => {
                         />
                     </div>
 
+                    {/* Note about file uploads */}
                     <div className="md:col-span-2">
-                        <FormTextarea
-                            label={t('application.steps.basicInfo.abstract')}
-                            name="abstract"
-                            placeholder={t('application.steps.basicInfo.abstractPlaceholder')}
-                            rows={4}
-                            maxLength={2000}
-                            currentLength={abstractValue.length}
-                            register={register('abstract')}
-                            error={errors.abstract}
-                            helperText={t('application.steps.basicInfo.abstractHelper')}
-                        />
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                            <div className="flex items-start">
+                                <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 mr-2 mt-0.5">info</span>
+                                <div>
+                                    <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
+                                        {t('application.steps.basicInfo.documentsNote')}
+                                    </p>
+                                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                                        {t('application.steps.basicInfo.documentsNoteDesc')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
