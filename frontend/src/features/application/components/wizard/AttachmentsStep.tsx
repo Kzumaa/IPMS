@@ -63,6 +63,7 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({
     // Metrics state
     const [metrics, setMetrics] = useState<Partial<ApplicationMetric>>({
         description_pages: undefined,
+        abstract_pages: undefined,
         claims_independent: undefined,
         claims_total: undefined,
         drawings_images: undefined,
@@ -227,7 +228,7 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({
                 applicationId,
                 data: metrics,
             })).unwrap();
-            
+
             console.log('[AttachmentsStep] Metrics saved successfully:', result);
             setMetricsSaved(true);
         } catch (error) {
@@ -373,6 +374,23 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({
                                     min="1"
                                     value={metrics.description_pages || ''}
                                     onChange={(e) => handleMetricChange('description_pages', e.target.value ? parseInt(e.target.value) : null)}
+                                    placeholder={t('application.steps.attachments.metricsPlaceholder')}
+                                    className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                        )}
+
+                        {/* Abstract Pages - only show if ABSTRACT file uploaded */}
+                        {uploadedTypes.has(AttachmentType.ABSTRACT) && (
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                    {t('application.steps.attachments.fields.abstractPages')} *
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={metrics.abstract_pages || ''}
+                                    onChange={(e) => handleMetricChange('abstract_pages', e.target.value ? parseInt(e.target.value) : null)}
                                     placeholder={t('application.steps.attachments.metricsPlaceholder')}
                                     className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />

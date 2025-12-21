@@ -6,6 +6,9 @@ import type {
     ProtectionTitle,
     FeeQuote,
     ApplicationMetric,
+    PriorityClaim,
+    SntcInfo,
+    UserSearchResult,
     CreateApplicationDTO,
     CreatePartyDTO,
     CreateProtectionTitleDTO,
@@ -165,6 +168,47 @@ export const applicationService = {
     // Metrics
     async saveMetrics(applicationId: number, data: Partial<ApplicationMetric>): Promise<ApplicationMetric> {
         const response = await axiosClient.put(`${BASE_URL}/${applicationId}/metrics`, data);
+        return response.data;
+    },
+
+    // Priority Claims
+    async getPriorityClaims(applicationId: number): Promise<ApiResponse<PriorityClaim[]>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/priority-claims`);
+        return response.data;
+    },
+
+    async addPriorityClaim(applicationId: number, data: Omit<PriorityClaim, 'id' | 'application_id'>): Promise<ApiResponse<PriorityClaim>> {
+        const response = await axiosClient.post(`${BASE_URL}/${applicationId}/priority-claims`, data);
+        return response.data;
+    },
+
+    async updatePriorityClaim(applicationId: number, claimId: number, data: Partial<PriorityClaim>): Promise<ApiResponse<PriorityClaim>> {
+        const response = await axiosClient.put(`${BASE_URL}/${applicationId}/priority-claims/${claimId}`, data);
+        return response.data;
+    },
+
+    async deletePriorityClaim(applicationId: number, claimId: number): Promise<void> {
+        await axiosClient.delete(`${BASE_URL}/${applicationId}/priority-claims/${claimId}`);
+    },
+
+    // SNTC Info (State Budget Science & Technology Task)
+    async getSntcInfo(applicationId: number): Promise<ApiResponse<SntcInfo | null>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/sntc-info`);
+        return response.data;
+    },
+
+    async saveSntcInfo(applicationId: number, data: Omit<SntcInfo, 'application_id'>): Promise<ApiResponse<SntcInfo>> {
+        const response = await axiosClient.post(`${BASE_URL}/${applicationId}/sntc-info`, data);
+        return response.data;
+    },
+
+    async deleteSntcInfo(applicationId: number): Promise<void> {
+        await axiosClient.delete(`${BASE_URL}/${applicationId}/sntc-info`);
+    },
+
+    // User Search (for adding co-applicants)
+    async searchUserByEmail(email: string): Promise<ApiResponse<UserSearchResult[]>> {
+        const response = await axiosClient.get(`/users/search?email=${encodeURIComponent(email)}`);
         return response.data;
     },
 };

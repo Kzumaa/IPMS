@@ -120,11 +120,42 @@ class ApplicationAttachmentController extends Controller
         // If using presigned URLs, generate one here
         return response()->json([
             'data' => [
-                'url' => $attachment->file->url,
+                'url' => $attachment->file->download_url,
                 'filename' => $attachment->file->filename,
                 'mime_type' => $attachment->file->mime,
                 'size' => $attachment->file->size_bytes,
             ]
         ]);
+    }
+
+    public function preview($applicationId, $attachmentId)
+    {
+        $application = Application::findOrFail($applicationId);
+        $this->authorize('view', $application);
+
+        $attachment = ApplicationAttachment::with('file')
+            ->where('application_id', $applicationId)
+            ->where('id', $attachmentId)
+            ->firstOrFail();
+
+        if (!$attachment->file) {
+            abort(404, 'File not found.');
+        }
+
+        $file = $attachment->file;
+        $disk = strtolower($file->storage);
+        
+        // Ensure we can access the file
+        if (!Storage::disk($disk)->exists($file->object_key)) {
+            abort(404, 'File not found in storage.');
+        }
+
+        // Return the file stream directly
+        // This proxies the file through the backend, avoiding CORS issues with R2/S3
+        return Storage::disk($disk)->response(
+            $file->object_key,
+            $file->filename,
+            ['Content-Disposition' => 'inline; filename="' . $file->filename . '"']
+        );
     }
 }

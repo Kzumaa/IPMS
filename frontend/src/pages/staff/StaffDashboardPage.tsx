@@ -2,8 +2,6 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchDashboardStats } from '@/features/staff/store/staffSlice';
-import { ApplicationStatusLabels } from '@/features/application/types/enums';
-import { AppTypeLabels } from '@/features/application/types/enums';
 
 export default function StaffDashboardPage() {
     const { t } = useTranslation();
@@ -70,7 +68,7 @@ export default function StaffDashboardPage() {
                         {Object.entries(dashboardStats.by_status).map(([status, count]) => (
                             <div key={status} className="flex justify-between items-center">
                                 <span className="text-gray-700">
-                                    {ApplicationStatusLabels[status as keyof typeof ApplicationStatusLabels] || status}
+                                    {t(`application.statuses.${status}`)}
                                 </span>
                                 <span className="font-semibold text-gray-900">{count}</span>
                             </div>
@@ -85,7 +83,7 @@ export default function StaffDashboardPage() {
                         {Object.entries(dashboardStats.by_type).map(([type, count]) => (
                             <div key={type} className="flex justify-between items-center">
                                 <span className="text-gray-700">
-                                    {AppTypeLabels[type as keyof typeof AppTypeLabels] || type}
+                                    {t(`application.appTypes.${type}`)}
                                 </span>
                                 <span className="font-semibold text-gray-900">{count}</span>
                             </div>

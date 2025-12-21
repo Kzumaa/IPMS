@@ -27,11 +27,11 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
 
     const applicants = parties.filter(p => p.party_type === 'APPLICANT');
     const inventors = parties.filter(p => p.party_type === 'INVENTOR');
-    const representatives = parties.filter(p => p.party_type === 'REPRESENTATIVE');
 
     // Check if metrics exist
     const hasMetrics = !!application?.metrics;
     const latestFeeQuote = feeQuotes && feeQuotes.length > 0 ? feeQuotes[0] : null;
+    const isIndustrialDesign = application?.app_type === AppType.INDUSTRIAL_DESIGN;
 
     console.log('[ReviewStep] application.metrics:', application?.metrics);
     console.log('[ReviewStep] hasMetrics:', hasMetrics);
@@ -60,13 +60,14 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
     const hasClaims = uploadedTypes.has(AttachmentType.CLAIMS);
     const hasAbstract = uploadedTypes.has(AttachmentType.ABSTRACT);
 
-    // Check if priority documents are needed
-    const hasPriorityClaim = !!(application?.priority_number || application?.priority_date);
+    // Check if priority documents are needed (now uses priority_claims array)
+    const hasPriorityClaim = !!(application?.priority_claims && application.priority_claims.length > 0) ||
+                             !!(application?.priority_number || application?.priority_date);
     const hasPriorityDocument = uploadedTypes.has(AttachmentType.PRIORITY_DOC);
 
-    // Check if POA is needed
-    const hasRepresentative = representatives.length > 0;
-    const hasPOA = uploadedTypes.has(AttachmentType.POA);
+    // Check for SNTC info (State Budget Task)
+    const hasSntcInfo = !!(application?.sntc_info &&
+        (application.sntc_info.agency_name || application.sntc_info.project_name || application.sntc_info.project_code));
 
     const validationIssues: string[] = [];
 
@@ -77,7 +78,6 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
     if (!hasAbstract) validationIssues.push(t('application.steps.review.validation.missingAbstract'));
     if (applicants.length === 0) validationIssues.push(t('application.steps.review.validation.missingApplicant'));
     if (hasPriorityClaim && !hasPriorityDocument) validationIssues.push(t('application.steps.review.validation.missingPriorityDoc'));
-    if (hasRepresentative && !hasPOA) validationIssues.push(t('application.steps.review.validation.missingPOA'));
     if (!hasMetrics) validationIssues.push(t('application.steps.review.validation.missingMetrics'));
     if (!latestFeeQuote) validationIssues.push(t('application.steps.review.validation.missingFees'));
 
@@ -129,17 +129,68 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
                     </div>
 
                     <div className="md:col-span-2">
-                        <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">{t('application.steps.basicInfo.inventionTitle')}</dt>
+                        <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                            {isIndustrialDesign ? t('application.steps.basicInfo.designTitle') : t('application.steps.basicInfo.inventionTitle')}
+                        </dt>
                         <dd className="text-sm text-slate-900 dark:text-white mt-1">
                             {application?.title || '-'}
                         </dd>
                     </div>
 
-                    {application?.priority_number && (
+                    {/* Priority Claims (new array-based structure) */}
+                    {application?.priority_claims && application.priority_claims.length > 0 && (
+                        <div className="md:col-span-2">
+                            <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">{t('application.steps.priority.title')}</dt>
+                            <dd className="text-sm text-slate-900 dark:text-white mt-1">
+                                <ul className="space-y-1">
+                                    {application.priority_claims.map((claim, idx) => (
+                                        <li key={idx} className="bg-slate-50 dark:bg-slate-700/50 px-2 py-1 rounded">
+                                            {claim.number} ({claim.country_code}) - {claim.filing_date}
+                                            {claim.kind && <span className="text-xs text-slate-500 ml-2">({t(`application.steps.priority.types.${claim.kind.toLowerCase()}`)})</span>}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </dd>
+                        </div>
+                    )}
+
+                    {/* Legacy priority (backward compatibility) */}
+                    {!application?.priority_claims?.length && application?.priority_number && (
                         <div className="md:col-span-2">
                             <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">{t('application.detail.priority')}</dt>
                             <dd className="text-sm text-slate-900 dark:text-white mt-1">
                                 {application.priority_number} ({application.priority_country}) - {application.priority_date}
+                            </dd>
+                        </div>
+                    )}
+
+                    {/* SNTC Info (State Budget Task) - Industrial Design only */}
+                    {isIndustrialDesign && hasSntcInfo && application?.sntc_info && (
+                        <div className="md:col-span-2">
+                            <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                                {t('application.steps.stateBudget.title')}
+                            </dt>
+                            <dd className="text-sm text-slate-900 dark:text-white mt-1 bg-slate-50 dark:bg-slate-700/50 p-2 rounded">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                                    {application.sntc_info.agency_name && (
+                                        <div>
+                                            <span className="text-slate-500">{t('application.steps.stateBudget.agencyName')}:</span>
+                                            <span className="ml-1">{application.sntc_info.agency_name}</span>
+                                        </div>
+                                    )}
+                                    {application.sntc_info.project_name && (
+                                        <div>
+                                            <span className="text-slate-500">{t('application.steps.stateBudget.taskName')}:</span>
+                                            <span className="ml-1">{application.sntc_info.project_name}</span>
+                                        </div>
+                                    )}
+                                    {application.sntc_info.project_code && (
+                                        <div>
+                                            <span className="text-slate-500">{t('application.steps.stateBudget.taskCode')}:</span>
+                                            <span className="ml-1">{application.sntc_info.project_code}</span>
+                                        </div>
+                                    )}
+                                </div>
                             </dd>
                         </div>
                     )}
@@ -177,6 +228,16 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
                                         </dt>
                                         <dd className="text-sm text-slate-900 dark:text-white mt-1">
                                             {application.metrics.description_pages}
+                                        </dd>
+                                    </div>
+                                )}
+                                {application.metrics.abstract_pages && (
+                                    <div>
+                                        <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                                            {t('application.steps.attachments.fields.abstractPages')}
+                                        </dt>
+                                        <dd className="text-sm text-slate-900 dark:text-white mt-1">
+                                            {application.metrics.abstract_pages}
                                         </dd>
                                     </div>
                                 )}
@@ -283,30 +344,16 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
                         )}
                     </div>
 
-                    {/* Inventors */}
+                    {/* Inventors / Authors / Designers */}
                     {inventors.length > 0 && (
                         <div>
                             <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                {t('application.steps.parties.inventors')} ({inventors.length})
+                                {isIndustrialDesign
+                                    ? t('application.steps.parties.authorsDesigners')
+                                    : t('application.steps.parties.inventors')} ({inventors.length})
                             </h4>
                             <ul className="space-y-2">
                                 {inventors.map((party) => (
-                                    <li key={party.id} className="text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-700/50 p-2 rounded">
-                                        {party.name}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    {/* Representatives */}
-                    {representatives.length > 0 && (
-                        <div>
-                            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                {t('application.steps.parties.representatives')} ({representatives.length})
-                            </h4>
-                            <ul className="space-y-2">
-                                {representatives.map((party) => (
                                     <li key={party.id} className="text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-700/50 p-2 rounded">
                                         {party.name}
                                         {party.email && <span className="text-slate-500"> • {party.email}</span>}

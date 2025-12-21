@@ -25,6 +25,28 @@ class File extends Model
 
     public function getDownloadUrlAttribute()
     {
-        return $this->url ?? \Illuminate\Support\Facades\Storage::disk(strtolower($this->storage))->url($this->object_key);
+        if ($this->url) {
+            return $this->url;
+        }
+
+        $disk = strtolower($this->storage);
+
+        // For S3/R2, use temporary URL to ensure access to private buckets
+        if (in_array($disk, ['s3', 'r2'])) {
+            try {
+                return \Illuminate\Support\Facades\Storage::disk($disk)->temporaryUrl(
+                    $this->object_key,
+                    now()->addMinutes(20),
+                    [
+                        'ResponseContentDisposition' => 'attachment; filename="' . $this->filename . '"',
+                    ]
+                );
+            } catch (\Exception $e) {
+                // Fallback or log if needed, though temporaryUrl is generally supported by S3 adapter
+                return null;
+            }
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk($disk)->url($this->object_key);
     }
 }

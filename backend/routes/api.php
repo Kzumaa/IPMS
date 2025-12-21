@@ -5,7 +5,9 @@ use App\Http\Controllers\Application\ApplicationAttachmentController;
 use App\Http\Controllers\Application\ApplicationClassificationController;
 use App\Http\Controllers\Application\ApplicationPartyController;
 use App\Http\Controllers\Application\FeeQuoteController;
+use App\Http\Controllers\Application\PriorityClaimController;
 use App\Http\Controllers\Application\ProtectionTitleController;
+use App\Http\Controllers\Application\SntcInfoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Staff\StaffController;
 use Illuminate\Http\Request;
@@ -44,11 +46,23 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/attachments', [ApplicationAttachmentController::class, 'store']);
         Route::delete('/{id}/attachments/{attachmentId}', [ApplicationAttachmentController::class, 'destroy']);
         Route::get('/{id}/attachments/{attachmentId}/download', [ApplicationAttachmentController::class, 'download']);
+        Route::get('/{id}/attachments/{attachmentId}/preview', [ApplicationAttachmentController::class, 'preview']);
 
         // Protection Titles (IPC/Locarno Classifications)
         Route::get('/{id}/protection-titles', [ApplicationClassificationController::class, 'index']);
         Route::post('/{id}/protection-titles', [ApplicationClassificationController::class, 'store']);
         Route::delete('/{id}/protection-titles/{titleId}', [ApplicationClassificationController::class, 'destroy']);
+
+        // Priority Claims
+        Route::get('/{id}/priority-claims', [PriorityClaimController::class, 'index']);
+        Route::post('/{id}/priority-claims', [PriorityClaimController::class, 'store']);
+        Route::put('/{id}/priority-claims/{claimId}', [PriorityClaimController::class, 'update']);
+        Route::delete('/{id}/priority-claims/{claimId}', [PriorityClaimController::class, 'destroy']);
+
+        // SNTC Info (State Budget Science & Technology Task)
+        Route::get('/{id}/sntc-info', [SntcInfoController::class, 'show']);
+        Route::post('/{id}/sntc-info', [SntcInfoController::class, 'store']);
+        Route::delete('/{id}/sntc-info', [SntcInfoController::class, 'destroy']);
 
         // Fee Quotes
         Route::get('/{id}/fee-quotes', [FeeQuoteController::class, 'index']);
@@ -73,6 +87,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/auth/me', [AuthController::class, 'me']);      // returns type + data
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+    // User search (for adding co-applicants)
+    Route::get('/users/search', [AuthController::class, 'searchByEmail']);
 });
 
 

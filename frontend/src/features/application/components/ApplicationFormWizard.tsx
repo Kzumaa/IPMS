@@ -60,8 +60,8 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
         address: user?.address || '',
         nationality: 'Việt Nam',
         country_code: user?.country || 'VN',
-        email: user?.email || null,
-        phone: user?.phone || null,
+        email: user?.email || '',
+        phone: user?.phone || '',
         id_number: user?.citizen_id || null,
         id_type: user?.citizen_id ? 'CCCD' : null,
         is_primary: true,
@@ -89,17 +89,31 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
         defaultValues: {
             applicants: parties.filter(p => p.party_type === 'APPLICANT').length > 0
                 ? parties.filter(p => p.party_type === 'APPLICANT').map(p => ({
-                    ...p,
+                    party_type: PartyType.APPLICANT,
+                    name: p.name,
+                    address: p.address,
+                    nationality: p.nationality || 'Việt Nam',
+                    country_code: p.country_code || 'VN',
+                    email: p.email || '',
+                    phone: p.phone || '',
+                    id_number: p.id_number || null,
+                    id_type: p.id_type || null,
                     is_primary: p.is_primary ?? false,
+                    share_percentage: p.share_percentage || null,
                 }))
                 : [defaultApplicantFromUser],
             inventors: parties.filter(p => p.party_type === 'INVENTOR').map(p => ({
-                ...p,
+                party_type: PartyType.INVENTOR,
+                name: p.name,
+                address: p.address,
+                nationality: p.nationality || 'Việt Nam',
+                country_code: p.country_code || 'VN',
+                email: p.email || '',
+                phone: p.phone || '',
+                id_number: p.id_number || null,
+                id_type: p.id_type || null,
                 is_primary: p.is_primary ?? false,
-            })),
-            representatives: parties.filter(p => p.party_type === 'REPRESENTATIVE').map(p => ({
-                ...p,
-                is_primary: p.is_primary ?? false,
+                share_percentage: p.share_percentage || null,
             })),
         },
     });
@@ -151,7 +165,6 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                     const allParties = [
                         ...formData.applicants.map(p => ({ ...p, party_type: PartyType.APPLICANT })),
                         ...(formData.inventors || []).map(p => ({ ...p, party_type: PartyType.INVENTOR })),
-                        ...(formData.representatives || []).map(p => ({ ...p, party_type: PartyType.REPRESENTATIVE })),
                     ];
 
                     for (const party of allParties) {
@@ -274,7 +287,6 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                 // Get contextual info for conditional document requirements
                 const basicInfo = basicInfoMethods.getValues();
                 const hasPriorityClaim = !!(basicInfo.priority_number || basicInfo.priority_date);
-                const hasRepresentative = (partiesMethods.getValues().representatives || []).length > 0;
 
                 return (
                     <AttachmentsStep
@@ -284,7 +296,7 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                         isLoading={loading}
                         isPct={basicInfo.is_pct}
                         hasPriorityClaim={hasPriorityClaim}
-                        hasRepresentative={hasRepresentative}
+                        hasRepresentative={false}
                         appType={basicInfo.app_type}
                         applicationId={currentApplication?.id}
                         existingMetrics={currentApplication?.metrics}

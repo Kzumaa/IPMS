@@ -135,4 +135,25 @@ class AuthController extends Controller
             'message' => 'Logged out',
         ]);
     }
+
+    /**
+     * Search users by email (for adding co-applicants).
+     */
+    public function searchByEmail(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'string', 'min:3'],
+        ]);
+
+        $email = $request->query('email');
+        $currentUserId = $request->user()?->id;
+
+        $users = User::where('email', 'like', "%{$email}%")
+            ->when($currentUserId, fn($q) => $q->where('id', '!=', $currentUserId))
+            ->select(['id', 'full_name', 'email', 'phone', 'address', 'country'])
+            ->limit(5)
+            ->get();
+
+        return response()->json(['data' => $users]);
+    }
 }

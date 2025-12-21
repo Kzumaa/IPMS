@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import PDFViewer from '@/components/PDFViewer';
+import PDFPreviewModal from '@/components/PDFPreviewModal';
 import axiosClient from '@/api/axiosClient';
+import { downloadFile } from '@/utils/fileDownload';
 import type { ApplicationAttachment } from '../types/applicationTypes';
 
 interface ApplicantDocumentViewerProps {
@@ -19,6 +20,8 @@ export default function ApplicantDocumentViewer({ attachments, applicationId }: 
 
     // Fetch file URL when selected document changes
     useEffect(() => {
+        let activeUrl: string | null = null;
+
         const fetchFileUrl = async () => {
             if (!selectedDoc) {
                 setFileUrl(null);
@@ -29,20 +32,35 @@ export default function ApplicantDocumentViewer({ attachments, applicationId }: 
             setFileError(null);
 
             try {
+                // Fetch the file content directly from backend proxy as a blob
+                // This handles Auth headers via axiosClient and avoids CORS issues with R2
                 const response = await axiosClient.get(
-                    `/applications/${applicationId}/attachments/${selectedDoc.id}/download`
+                    `/applications/${applicationId}/attachments/${selectedDoc.id}/preview`,
+                    { responseType: 'blob' }
                 );
-                setFileUrl(response.data.data.url);
+
+                const blob = new Blob([response.data], { type: response.headers['content-type'] });
+                activeUrl = URL.createObjectURL(blob);
+                setFileUrl(activeUrl);
             } catch (error) {
                 console.error('Failed to fetch file URL:', error);
-                setFileError('Failed to load file. Please try again.');
+                setFileError('Failed to load file. Please try downloading instead.');
             } finally {
                 setLoadingFile(false);
             }
         };
 
-        fetchFileUrl();
-    }, [selectedDoc, applicationId]);
+        if (showViewer && selectedDoc) {
+            fetchFileUrl();
+        }
+
+        // Cleanup function to revoke object URL
+        return () => {
+            if (activeUrl) {
+                URL.revokeObjectURL(activeUrl);
+            }
+        };
+    }, [selectedDoc, applicationId, showViewer]);
 
     const getDocTypeIcon = (docType: string) => {
         switch (docType) {
@@ -74,14 +92,10 @@ export default function ApplicantDocumentViewer({ attachments, applicationId }: 
                 `/applications/${applicationId}/attachments/${attachment.id}/download`
             );
             const downloadUrl = response.data.data.url;
+            const filename = response.data.data.filename || attachment.file_name;
 
-            // Create a temporary link and trigger download
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = response.data.data.filename || attachment.file_name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Use the proper download utility
+            await downloadFile(downloadUrl, filename);
         } catch (error) {
             console.error('Failed to download file:', error);
             alert('Failed to download file. Please try again.');
@@ -92,6 +106,7 @@ export default function ApplicantDocumentViewer({ attachments, applicationId }: 
         setShowViewer(false);
         setSelectedDoc(null);
         setFileUrl(null);
+        setFileError(null);
     };
 
     if (attachments.length === 0) {
@@ -143,116 +158,15 @@ export default function ApplicantDocumentViewer({ attachments, applicationId }: 
             </ul>
 
             {/* Document Viewer Modal */}
-            {showViewer && selectedDoc && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
-                        {/* Modal Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
-                            <div className="flex items-center gap-3">
-                                <span className="material-symbols-outlined text-indigo-600">
-                                    {getDocTypeIcon(selectedDoc.attachment_type)}
-                                </span>
-                                <div>
-                                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                                        {selectedDoc.file_name}
-                                    </h3>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                                        {t(`application.attachmentTypes.${selectedDoc.attachment_type}`)}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => handleDownload(selectedDoc)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                                >
-                                    <span className="material-symbols-outlined text-lg">download</span>
-                                    <span className="hidden sm:inline text-sm font-medium">
-                                        {t('common.download')}
-                                    </span>
-                                </button>
-                                <button
-                                    onClick={handleCloseViewer}
-                                    className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                                    title={t('common.close')}
-                                >
-                                    <span className="material-symbols-outlined">close</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Modal Content */}
-                        <div className="flex-1 overflow-hidden p-4">
-                            {loadingFile ? (
-                                <div className="flex items-center justify-center h-full">
-                                    <div className="text-center">
-                                        <span className="material-symbols-outlined text-5xl text-indigo-600 animate-spin mb-4">
-                                            refresh
-                                        </span>
-                                        <p className="text-slate-600 dark:text-slate-400">
-                                            {t('common.loading')}
-                                        </p>
-                                    </div>
-                                </div>
-                            ) : fileError ? (
-                                <div className="flex items-center justify-center h-full">
-                                    <div className="text-center p-8">
-                                        <span className="material-symbols-outlined text-6xl text-red-500 mb-4">
-                                            error
-                                        </span>
-                                        <p className="text-slate-600 dark:text-slate-400 mb-4">
-                                            {fileError}
-                                        </p>
-                                        <button
-                                            onClick={() => handleDownload(selectedDoc)}
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                                        >
-                                            <span className="material-symbols-outlined">download</span>
-                                            <span className="text-sm font-medium">
-                                                {t('common.download')}
-                                            </span>
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : fileUrl && selectedDoc.file_name.toLowerCase().endsWith('.pdf') ? (
-                                <PDFViewer
-                                    fileUrl={fileUrl}
-                                    fileName={selectedDoc.file_name}
-                                    onDownload={() => handleDownload(selectedDoc)}
-                                />
-                            ) : fileUrl && selectedDoc.file_name.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                                <div className="h-full flex items-center justify-center bg-slate-100 dark:bg-slate-900 rounded-lg">
-                                    <img
-                                        src={fileUrl}
-                                        alt={selectedDoc.file_name}
-                                        className="max-w-full max-h-full object-contain"
-                                    />
-                                </div>
-                            ) : (
-                                <div className="flex items-center justify-center h-full">
-                                    <div className="text-center">
-                                        <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600 mb-4">
-                                            description
-                                        </span>
-                                        <p className="text-slate-600 dark:text-slate-400 mb-4">
-                                            {t('pdfViewer.previewNotAvailable')}
-                                        </p>
-                                        <button
-                                            onClick={() => handleDownload(selectedDoc)}
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                                        >
-                                            <span className="material-symbols-outlined">download</span>
-                                            <span className="text-sm font-medium">
-                                                {t('common.download')}
-                                            </span>
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+            <PDFPreviewModal
+                isOpen={showViewer && selectedDoc !== null}
+                onClose={handleCloseViewer}
+                fileUrl={fileUrl}
+                fileName={selectedDoc?.file_name || ''}
+                fileType={selectedDoc ? t(`application.attachmentTypes.${selectedDoc.attachment_type}`) : undefined}
+                isLoading={loadingFile}
+                error={fileError}
+            />
         </>
     );
 }

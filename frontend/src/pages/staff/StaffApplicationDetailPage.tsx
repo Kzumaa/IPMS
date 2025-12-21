@@ -7,9 +7,9 @@ import { ApplicationStatusBadge } from "@/features/application/components";
 import ExaminationPanel from "@/features/staff/components/ExaminationPanel";
 import ApplicationDocumentViewer from "@/features/staff/components/ApplicationDocumentViewer";
 
-const formatDate = (dateString: string | null): string => {
+const formatDate = (dateString: string | null, language: string): string => {
   if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("vi-VN", {
+  return new Date(dateString).toLocaleDateString(language === 'vi' ? "vi-VN" : "en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -17,7 +17,7 @@ const formatDate = (dateString: string | null): string => {
 };
 
 const StaffApplicationDetailPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const { currentApplication, parties, attachments, loading, error } =
@@ -116,7 +116,7 @@ const StaffApplicationDetailPage: React.FC = () => {
             </div>
             <p className="text-slate-500 dark:text-slate-400">
               {t("application.detail.filingDate")}:{" "}
-              {formatDate(currentApplication.filing_date)}
+              {formatDate(currentApplication.filing_date, i18n.language)}
             </p>
           </div>
         </div>
@@ -151,7 +151,7 @@ const StaffApplicationDetailPage: React.FC = () => {
                   {t("application.detail.filingDate")}
                 </dt>
                 <dd className="text-sm text-slate-900 dark:text-white mt-1">
-                  {formatDate(currentApplication.filing_date)}
+                  {formatDate(currentApplication.filing_date, i18n.language)}
                 </dd>
               </div>
 

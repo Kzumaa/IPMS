@@ -26,7 +26,7 @@ const StaffLayout: React.FC = () => {
     // Generate breadcrumbs based on path
     const getBreadcrumbs = () => {
         const path = location.pathname.split('/').filter(Boolean);
-        const breadcrumbs: { label: string; href?: string; active?: boolean }[] = [{ label: 'Staff', href: '/staff' }];
+        const breadcrumbs: { label: string; href?: string; active?: boolean }[] = [{ label: t('staff.nav.staff'), href: '/staff' }];
 
         if (path.includes('dashboard')) {
             breadcrumbs.push({ label: t('staff.dashboard.title'), active: true });
@@ -91,7 +91,7 @@ const StaffLayout: React.FC = () => {
                         </a>
                         <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700/50 w-full text-left">
                             <span className="material-symbols-outlined">logout</span>
-                            <p className="text-sm font-medium leading-normal">{t('dashboard.nav.logout') || 'Logout'}</p>
+                            <p className="text-sm font-medium leading-normal">{t('dashboard.nav.logout')}</p>
                         </button>
                     </div>
                 </div>

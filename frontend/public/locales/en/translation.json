@@ -152,6 +152,8 @@
                 "appTypePlaceholder": "Select type...",
                 "inventionTitle": "Invention/Solution Title",
                 "inventionTitlePlaceholder": "Enter invention or solution title",
+                "designTitle": "Design Title",
+                "designTitlePlaceholder": "Enter design title",
                 "abstract": "Abstract",
                 "abstractPlaceholder": "Enter a brief summary of the invention...",
                 "abstractHelper": "Brief summary of the invention (max 2000 characters)",
@@ -169,12 +171,43 @@
             "priority": {
                 "title": "Priority Claim",
                 "description": "Fill in if claiming priority from a previous application",
+                "hasPriority": "Claim priority from a previous application",
+                "typeLabel": "Priority Type",
+                "types": {
+                    "vnFirst": "VN First Filing (Based on a previous VN application)",
+                    "paris": "Paris Convention Priority",
+                    "other": "Other International Agreement"
+                },
                 "number": "Priority Number",
                 "numberPlaceholder": "Priority number",
                 "date": "Priority Date",
                 "country": "Country Code",
                 "countryPlaceholder": "VN, US, JP...",
-                "countryHelper": "2-letter code"
+                "countryHelper": "2-letter code",
+                "addClaim": "Add Priority Claim",
+                "noClaims": "No priority claims added yet"
+            },
+            "stateBudget": {
+                "title": "State Budget Science & Technology Task",
+                "isStateBudget": "Created under state budget science & technology task",
+                "agencyName": "Managing Agency",
+                "agencyNamePlaceholder": "Enter managing agency name",
+                "taskName": "Task/Project Name",
+                "taskNamePlaceholder": "Enter task or project name",
+                "taskCode": "Task Code",
+                "taskCodePlaceholder": "Enter task code"
+            },
+            "classification": {
+                "titleLocarno": "Locarno Classification",
+                "titleIpc": "IPC Classification",
+                "locarno": "Locarno Class",
+                "locarnoPlaceholder": "e.g., 06-01",
+                "locarnoHelper": "International Classification for Industrial Designs",
+                "ipc": "IPC Class",
+                "ipcPlaceholder": "e.g., A01B 1/00",
+                "ipcHelper": "International Patent Classification",
+                "fieldOfUse": "Field of Use",
+                "fieldOfUsePlaceholder": "e.g., Furniture, Vehicles..."
             },
             "descriptionStep": {
                 "title": "Description",
@@ -211,8 +244,17 @@
                 "applicantsDesc": "Information about the applicant(s) (at least 1 required)",
                 "inventors": "Inventors",
                 "inventorsDesc": "Information about inventor(s) (optional)",
-                "representatives": "IP Representatives",
-                "representativesDesc": "Information about legal representative(s) (optional)",
+                "authorsDesigners": "Authors / Designers",
+                "authorsDesignersDesc": "Information about the author(s) or designer(s) (optional)",
+                "authorDesigner": "Author/Designer",
+                "primary": "Primary",
+                "otherApplicants": "Other Applicants",
+                "otherApplicantsDesc": "Add up to {{max}} additional applicants",
+                "searchExistingUser": "Search for existing user",
+                "searchByEmail": "Search by email address...",
+                "noUsersFound": "No users found",
+                "addManually": "Add manually",
+                "maxApplicantsReached": "Maximum number of additional applicants reached",
                 "add": "Add",
                 "noApplicants": "No applicants added",
                 "addApplicant": "Add applicant",
@@ -278,6 +320,7 @@
                 "metricsMustBeSaved": "Please fill in and save the application metrics before proceeding to the review step. Metrics are required for fee calculation.",
                 "fields": {
                     "descriptionPages": "Description Pages",
+                    "abstractPages": "Abstract Pages",
                     "independentClaims": "Independent Claims",
                     "totalClaims": "Total Claims",
                     "drawingImages": "Drawing Figures",
@@ -391,6 +434,7 @@
         "required": "Required",
         "optional": "Optional",
         "save": "Save",
+        "saving": "Saving...",
         "cancel": "Cancel",
         "delete": "Delete",
         "edit": "Edit",
@@ -401,7 +445,8 @@
         "error": "Error",
         "success": "Success",
         "loading": "Loading...",
-        "noData": "No data"
+        "noData": "No data",
+        "actions": "Actions"
     },
     "pdfViewer": {
         "loadError": "Failed to Load PDF",
@@ -413,11 +458,18 @@
     },
     "staff": {
         "nav": {
+            "staff": "Staff",
             "allApplications": "All Applications",
-            "myApplications": "My Applications"
+            "myApplications": "My Applications",
+            "dashboard": "Dashboard",
+            "reports": "Reports"
+        },
+        "common": {
+            "error": "Error"
         },
         "dashboard": {
             "title": "Staff Dashboard",
+            "subtitle": "Overview of your assigned tasks and system status",
             "totalApplications": "Total Applications",
             "assignedToMe": "Assigned to Me",
             "pendingFormalityExam": "Pending Formality Exam",
@@ -433,6 +485,11 @@
             "reportsDesc": "Generate and view reports",
             "loadingDashboard": "Loading dashboard...",
             "error": "Error: {{error}}"
+        },
+        "reports": {
+            "subtitle": "View system analytics and performance reports",
+            "comingSoon": "Coming Soon",
+            "description": "Reports and analytics feature is currently under development. Check back later for updates."
         },
         "applications": {
             "title": "All Applications",
@@ -453,7 +510,8 @@
             "showing": "Showing {{count}} of {{total}} applications",
             "previous": "Previous",
             "next": "Next",
-            "page": "Page {{current}} of {{total}}"
+            "page": "Page {{current}} of {{total}}",
+            "assigned": "Assigned"
         },
         "examination": {
             "title": "Examination Panel",
@@ -479,7 +537,7 @@
         },
         "formCheck": {
             "title": "Formality Examination (Format Check)",
-            "applicationInfo": "Application Information",
+            "applicationInfo": "Application Info",
             "parties": "Parties",
             "partiesCount": "parties",
             "attachments": "Attachments",

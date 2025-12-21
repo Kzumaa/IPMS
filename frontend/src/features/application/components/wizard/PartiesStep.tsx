@@ -1,18 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { FormInput, FormSelect } from '../forms';
-import { PartyType } from '../../types/enums';
+import { PartyType, AppType } from '../../types/enums';
 import type { PartiesFormData, PartyFormData } from '../../schemas/applicationSchemas';
+import type { UserSearchResult } from '../../types/applicationTypes';
+import { applicationService } from '../../services/applicationService';
+
+// Debounce hook for search
+function useDebounce(
+    callback: (query: string) => void,
+    delay: number
+): (query: string) => void {
+    const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const callbackRef = React.useRef<(query: string) => void>(callback);
+
+    // Update callback ref when callback changes
+    React.useEffect(() => {
+        callbackRef.current = callback;
+    }, [callback]);
+
+    return useCallback(
+        (query: string) => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+            timeoutRef.current = setTimeout(() => {
+                callbackRef.current(query);
+            }, delay);
+        },
+        [delay]
+    );
+}
+
+type PartyArrayKey = 'applicants' | 'inventors';
 
 interface PartyCardProps {
     index: number;
-    partyType: 'applicants' | 'inventors' | 'representatives';
+    partyType: PartyArrayKey;
     onRemove: () => void;
     canRemove: boolean;
+    isIndustrialDesign?: boolean;
 }
 
-const PartyCard: React.FC<PartyCardProps> = ({ index, partyType, onRemove, canRemove }) => {
+const PartyCard: React.FC<PartyCardProps> = ({ index, partyType, onRemove, canRemove, isIndustrialDesign }) => {
     const { t } = useTranslation();
     const {
         register,
@@ -20,12 +51,18 @@ const PartyCard: React.FC<PartyCardProps> = ({ index, partyType, onRemove, canRe
     } = useFormContext<PartiesFormData>();
     const [isExpanded, setIsExpanded] = useState(true);
 
-    const fieldErrors = errors[partyType]?.[index];
+    // Get field errors with proper typing
+    const partyErrors = partyType === 'applicants' ? errors.applicants : errors.inventors;
+    const fieldErrors = partyErrors?.[index];
 
-    const getPartyTypeKey = () => {
-        if (partyType === 'applicants') return 'APPLICANT';
-        if (partyType === 'inventors') return 'INVENTOR';
-        return 'REPRESENTATIVE';
+    const getPartyTypeLabel = () => {
+        if (partyType === 'applicants') {
+            return t('application.partyTypes.APPLICANT');
+        }
+        // For inventors/authors/designers
+        return isIndustrialDesign
+            ? t('application.steps.parties.authorDesigner')
+            : t('application.partyTypes.INVENTOR');
     };
 
     const idTypeOptions = [
@@ -47,7 +84,12 @@ const PartyCard: React.FC<PartyCardProps> = ({ index, partyType, onRemove, canRe
                         {isExpanded ? 'expand_less' : 'expand_more'}
                     </span>
                     <span className="font-medium text-slate-900 dark:text-white">
-                        {t(`application.partyTypes.${getPartyTypeKey()}`)} #{index + 1}
+                        {getPartyTypeLabel()} #{index + 1}
+                        {index === 0 && partyType === 'applicants' && (
+                            <span className="ml-2 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded">
+                                {t('application.steps.parties.primary')}
+                            </span>
+                        )}
                     </span>
                 </div>
                 {canRemove && (
@@ -73,8 +115,17 @@ const PartyCard: React.FC<PartyCardProps> = ({ index, partyType, onRemove, canRe
                             name={`${partyType}.${index}.name`}
                             placeholder={t('application.steps.parties.fields.namePlaceholder')}
                             required
-                            register={register(`${partyType}.${index}.name` as keyof PartiesFormData)}
+                            register={register(`${partyType}.${index}.name` as `applicants.${number}.name`)}
                             error={fieldErrors?.name}
+                        />
+
+                        <FormInput
+                            label={t('application.steps.parties.fields.nationality')}
+                            name={`${partyType}.${index}.nationality`}
+                            placeholder={t('application.steps.parties.fields.nationalityPlaceholder')}
+                            required
+                            register={register(`${partyType}.${index}.nationality` as `applicants.${number}.nationality`)}
+                            error={fieldErrors?.nationality}
                         />
 
                         <div className="md:col-span-2">
@@ -83,34 +134,18 @@ const PartyCard: React.FC<PartyCardProps> = ({ index, partyType, onRemove, canRe
                                 name={`${partyType}.${index}.address`}
                                 placeholder={t('application.steps.parties.fields.addressPlaceholder')}
                                 required
-                                register={register(`${partyType}.${index}.address` as keyof PartiesFormData)}
+                                register={register(`${partyType}.${index}.address` as `applicants.${number}.address`)}
                                 error={fieldErrors?.address}
                             />
                         </div>
-
-                        <FormInput
-                            label={t('application.steps.parties.fields.nationality')}
-                            name={`${partyType}.${index}.nationality`}
-                            placeholder={t('application.steps.parties.fields.nationalityPlaceholder')}
-                            register={register(`${partyType}.${index}.nationality` as keyof PartiesFormData)}
-                            error={fieldErrors?.nationality}
-                        />
-
-                        <FormInput
-                            label={t('application.steps.parties.fields.countryCode')}
-                            name={`${partyType}.${index}.country_code`}
-                            placeholder={t('application.steps.parties.fields.countryCodePlaceholder')}
-                            register={register(`${partyType}.${index}.country_code` as keyof PartiesFormData)}
-                            error={fieldErrors?.country_code}
-                            helperText={t('application.steps.parties.fields.countryCodeHelper')}
-                        />
 
                         <FormInput
                             label={t('application.steps.parties.fields.email')}
                             name={`${partyType}.${index}.email`}
                             type="email"
                             placeholder={t('application.steps.parties.fields.emailPlaceholder')}
-                            register={register(`${partyType}.${index}.email` as keyof PartiesFormData)}
+                            required
+                            register={register(`${partyType}.${index}.email` as `applicants.${number}.email`)}
                             error={fieldErrors?.email}
                         />
 
@@ -119,15 +154,25 @@ const PartyCard: React.FC<PartyCardProps> = ({ index, partyType, onRemove, canRe
                             name={`${partyType}.${index}.phone`}
                             type="tel"
                             placeholder={t('application.steps.parties.fields.phonePlaceholder')}
-                            register={register(`${partyType}.${index}.phone` as keyof PartiesFormData)}
+                            required
+                            register={register(`${partyType}.${index}.phone` as `applicants.${number}.phone`)}
                             error={fieldErrors?.phone}
+                        />
+
+                        <FormInput
+                            label={t('application.steps.parties.fields.countryCode')}
+                            name={`${partyType}.${index}.country_code`}
+                            placeholder={t('application.steps.parties.fields.countryCodePlaceholder')}
+                            register={register(`${partyType}.${index}.country_code` as `applicants.${number}.country_code`)}
+                            error={fieldErrors?.country_code}
+                            helperText={t('application.steps.parties.fields.countryCodeHelper')}
                         />
 
                         <FormInput
                             label={t('application.steps.parties.fields.idNumber')}
                             name={`${partyType}.${index}.id_number`}
                             placeholder={t('application.steps.parties.fields.idNumberPlaceholder')}
-                            register={register(`${partyType}.${index}.id_number` as keyof PartiesFormData)}
+                            register={register(`${partyType}.${index}.id_number` as `applicants.${number}.id_number`)}
                             error={fieldErrors?.id_number}
                         />
 
@@ -136,7 +181,7 @@ const PartyCard: React.FC<PartyCardProps> = ({ index, partyType, onRemove, canRe
                             name={`${partyType}.${index}.id_type`}
                             options={idTypeOptions}
                             placeholder={t('application.steps.parties.fields.idTypePlaceholder')}
-                            register={register(`${partyType}.${index}.id_type` as keyof PartiesFormData)}
+                            register={register(`${partyType}.${index}.id_type` as `applicants.${number}.id_type`)}
                             error={fieldErrors?.id_type}
                         />
                     </div>
@@ -146,9 +191,116 @@ const PartyCard: React.FC<PartyCardProps> = ({ index, partyType, onRemove, canRe
     );
 };
 
-const PartiesStep: React.FC = () => {
+// User Search Component
+interface UserSearchProps {
+    onSelect: (user: UserSearchResult) => void;
+}
+
+const UserSearch: React.FC<UserSearchProps> = ({ onSelect }) => {
+    const { t } = useTranslation();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showResults, setShowResults] = useState(false);
+
+    const performSearch = useCallback(async (query: string) => {
+        if (query.length < 3) {
+            setSearchResults([]);
+            return;
+        }
+
+        setIsSearching(true);
+        try {
+            const response = await applicationService.searchUserByEmail(query);
+            setSearchResults(response.data || []);
+            setShowResults(true);
+        } catch (error) {
+            console.error('User search failed:', error);
+            setSearchResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    }, []);
+
+    const debouncedSearch = useDebounce(performSearch, 300);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+        debouncedSearch(value);
+    };
+
+    const handleSelect = (user: UserSearchResult) => {
+        onSelect(user);
+        setSearchQuery('');
+        setSearchResults([]);
+        setShowResults(false);
+    };
+
+    return (
+        <div className="relative">
+            <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        search
+                    </span>
+                    <input
+                        type="email"
+                        value={searchQuery}
+                        onChange={handleInputChange}
+                        onFocus={() => searchResults.length > 0 && setShowResults(true)}
+                        onBlur={() => setTimeout(() => setShowResults(false), 200)}
+                        placeholder={t('application.steps.parties.searchByEmail')}
+                        className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:text-white"
+                    />
+                    {isSearching && (
+                        <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 animate-spin">
+                            progress_activity
+                        </span>
+                    )}
+                </div>
+            </div>
+
+            {/* Search Results Dropdown */}
+            {showResults && searchResults.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-60 overflow-auto">
+                    {searchResults.map((user) => (
+                        <button
+                            key={user.id}
+                            type="button"
+                            onClick={() => handleSelect(user)}
+                            className="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-b border-slate-100 dark:border-slate-700 last:border-b-0"
+                        >
+                            <div className="font-medium text-slate-900 dark:text-white">
+                                {user.full_name}
+                            </div>
+                            <div className="text-sm text-slate-500 dark:text-slate-400">
+                                {user.email}
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {showResults && searchQuery.length >= 3 && searchResults.length === 0 && !isSearching && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg p-4 text-center text-slate-500 dark:text-slate-400">
+                    {t('application.steps.parties.noUsersFound')}
+                </div>
+            )}
+        </div>
+    );
+};
+
+interface PartiesStepProps {
+    appType?: AppType;
+}
+
+const PartiesStep: React.FC<PartiesStepProps> = ({ appType }) => {
     const { t } = useTranslation();
     const { control, formState: { errors } } = useFormContext<PartiesFormData>();
+
+    // Use app_type from props (passed from parent wizard)
+    const isIndustrialDesign = appType === AppType.INDUSTRIAL_DESIGN;
 
     const {
         fields: applicantFields,
@@ -168,14 +320,8 @@ const PartiesStep: React.FC = () => {
         name: 'inventors',
     });
 
-    const {
-        fields: representativeFields,
-        append: appendRepresentative,
-        remove: removeRepresentative,
-    } = useFieldArray({
-        control,
-        name: 'representatives',
-    });
+    const MAX_ADDITIONAL_APPLICANTS = 2; // Max 2 additional (total 3 including primary)
+    const canAddMoreApplicants = applicantFields.length < (MAX_ADDITIONAL_APPLICANTS + 1);
 
     const defaultParty: PartyFormData = {
         party_type: PartyType.APPLICANT,
@@ -183,12 +329,38 @@ const PartiesStep: React.FC = () => {
         address: '',
         nationality: 'Việt Nam',
         country_code: 'VN',
-        email: null,
-        phone: null,
+        email: '',
+        phone: '',
         id_number: null,
         id_type: null,
         is_primary: false,
         share_percentage: null,
+    };
+
+    const handleUserSelect = (user: UserSearchResult) => {
+        if (!canAddMoreApplicants) return;
+
+        const newApplicant: PartyFormData = {
+            party_type: PartyType.APPLICANT,
+            name: user.full_name,
+            address: user.address || '',
+            nationality: user.country || 'Việt Nam',
+            country_code: user.country?.slice(0, 2).toUpperCase() || 'VN',
+            email: user.email,
+            phone: user.phone || '',
+            id_number: null,
+            id_type: null,
+            is_primary: false,
+            share_percentage: null,
+            user_id: user.id,
+        };
+
+        appendApplicant(newApplicant);
+    };
+
+    const handleAddApplicant = () => {
+        if (!canAddMoreApplicants) return;
+        appendApplicant({ ...defaultParty, party_type: PartyType.APPLICANT });
     };
 
     return (
@@ -204,56 +376,116 @@ const PartiesStep: React.FC = () => {
                             {t('application.steps.parties.applicantsDesc')}
                         </p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => appendApplicant({ ...defaultParty, party_type: PartyType.APPLICANT })}
-                        className="flex items-center px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-                    >
-                        <span className="material-symbols-outlined mr-1 !text-lg">add</span>
-                        {t('application.steps.parties.add')}
-                    </button>
                 </div>
 
                 {errors.applicants?.message && (
                     <p className="text-sm text-red-500 mb-4">{errors.applicants.message}</p>
                 )}
 
-                <div className="space-y-4">
-                    {applicantFields.map((field, index) => (
+                {/* Primary Applicant (first one) */}
+                <div className="space-y-4 mb-6">
+                    {applicantFields.slice(0, 1).map((field, index) => (
                         <PartyCard
                             key={field.id}
                             index={index}
                             partyType="applicants"
                             onRemove={() => removeApplicant(index)}
-                            canRemove={applicantFields.length > 1}
+                            canRemove={false}
+                            isIndustrialDesign={isIndustrialDesign}
                         />
                     ))}
                 </div>
 
                 {applicantFields.length === 0 && (
-                    <div className="text-center py-8 bg-slate-50 dark:bg-slate-800 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600">
+                    <div className="text-center py-8 bg-slate-50 dark:bg-slate-800 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 mb-6">
                         <span className="material-symbols-outlined text-4xl text-slate-400 mb-2">person_add</span>
                         <p className="text-slate-500 dark:text-slate-400">{t('application.steps.parties.noApplicants')}</p>
                         <button
                             type="button"
-                            onClick={() => appendApplicant({ ...defaultParty, party_type: PartyType.APPLICANT })}
+                            onClick={handleAddApplicant}
                             className="mt-2 text-indigo-600 dark:text-indigo-400 hover:underline"
                         >
                             {t('application.steps.parties.addApplicant')}
                         </button>
                     </div>
                 )}
+
+                {/* Other Applicants Section */}
+                {applicantFields.length > 0 && (
+                    <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 className="font-medium text-slate-900 dark:text-white">
+                                    {t('application.steps.parties.otherApplicants')}
+                                </h4>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    {t('application.steps.parties.otherApplicantsDesc', { max: MAX_ADDITIONAL_APPLICANTS })}
+                                </p>
+                            </div>
+                            <span className="text-sm text-slate-500 dark:text-slate-400">
+                                {applicantFields.length - 1}/{MAX_ADDITIONAL_APPLICANTS}
+                            </span>
+                        </div>
+
+                        {/* User Search */}
+                        {canAddMoreApplicants && (
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    {t('application.steps.parties.searchExistingUser')}
+                                </label>
+                                <UserSearch onSelect={handleUserSelect} />
+                            </div>
+                        )}
+
+                        {/* Other Applicants List */}
+                        <div className="space-y-4">
+                            {applicantFields.slice(1).map((field, idx) => (
+                                <PartyCard
+                                    key={field.id}
+                                    index={idx + 1}
+                                    partyType="applicants"
+                                    onRemove={() => removeApplicant(idx + 1)}
+                                    canRemove={true}
+                                    isIndustrialDesign={isIndustrialDesign}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Add Manual Button */}
+                        {canAddMoreApplicants && (
+                            <button
+                                type="button"
+                                onClick={handleAddApplicant}
+                                className="mt-4 flex items-center px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+                            >
+                                <span className="material-symbols-outlined mr-1 !text-lg">add</span>
+                                {t('application.steps.parties.addManually')}
+                            </button>
+                        )}
+
+                        {!canAddMoreApplicants && applicantFields.length > 1 && (
+                            <p className="mt-4 text-sm text-amber-600 dark:text-amber-400">
+                                <span className="material-symbols-outlined text-sm align-middle mr-1">info</span>
+                                {t('application.steps.parties.maxApplicantsReached')}
+                            </p>
+                        )}
+                    </div>
+                )}
             </div>
 
-            {/* Inventors Section */}
+            {/* Inventors/Authors Section */}
             <div>
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                            {t('application.steps.parties.inventors')}
+                            {isIndustrialDesign
+                                ? t('application.steps.parties.authorsDesigners')
+                                : t('application.steps.parties.inventors')}
                         </h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {t('application.steps.parties.inventorsDesc')}
+                            {isIndustrialDesign
+                                ? t('application.steps.parties.authorsDesignersDesc')
+                                : t('application.steps.parties.inventorsDesc')}
                         </p>
                     </div>
                     <button
@@ -274,53 +506,12 @@ const PartiesStep: React.FC = () => {
                             partyType="inventors"
                             onRemove={() => removeInventor(index)}
                             canRemove={true}
+                            isIndustrialDesign={isIndustrialDesign}
                         />
                     ))}
                 </div>
 
                 {inventorFields.length === 0 && (
-                    <div className="text-center py-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">
-                            {t('application.steps.parties.noData')}
-                        </p>
-                    </div>
-                )}
-            </div>
-
-            {/* Representatives Section */}
-            <div>
-                <div className="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                            {t('application.steps.parties.representatives')}
-                        </h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {t('application.steps.parties.representativesDesc')}
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => appendRepresentative({ ...defaultParty, party_type: PartyType.REPRESENTATIVE })}
-                        className="flex items-center px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-                    >
-                        <span className="material-symbols-outlined mr-1 !text-lg">add</span>
-                        {t('application.steps.parties.add')}
-                    </button>
-                </div>
-
-                <div className="space-y-4">
-                    {representativeFields.map((field, index) => (
-                        <PartyCard
-                            key={field.id}
-                            index={index}
-                            partyType="representatives"
-                            onRemove={() => removeRepresentative(index)}
-                            canRemove={true}
-                        />
-                    ))}
-                </div>
-
-                {representativeFields.length === 0 && (
                     <div className="text-center py-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
                         <p className="text-slate-500 dark:text-slate-400 text-sm">
                             {t('application.steps.parties.noData')}

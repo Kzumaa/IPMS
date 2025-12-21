@@ -35,6 +35,8 @@ class StaffController extends Controller
             $query->where('status', $request->status);
         }
 
+        $query->where('status', '!=', 'DRAFT');
+
         // Filter by app_type
         if ($request->has('app_type')) {
             $query->where('app_type', $request->app_type);

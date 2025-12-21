@@ -151,6 +151,8 @@
                 "appTypePlaceholder": "Chọn loại đơn...",
                 "inventionTitle": "Tên sáng chế / Giải pháp",
                 "inventionTitlePlaceholder": "Nhập tên sáng chế hoặc giải pháp",
+                "designTitle": "Tên kiểu dáng",
+                "designTitlePlaceholder": "Nhập tên kiểu dáng công nghiệp",
                 "abstract": "Tóm tắt",
                 "abstractPlaceholder": "Nhập tóm tắt nội dung sáng chế...",
                 "abstractHelper": "Tóm tắt ngắn gọn về sáng chế (không quá 2000 ký tự)",
@@ -168,12 +170,43 @@
             "priority": {
                 "title": "Yêu cầu quyền ưu tiên",
                 "description": "Điền thông tin nếu bạn yêu cầu quyền ưu tiên từ đơn đã nộp trước đó",
+                "hasPriority": "Yêu cầu quyền ưu tiên từ đơn đã nộp trước",
+                "typeLabel": "Loại quyền ưu tiên",
+                "types": {
+                    "vnFirst": "Đơn đầu tiên tại VN (Dựa trên đơn VN đã nộp trước)",
+                    "paris": "Quyền ưu tiên theo Công ước Paris",
+                    "other": "Hiệp định quốc tế khác"
+                },
                 "number": "Số đơn ưu tiên",
                 "numberPlaceholder": "Số đơn ưu tiên",
                 "date": "Ngày ưu tiên",
                 "country": "Mã quốc gia",
                 "countryPlaceholder": "VN, US, JP...",
-                "countryHelper": "Mã 2 ký tự"
+                "countryHelper": "Mã 2 ký tự",
+                "addClaim": "Thêm yêu cầu ưu tiên",
+                "noClaims": "Chưa có yêu cầu ưu tiên nào"
+            },
+            "stateBudget": {
+                "title": "Nhiệm vụ KH&CN sử dụng ngân sách nhà nước",
+                "isStateBudget": "Được tạo ra trong khuôn khổ nhiệm vụ KH&CN sử dụng NSNN",
+                "agencyName": "Cơ quan chủ quản",
+                "agencyNamePlaceholder": "Nhập tên cơ quan chủ quản",
+                "taskName": "Tên nhiệm vụ/Đề tài",
+                "taskNamePlaceholder": "Nhập tên nhiệm vụ hoặc đề tài",
+                "taskCode": "Mã số nhiệm vụ",
+                "taskCodePlaceholder": "Nhập mã số nhiệm vụ"
+            },
+            "classification": {
+                "titleLocarno": "Phân loại Locarno",
+                "titleIpc": "Phân loại IPC",
+                "locarno": "Locarno",
+                "locarnoPlaceholder": "VD: 06-01",
+                "locarnoHelper": "Phân loại quốc tế về kiểu dáng công nghiệp",
+                "ipc": "IPC",
+                "ipcPlaceholder": "VD: A01B 1/00",
+                "ipcHelper": "Phân loại sáng chế quốc tế",
+                "fieldOfUse": "Lĩnh vực sử dụng",
+                "fieldOfUsePlaceholder": "VD: Đồ nội thất, Phương tiện..."
             },
             "descriptionStep": {
                 "title": "Bản mô tả",
@@ -210,8 +243,17 @@
                 "applicantsDesc": "Thông tin về người/tổ chức nộp đơn đăng ký (bắt buộc ít nhất 1)",
                 "inventors": "Tác giả sáng chế",
                 "inventorsDesc": "Thông tin về tác giả/nhà sáng chế (không bắt buộc)",
-                "representatives": "Đại diện sở hữu công nghiệp",
-                "representativesDesc": "Thông tin về đại diện pháp lý (không bắt buộc)",
+                "authorsDesigners": "Tác giả / Nhà thiết kế",
+                "authorsDesignersDesc": "Thông tin về tác giả hoặc nhà thiết kế (không bắt buộc)",
+                "authorDesigner": "Tác giả/Nhà thiết kế",
+                "primary": "Chính",
+                "otherApplicants": "Người nộp đơn khác",
+                "otherApplicantsDesc": "Thêm tối đa {{max}} người nộp đơn khác",
+                "searchExistingUser": "Tìm kiếm người dùng hiện có",
+                "searchByEmail": "Tìm kiếm theo email...",
+                "noUsersFound": "Không tìm thấy người dùng",
+                "addManually": "Thêm thủ công",
+                "maxApplicantsReached": "Đã đạt số lượng người nộp đơn tối đa",
                 "add": "Thêm",
                 "noApplicants": "Chưa có người nộp đơn",
                 "addApplicant": "Thêm người nộp đơn",
@@ -277,6 +319,7 @@
                 "metricsMustBeSaved": "Vui lòng điền và lưu chỉ số đơn trước khi chuyển sang bước xem lại. Chỉ số đơn là bắt buộc để tính phí.",
                 "fields": {
                     "descriptionPages": "Số trang bản mô tả",
+                    "abstractPages": "Số trang tóm tắt",
                     "independentClaims": "Số yêu cầu bảo hộ độc lập",
                     "totalClaims": "Tổng số yêu cầu bảo hộ",
                     "drawingImages": "Số hình vẽ",
@@ -390,6 +433,7 @@
         "required": "Bắt buộc",
         "optional": "Không bắt buộc",
         "save": "Lưu",
+        "saving": "Đang lưu...",
         "cancel": "Hủy",
         "delete": "Xóa",
         "edit": "Chỉnh sửa",
@@ -400,7 +444,8 @@
         "error": "Lỗi",
         "success": "Thành công",
         "loading": "Đang tải...",
-        "noData": "Không có dữ liệu"
+        "noData": "Không có dữ liệu",
+        "actions": "Hành động"
     },
     "pdfViewer": {
         "loadError": "Không thể tải PDF",
@@ -411,8 +456,19 @@
         "previewNotAvailable": "Không có bản xem trước cho loại tệp này"
     },
     "staff": {
+        "nav": {
+            "staff": "Nhân viên",
+            "allApplications": "Tất cả đơn",
+            "myApplications": "Đơn của tôi",
+            "dashboard": "Bảng điều khiển",
+            "reports": "Báo cáo"
+        },
+        "common": {
+            "error": "Lỗi"
+        },
         "dashboard": {
             "title": "Bảng điều khiển nhân viên",
+            "subtitle": "Tổng quan về các nhiệm vụ được giao và trạng thái hệ thống",
             "totalApplications": "Tổng số đơn",
             "assignedToMe": "Đơn được giao",
             "pendingFormalityExam": "Chờ thẩm định hình thức",
@@ -428,6 +484,11 @@
             "reportsDesc": "Tạo và xem báo cáo",
             "loadingDashboard": "Đang tải bảng điều khiển...",
             "error": "Lỗi: {{error}}"
+        },
+        "reports": {
+            "subtitle": "Xem phân tích hệ thống và báo cáo hiệu suất",
+            "comingSoon": "Sắp ra mắt",
+            "description": "Tính năng báo cáo và phân tích hiện đang được phát triển. Vui lòng quay lại sau để cập nhật."
         },
         "applications": {
             "title": "Tất cả đơn đăng ký",
@@ -448,7 +509,8 @@
             "showing": "Hiển thị {{count}} trong {{total}} đơn",
             "previous": "Trước",
             "next": "Sau",
-            "page": "Trang {{current}} / {{total}}"
+            "page": "Trang {{current}} / {{total}}",
+            "assigned": "Đã giao"
         },
         "examination": {
             "title": "Bảng thẩm định",
@@ -471,6 +533,65 @@
             "issueDecisionButton": "Ra quyết định",
             "submitting": "Đang gửi...",
             "decision": "Quyết định"
+        },
+        "formCheck": {
+            "title": "Thẩm định hình thức (Kiểm tra hình thức)",
+            "applicationInfo": "Thông tin đơn",
+            "parties": "Các bên",
+            "partiesCount": "bên",
+            "attachments": "Tài liệu",
+            "documentsCount": "tài liệu",
+            "checklist": "Danh mục tài liệu kiểm tra",
+            "required": "(Bắt buộc)",
+            "applicantExists": "Có ít nhất một người nộp đơn",
+            "titleValid": "Tên sáng chế hợp lệ",
+            "inventorExists": "Có thông tin tác giả",
+            "descriptionExists": "Có bản mô tả",
+            "claimsExists": "Có yêu cầu bảo hộ",
+            "abstractExists": "Có bản tóm tắt",
+            "drawingsExists": "Có bản vẽ/Ảnh chụp",
+            "designDescriptionExists": "Có bản mô tả kiểu dáng",
+            "notAllRequirementsMet": "Cảnh báo: Chưa đủ các mục yêu cầu",
+            "requiredForFail": "(Bắt buộc khi kết quả là KHÔNG ĐẠT)",
+            "failNotesGuidance": "Vui lòng ghi rõ tài liệu nào còn thiếu hoặc cần sửa đổi gì."
+        },
+        "contentCheck": {
+            "title": "Thẩm định nội dung (Kiểm tra nội dung)",
+            "applicationInfo": "Thông tin đơn",
+            "publicationDate": "Ngày công bố",
+            "publicationNumber": "Số công bố",
+            "examinationCriteria": "Tiêu chí thẩm định",
+            "assessEachCriteria": "Đánh giá từng tiêu chí dựa trên việc thẩm định nội dung kỹ thuật.",
+            "pass": "Đạt",
+            "concern": "Lo ngại",
+            "fail": "Không đạt",
+            "novelty": "Tính mới",
+            "noveltyDesc": "Sáng chế là mới và chưa được bộc lộ trong tình trạng kỹ thuật",
+            "inventiveStep": "Trình độ sáng tạo",
+            "inventiveStepDesc": "Sáng chế có trình độ sáng tạo, không hiển nhiên đối với người có hiểu biết trung bình",
+            "industrialApplicability": "Khả năng áp dụng công nghiệp",
+            "industrialApplicabilityDesc": "Sáng chế có thể chế tạo hoặc sử dụng trong công nghiệp",
+            "sufficientDisclosure": "Bộc lộ đầy đủ",
+            "sufficientDisclosureDesc": "Bản mô tả rõ ràng và đầy đủ để người có hiểu biết trung bình thực hiện được",
+            "claimsSupported": "Yêu cầu bảo hộ được ủng hộ",
+            "claimsSupportedDesc": "Tất cả các điểm yêu cầu bảo hộ đều được ủng hộ bởi bản mô tả",
+            "unityInvention": "Tính thống nhất",
+            "unityInventionDesc": "Đơn chỉ yêu cầu bảo hộ cho một đối tượng hoặc một nhóm đối tượng thống nhất",
+            "designNovelty": "Tính mới (Kiểu dáng)",
+            "designNoveltyDesc": "Kiểu dáng là mới và chưa được bộc lộ công khai trước ngày nộp đơn",
+            "designOriginality": "Tính sáng tạo (Kiểu dáng)",
+            "designOriginalityDesc": "Kiểu dáng mang tính sáng tạo, không phải là sự sao chép đơn thuần",
+            "designClarity": "Tính rõ ràng",
+            "designClarityDesc": "Kiểu dáng được thể hiện rõ ràng trong bộ ảnh chụp/bản vẽ",
+            "assessmentSummary": "Tổng hợp đánh giá",
+            "hasFailures": "Một số tiêu chí không đạt. Xem xét ra quyết định từ chối hoặc yêu cầu sửa đổi.",
+            "hasConcerns": "Có một số lo ngại. Xem xét ra thông báo phản đối để làm rõ.",
+            "allPass": "Tất cả tiêu chí đều đạt. Đơn đáp ứng các yêu cầu bảo hộ.",
+            "requiredForNonAcceptable": "(Bắt buộc khi PHẢN ĐỐI hoặc TỪ CHỐI)",
+            "notesPlaceholder": "Nhập kết quả thẩm định chi tiết, bao gồm:\n- Các vấn đề cụ thể được xác định\n- Dẫn chứng tài liệu đối chứng (nếu có)\n- Khuyến nghị cho người nộp đơn\n- Cơ sở pháp lý cho quyết định",
+            "objectionGuidance": "Giải thích các lo ngại và những điểm người nộp đơn cần làm rõ hoặc sửa đổi.",
+            "rejectionGuidance": "Cung cấp lý do từ chối chi tiết kèm cơ sở pháp lý và dẫn chứng.",
+            "acceptableGuidance": "Tóm tắt kết quả thẩm định xác nhận đơn đáp ứng đủ các điều kiện bảo hộ."
         }
     },
     "messages": {

@@ -27,6 +27,8 @@ export interface Application {
     fee_quotes?: FeeQuote[];
     metrics?: ApplicationMetric;
     applicant?: User;
+    priority_claims?: PriorityClaim[];
+    sntc_info?: SntcInfo | null;
 }
 
 export interface ApplicationParty {
@@ -101,6 +103,7 @@ export interface FeeQuote {
 export interface ApplicationMetric {
     application_id: number;
     description_pages?: number | null;
+    abstract_pages?: number | null;
     claims_independent?: number | null;
     claims_total?: number | null;
     drawings_images?: number | null;
@@ -112,10 +115,45 @@ export interface ApplicationMetric {
     is_user_classified?: boolean;
 }
 
+// Priority Claim Types
+export type PriorityKind = 'VN_FIRST' | 'PARIS' | 'OTHER';
+
+export interface PriorityClaim {
+    id?: number;
+    application_id?: number;
+    kind?: PriorityKind | null;
+    number: string;
+    filing_date: string;
+    country_code: string;
+    agreement_name?: string | null;
+}
+
+// SNTC Info (State Budget Science & Technology Task)
+export interface SntcInfo {
+    application_id?: number;
+    agency_name: string | null;
+    project_name: string | null;
+    project_code: string | null;
+}
+
 export interface User {
     id: number;
-    name: string;
+    name?: string;
+    full_name?: string;
     email: string;
+    phone?: string | null;
+    address?: string | null;
+    country?: string | null;
+}
+
+// User search result from API
+export interface UserSearchResult {
+    id: number;
+    full_name: string;
+    email: string;
+    phone: string | null;
+    address: string | null;
+    country: string | null;
 }
 
 // Form Types

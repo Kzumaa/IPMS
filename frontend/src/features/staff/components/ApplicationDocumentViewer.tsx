@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import PDFViewer from '@/components/PDFViewer';
+import PDFPreviewModal from '@/components/PDFPreviewModal';
 import axiosClient from '@/api/axiosClient';
+import { downloadFile } from '@/utils/fileDownload';
 import type { ApplicationAttachment } from '@/features/application/types/applicationTypes';
 
 interface ApplicationDocumentViewerProps {
@@ -17,9 +19,12 @@ export default function ApplicationDocumentViewer({ attachments, applicationId }
     const [fileUrl, setFileUrl] = useState<string | null>(null);
     const [loadingFile, setLoadingFile] = useState(false);
     const [fileError, setFileError] = useState<string | null>(null);
+    const [showPreviewModal, setShowPreviewModal] = useState(false);
 
     // Fetch file URL when selected document changes
     useEffect(() => {
+        let activeUrl: string | null = null;
+
         const fetchFileUrl = async () => {
             if (!selectedDoc) {
                 setFileUrl(null);
@@ -30,10 +35,16 @@ export default function ApplicationDocumentViewer({ attachments, applicationId }
             setFileError(null);
 
             try {
+                // Fetch the file content directly from backend proxy as a blob
+                // This handles Auth headers via axiosClient and avoids CORS issues with R2
                 const response = await axiosClient.get(
-                    `/applications/${applicationId}/attachments/${selectedDoc.id}/download`
+                    `/applications/${applicationId}/attachments/${selectedDoc.id}/preview`,
+                    { responseType: 'blob' }
                 );
-                setFileUrl(response.data.data.url);
+
+                const blob = new Blob([response.data], { type: response.headers['content-type'] });
+                activeUrl = URL.createObjectURL(blob);
+                setFileUrl(activeUrl);
             } catch (error) {
                 console.error('Failed to fetch file URL:', error);
                 setFileError('Failed to load file. Please try downloading instead.');
@@ -43,6 +54,13 @@ export default function ApplicationDocumentViewer({ attachments, applicationId }
         };
 
         fetchFileUrl();
+
+        // Cleanup
+        return () => {
+            if (activeUrl) {
+                URL.revokeObjectURL(activeUrl);
+            }
+        };
     }, [selectedDoc, applicationId]);
 
     const getDocTypeIcon = (docType: string) => {
@@ -88,20 +106,25 @@ export default function ApplicationDocumentViewer({ attachments, applicationId }
             const response = await axiosClient.get(
                 `/applications/${applicationId}/attachments/${attachment.id}/download`
             );
-            const fileUrl = response.data.data.url;
+            const downloadUrl = response.data.data.url;
+            const filename = response.data.data.filename || attachment.file_name;
 
-            // Create a temporary link and trigger download
-            const link = document.createElement('a');
-            link.href = fileUrl;
-            link.download = response.data.data.filename || attachment.file_name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Use the proper download utility
+            await downloadFile(downloadUrl, filename);
         } catch (error) {
             console.error('Failed to download file:', error);
             alert('Failed to download file. Please try again.');
         }
     };
+
+    const handleOpenPreviewModal = () => {
+        if (selectedDoc) {
+            setShowPreviewModal(true);
+        }
+    };
+
+    const isPdf = selectedDoc?.file_name.toLowerCase().endsWith('.pdf');
+    const isImage = selectedDoc?.file_name.match(/\.(jpg|jpeg|png|gif|webp)$/i);
 
     if (attachments.length === 0) {
         return (
@@ -144,11 +167,10 @@ export default function ApplicationDocumentViewer({ attachments, applicationId }
                                 <button
                                     key={attachment.id}
                                     onClick={() => setSelectedDoc(attachment)}
-                                    className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
-                                        selectedDoc?.id === attachment.id
+                                    className={`w-full text-left p-3 rounded-lg border-2 transition-all ${selectedDoc?.id === attachment.id
                                             ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
                                             : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300'
-                                    }`}
+                                        }`}
                                 >
                                     <div className="flex items-start gap-3">
                                         <span className={`material-symbols-outlined text-lg ${getDocTypeColor(attachment.attachment_type)}`}>
@@ -196,15 +218,28 @@ export default function ApplicationDocumentViewer({ attachments, applicationId }
                                         </p>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => handleDownload(selectedDoc)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                                >
-                                    <span className="material-symbols-outlined text-lg">download</span>
-                                    <span className="text-sm font-medium">
-                                        {t('staff.documentViewer.download')}
-                                    </span>
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    {(isPdf || isImage) && (
+                                        <button
+                                            onClick={handleOpenPreviewModal}
+                                            className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                                        >
+                                            <span className="material-symbols-outlined text-lg">fullscreen</span>
+                                            <span className="text-sm font-medium hidden sm:inline">
+                                                {t('common.view')}
+                                            </span>
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => handleDownload(selectedDoc)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">download</span>
+                                        <span className="text-sm font-medium">
+                                            {t('staff.documentViewer.download')}
+                                        </span>
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Document Details */}
@@ -240,17 +275,6 @@ export default function ApplicationDocumentViewer({ attachments, applicationId }
                                             }
                                         </dd>
                                     </div>
-                                    <div>
-                                        <dt className="text-slate-500 dark:text-slate-400 mb-1">
-                                            {t('staff.documentViewer.uploadedAt')}
-                                        </dt>
-                                        <dd className="font-medium text-slate-900 dark:text-white">
-                                            {selectedDoc.uploaded_at
-                                                ? new Date(selectedDoc.uploaded_at).toLocaleString()
-                                                : '-'
-                                            }
-                                        </dd>
-                                    </div>
                                     {selectedDoc.description && (
                                         <div className="col-span-2">
                                             <dt className="text-slate-500 dark:text-slate-400 mb-1">
@@ -264,10 +288,10 @@ export default function ApplicationDocumentViewer({ attachments, applicationId }
                                 </dl>
                             </div>
 
-                            {/* Preview Area */}
+                            {/* Inline Preview Area */}
                             <div className="rounded-lg overflow-hidden">
                                 {loadingFile ? (
-                                    <div className="flex items-center justify-center h-[600px] bg-slate-50 dark:bg-slate-900/50 rounded-lg">
+                                    <div className="flex items-center justify-center h-[400px] bg-slate-50 dark:bg-slate-900/50 rounded-lg">
                                         <div className="text-center">
                                             <span className="material-symbols-outlined text-5xl text-indigo-600 animate-spin mb-4">
                                                 refresh
@@ -278,7 +302,7 @@ export default function ApplicationDocumentViewer({ attachments, applicationId }
                                         </div>
                                     </div>
                                 ) : fileError ? (
-                                    <div className="flex items-center justify-center h-[600px] bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600">
+                                    <div className="flex items-center justify-center h-[400px] bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600">
                                         <div className="text-center p-8">
                                             <span className="material-symbols-outlined text-6xl text-red-500 mb-4">
                                                 error
@@ -297,18 +321,21 @@ export default function ApplicationDocumentViewer({ attachments, applicationId }
                                             </button>
                                         </div>
                                     </div>
-                                ) : fileUrl && selectedDoc.file_name.toLowerCase().endsWith('.pdf') ? (
-                                    <PDFViewer
-                                        fileUrl={fileUrl}
-                                        fileName={selectedDoc.file_name}
-                                        onDownload={() => handleDownload(selectedDoc)}
-                                    />
-                                ) : fileUrl && selectedDoc.file_name.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                                    <div className="bg-slate-100 dark:bg-slate-900 rounded-lg p-4">
+                                ) : fileUrl && isPdf ? (
+                                    <div className="h-[400px]">
+                                        <PDFViewer
+                                            fileUrl={fileUrl}
+                                            fileName={selectedDoc.file_name}
+                                            onDownload={() => handleDownload(selectedDoc)}
+                                        />
+                                    </div>
+                                ) : fileUrl && isImage ? (
+                                    <div className="bg-slate-100 dark:bg-slate-900 rounded-lg p-4 flex items-center justify-center h-[400px]">
                                         <img
                                             src={fileUrl}
                                             alt={selectedDoc.file_name}
-                                            className="w-full h-auto max-h-[600px] object-contain"
+                                            className="max-w-full max-h-full object-contain cursor-pointer"
+                                            onClick={handleOpenPreviewModal}
                                         />
                                     </div>
                                 ) : (
@@ -348,6 +375,17 @@ export default function ApplicationDocumentViewer({ attachments, applicationId }
                     )}
                 </div>
             </div>
+
+            {/* Full-screen Preview Modal */}
+            <PDFPreviewModal
+                isOpen={showPreviewModal && selectedDoc !== null}
+                onClose={() => setShowPreviewModal(false)}
+                fileUrl={fileUrl}
+                fileName={selectedDoc?.file_name || ''}
+                fileType={selectedDoc ? t(`staff.documentViewer.docTypes.${selectedDoc.attachment_type}`) : undefined}
+                isLoading={loadingFile}
+                error={fileError}
+            />
         </div>
     );
 }

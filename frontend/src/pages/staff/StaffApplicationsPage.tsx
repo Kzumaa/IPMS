@@ -89,9 +89,9 @@ export default function StaffApplicationsPage({ assignedOnly = false }: StaffApp
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
                         <option value="">{t('staff.applications.allStatuses')}</option>
-                        {Object.entries(ApplicationStatusLabels).map(([value, label]) => (
-                            <option key={value} value={value}>
-                                {label}
+                        {Object.keys(ApplicationStatusLabels).map((status) => (
+                            <option key={status} value={status}>
+                                {t(`application.statuses.${status}`)}
                             </option>
                         ))}
                     </select>
@@ -103,9 +103,9 @@ export default function StaffApplicationsPage({ assignedOnly = false }: StaffApp
                         onChange={(e) => setTypeFilter(e.target.value)}
                     >
                         <option value="">{t('staff.applications.allTypes')}</option>
-                        {Object.entries(AppTypeLabels).map(([value, label]) => (
-                            <option key={value} value={value}>
-                                {label}
+                        {Object.keys(AppTypeLabels).map((type) => (
+                            <option key={type} value={type}>
+                                {t(`application.appTypes.${type}`)}
                             </option>
                         ))}
                     </select>
@@ -122,7 +122,7 @@ export default function StaffApplicationsPage({ assignedOnly = false }: StaffApp
             {/* Error State */}
             {applicationsError && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                    <div className="text-red-800">Error: {applicationsError}</div>
+                    <div className="text-red-800">{t('staff.common.error')}: {applicationsError}</div>
                 </div>
             )}
 
@@ -155,13 +155,13 @@ export default function StaffApplicationsPage({ assignedOnly = false }: StaffApp
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-900">{app.title}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                                {AppTypeLabels[app.app_type]}
+                                                {t(`application.appTypes.${app.app_type}`)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span
                                                     className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors?.bg} ${statusColors?.text} ${statusColors?.border} border`}
                                                 >
-                                                    {ApplicationStatusLabels[app.status as keyof typeof ApplicationStatus]}
+                                                    {t(`application.statuses.${app.status}`)}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">

@@ -15,6 +15,7 @@ class ApplicationMetric extends Model
     protected $fillable = [
         'application_id',
         'description_pages',
+        'abstract_pages',
         'claims_independent',
         'claims_total',
         'drawings_images',
@@ -29,6 +30,7 @@ class ApplicationMetric extends Model
     protected $casts = [
         'application_id' => 'integer',
         'description_pages' => 'integer',
+        'abstract_pages' => 'integer',
         'claims_independent' => 'integer',
         'claims_total' => 'integer',
         'drawings_images' => 'integer',
