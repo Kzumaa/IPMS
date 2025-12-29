@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class FeeQuote extends Model
 {
     public $timestamps = false;
-    protected $fillable = ['application_id', 'version', 'currency', 'total_amount', 'status', 'generated_at', 'law_version'];
+    protected $fillable = ['application_id', 'request_id', 'version', 'currency', 'total_amount', 'status', 'generated_at', 'law_version'];
 
 
     protected $casts = ['generated_at' => 'datetime'];
@@ -23,5 +23,10 @@ class FeeQuote extends Model
     public function lines(): HasMany
     {
         return $this->hasMany(FeeQuoteLine::class);
+    }
+
+    public function request(): BelongsTo
+    {
+        return $this->belongsTo(ApplicationRequest::class, 'request_id');
     }
 }

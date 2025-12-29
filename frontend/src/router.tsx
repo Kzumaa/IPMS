@@ -16,7 +16,17 @@ import StaffDashboardPage from './pages/staff/StaffDashboardPage';
 import StaffApplicationsPage from './pages/staff/StaffApplicationsPage';
 import StaffApplicationDetailPage from './pages/staff/StaffApplicationDetailPage';
 import StaffReportsPage from './pages/staff/StaffReportsPage';
+import StaffRequestsPage from './pages/staff/StaffRequestsPage';
+import StaffRequestDetailPage from './pages/staff/StaffRequestDetailPage';
 import { ProtectedRoute, PublicRoute } from './components/AuthRoutes';
+import {
+    CreateAmendmentPage,
+    CreateAssignmentPage,
+    CreateLicensePage,
+    CreateSplitPage,
+    CreateAppealPage,
+    RequestDetailPage,
+} from './pages/request';
 
 const router = createBrowserRouter([
     {
@@ -68,6 +78,14 @@ const router = createBrowserRouter([
                         element: <StaffApplicationDetailPage />,
                     },
                     {
+                        path: 'requests',
+                        element: <StaffRequestsPage />,
+                    },
+                    {
+                        path: 'requests/:requestId',
+                        element: <StaffRequestDetailPage />,
+                    },
+                    {
                         path: 'reports',
                         element: <StaffReportsPage />,
                     },
@@ -100,6 +118,31 @@ const router = createBrowserRouter([
                     {
                         path: 'applications/:id/edit',
                         element: <NewApplicationPage />,
+                    },
+                    // Request routes
+                    {
+                        path: 'applications/:id/requests/amendments/new',
+                        element: <CreateAmendmentPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/assignments/new',
+                        element: <CreateAssignmentPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/licenses/new',
+                        element: <CreateLicensePage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/splits/new',
+                        element: <CreateSplitPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/appeals/new',
+                        element: <CreateAppealPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/:type/:requestId',
+                        element: <RequestDetailPage />,
                     },
                     {
                         path: 'assets',

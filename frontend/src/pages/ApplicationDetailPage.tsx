@@ -10,6 +10,7 @@ import {
   ApplicationStatusBadge,
   ApplicantDocumentViewer,
 } from "../features/application/components";
+import { RequestsSection } from "../features/request/components";
 
 const formatDate = (dateString: string | null): string => {
   if (!dateString) return "-";
@@ -227,6 +228,12 @@ const ApplicationDetailPage: React.FC = () => {
             </div>
 
             {/* Note: Abstract, description, and claims are uploaded as attachments */}
+
+            {/* Requests Section */}
+            <RequestsSection
+              applicationId={currentApplication.id!}
+              applicationStatus={currentApplication.status}
+            />
           </div>
 
           {/* Sidebar */}

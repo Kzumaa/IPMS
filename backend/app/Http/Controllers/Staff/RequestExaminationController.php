@@ -1,0 +1,241 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Staff;
+
+use App\Enums\AppealResolution;
+use App\Enums\RequestStatus;
+use App\Enums\RequestType;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\ApplicationRequestResource;
+use App\Models\ApplicationRequest;
+use App\Services\Request\AmendmentService;
+use App\Services\Request\AppealService;
+use App\Services\Request\AssignmentService;
+use App\Services\Request\LicenseService;
+use App\Services\Request\SplitService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class RequestExaminationController extends Controller
+{
+    protected AmendmentService $amendmentService;
+    protected AssignmentService $assignmentService;
+    protected LicenseService $licenseService;
+    protected SplitService $splitService;
+    protected AppealService $appealService;
+
+    public function __construct(
+        AmendmentService $amendmentService,
+        AssignmentService $assignmentService,
+        LicenseService $licenseService,
+        SplitService $splitService,
+        AppealService $appealService
+    ) {
+        $this->amendmentService = $amendmentService;
+        $this->assignmentService = $assignmentService;
+        $this->licenseService = $licenseService;
+        $this->splitService = $splitService;
+        $this->appealService = $appealService;
+    }
+
+    /**
+     * List all pending requests for staff review.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'type' => 'nullable|string|in:' . implode(',', array_column(RequestType::cases(), 'value')),
+            'status' => 'nullable|string|in:' . implode(',', array_column(RequestStatus::cases(), 'value')),
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $query = ApplicationRequest::with([
+            'application',
+            'creator',
+            'amendment',
+            'assignment',
+            'license',
+            'appeal',
+            'feeQuote',
+        ]);
+
+        // By default, show submitted requests (pending review)
+        $status = $validated['status'] ?? RequestStatus::SUBMITTED->value;
+        $query->where('status', $status);
+
+        if (!empty($validated['type'])) {
+            $query->where('type', $validated['type']);
+        }
+
+        // Only show requests where fee is paid
+        $query->whereHas('feeQuote', function ($q) {
+            $q->where('status', 'PAID');
+        });
+
+        $perPage = $validated['per_page'] ?? 20;
+        $requests = $query->orderBy('request_date', 'asc')->paginate($perPage);
+
+        return response()->json([
+            'data' => ApplicationRequestResource::collection($requests->items()),
+            'meta' => [
+                'current_page' => $requests->currentPage(),
+                'last_page' => $requests->lastPage(),
+                'per_page' => $requests->perPage(),
+                'total' => $requests->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * Show a specific request for review.
+     */
+    public function show(int $requestId): JsonResponse
+    {
+        $request = ApplicationRequest::with([
+            'application',
+            'creator',
+            'amendment',
+            'assignment',
+            'assignment.assignor',
+            'assignment.assignee',
+            'license',
+            'license.licensor',
+            'license.licensee',
+            'appeal',
+            'appeal.targetDecision',
+            'attachments',
+            'attachments.file',
+            'feeQuote',
+            'feeQuote.lines',
+        ])->findOrFail($requestId);
+
+        return response()->json([
+            'data' => new ApplicationRequestResource($request),
+        ]);
+    }
+
+    /**
+     * Start examining a request.
+     */
+    public function startExamination(int $requestId): JsonResponse
+    {
+        $request = ApplicationRequest::findOrFail($requestId);
+
+        if ($request->status !== RequestStatus::SUBMITTED) {
+            return response()->json([
+                'message' => 'Only submitted requests can be examined.',
+            ], 400);
+        }
+
+        $request->update([
+            'status' => RequestStatus::EXAMINING,
+            'processed_by' => Auth::guard('staff')->id(),
+        ]);
+
+        return response()->json([
+            'data' => new ApplicationRequestResource($request->fresh()),
+        ]);
+    }
+
+    /**
+     * Approve a request.
+     */
+    public function approve(Request $request, int $requestId): JsonResponse
+    {
+        $applicationRequest = ApplicationRequest::findOrFail($requestId);
+        $staffId = Auth::guard('staff')->id();
+
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:5000',
+        ]);
+
+        $service = $this->getServiceForType($applicationRequest->type);
+        $approvedRequest = $service->approveRequest(
+            $applicationRequest,
+            $staffId,
+            $validated['notes'] ?? null
+        );
+
+        return response()->json([
+            'data' => new ApplicationRequestResource($approvedRequest->load(['amendment', 'assignment', 'license', 'appeal'])),
+            'message' => 'Request approved successfully.',
+        ]);
+    }
+
+    /**
+     * Refuse a request.
+     */
+    public function refuse(Request $request, int $requestId): JsonResponse
+    {
+        $applicationRequest = ApplicationRequest::findOrFail($requestId);
+        $staffId = Auth::guard('staff')->id();
+
+        $validated = $request->validate([
+            'notes' => 'required|string|max:5000',
+        ]);
+
+        $service = $this->getServiceForType($applicationRequest->type);
+        $refusedRequest = $service->refuseRequest(
+            $applicationRequest,
+            $staffId,
+            $validated['notes']
+        );
+
+        return response()->json([
+            'data' => new ApplicationRequestResource($refusedRequest),
+            'message' => 'Request refused.',
+        ]);
+    }
+
+    /**
+     * Resolve an appeal with specific resolution.
+     */
+    public function resolveAppeal(Request $request, int $requestId): JsonResponse
+    {
+        $applicationRequest = ApplicationRequest::findOrFail($requestId);
+
+        if ($applicationRequest->type !== RequestType::APPEAL) {
+            return response()->json([
+                'message' => 'This endpoint is only for appeal requests.',
+            ], 400);
+        }
+
+        $staffId = Auth::guard('staff')->id();
+
+        $validated = $request->validate([
+            'resolution' => 'required|string|in:' . implode(',', array_column(AppealResolution::cases(), 'value')),
+            'notes' => 'nullable|string|max:5000',
+        ]);
+
+        $resolvedRequest = $this->appealService->resolveAppeal(
+            $applicationRequest,
+            $staffId,
+            AppealResolution::from($validated['resolution']),
+            $validated['notes'] ?? null
+        );
+
+        return response()->json([
+            'data' => new ApplicationRequestResource($resolvedRequest->load(['appeal'])),
+            'message' => 'Appeal resolved.',
+        ]);
+    }
+
+    /**
+     * Get the appropriate service for a request type.
+     */
+    private function getServiceForType(RequestType $type): AmendmentService|AssignmentService|LicenseService|SplitService|AppealService
+    {
+        return match ($type) {
+            RequestType::AMENDMENT => $this->amendmentService,
+            RequestType::ASSIGNMENT => $this->assignmentService,
+            RequestType::LICENSE => $this->licenseService,
+            RequestType::SPLIT => $this->splitService,
+            RequestType::APPEAL => $this->appealService,
+            default => $this->amendmentService,
+        };
+    }
+}

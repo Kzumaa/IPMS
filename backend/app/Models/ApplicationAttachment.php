@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ApplicationAttachment extends Model
 {
     public $timestamps = false;
-    protected $fillable = ['application_id', 'file_id', 'doc_type', 'is_current', 'notes', 'created_at'];
+    protected $fillable = ['application_id', 'request_id', 'file_id', 'doc_type', 'is_current', 'notes', 'created_at'];
 
 
     protected $casts = ['is_current' => 'bool', 'created_at' => 'datetime'];
@@ -22,5 +22,10 @@ class ApplicationAttachment extends Model
     public function file(): BelongsTo
     {
         return $this->belongsTo(File::class);
+    }
+
+    public function request(): BelongsTo
+    {
+        return $this->belongsTo(ApplicationRequest::class, 'request_id');
     }
 }

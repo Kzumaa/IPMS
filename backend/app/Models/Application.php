@@ -92,4 +92,17 @@ class Application extends Model
     {
         return $this->hasMany(FeeQuote::class);
     }
+
+    public function requests(): HasMany
+    {
+        return $this->hasMany(ApplicationRequest::class);
+    }
+
+    /**
+     * Get active (current) parties only.
+     */
+    public function activeParties(): HasMany
+    {
+        return $this->hasMany(ApplicationParty::class)->whereNull('valid_to');
+    }
 }

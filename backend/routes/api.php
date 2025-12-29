@@ -9,6 +9,12 @@ use App\Http\Controllers\Application\PriorityClaimController;
 use App\Http\Controllers\Application\ProtectionTitleController;
 use App\Http\Controllers\Application\SntcInfoController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Request\AmendmentController;
+use App\Http\Controllers\Request\AppealController;
+use App\Http\Controllers\Request\AssignmentController;
+use App\Http\Controllers\Request\LicenseController;
+use App\Http\Controllers\Request\SplitController;
+use App\Http\Controllers\Staff\RequestExaminationController;
 use App\Http\Controllers\Staff\StaffController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -73,6 +79,52 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/examination/complete', [ApplicationController::class, 'completeExamination']);
         Route::post('/{id}/substantive-examination/complete', [ApplicationController::class, 'completeSubstantiveExamination']);
         Route::post('/{id}/decision', [ApplicationController::class, 'issueDecision']);
+
+        // Amendment Requests
+        Route::prefix('/{id}/requests/amendments')->group(function () {
+            Route::get('/', [AmendmentController::class, 'index']);
+            Route::post('/', [AmendmentController::class, 'store']);
+            Route::get('/{requestId}', [AmendmentController::class, 'show']);
+            Route::put('/{requestId}', [AmendmentController::class, 'update']);
+            Route::delete('/{requestId}', [AmendmentController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [AmendmentController::class, 'submit']);
+        });
+
+        // Assignment/Transfer Requests
+        Route::prefix('/{id}/requests/assignments')->group(function () {
+            Route::get('/', [AssignmentController::class, 'index']);
+            Route::post('/', [AssignmentController::class, 'store']);
+            Route::get('/{requestId}', [AssignmentController::class, 'show']);
+            Route::delete('/{requestId}', [AssignmentController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [AssignmentController::class, 'submit']);
+        });
+
+        // License Requests
+        Route::prefix('/{id}/requests/licenses')->group(function () {
+            Route::get('/', [LicenseController::class, 'index']);
+            Route::post('/', [LicenseController::class, 'store']);
+            Route::get('/{requestId}', [LicenseController::class, 'show']);
+            Route::delete('/{requestId}', [LicenseController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [LicenseController::class, 'submit']);
+        });
+
+        // Split Requests
+        Route::prefix('/{id}/requests/splits')->group(function () {
+            Route::get('/', [SplitController::class, 'index']);
+            Route::post('/', [SplitController::class, 'store']);
+            Route::get('/{requestId}', [SplitController::class, 'show']);
+            Route::delete('/{requestId}', [SplitController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [SplitController::class, 'submit']);
+        });
+
+        // Appeal Requests
+        Route::prefix('/{id}/requests/appeals')->group(function () {
+            Route::get('/', [AppealController::class, 'index']);
+            Route::post('/', [AppealController::class, 'store']);
+            Route::get('/{requestId}', [AppealController::class, 'show']);
+            Route::delete('/{requestId}', [AppealController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [AppealController::class, 'submit']);
+        });
     });
 
     Route::get('/protection-titles/{id}/schedule', [ProtectionTitleController::class, 'getSchedule']);
@@ -83,6 +135,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/applications', [StaffController::class, 'listApplications']);
         Route::get('/applications/assigned', [StaffController::class, 'getMyApplications']);
         Route::get('/dashboard/stats', [StaffController::class, 'getDashboardStats']);
+
+        // Request examination
+        Route::prefix('requests')->group(function () {
+            Route::get('/', [RequestExaminationController::class, 'index']);
+            Route::get('/{requestId}', [RequestExaminationController::class, 'show']);
+            Route::post('/{requestId}/start-examination', [RequestExaminationController::class, 'startExamination']);
+            Route::post('/{requestId}/approve', [RequestExaminationController::class, 'approve']);
+            Route::post('/{requestId}/refuse', [RequestExaminationController::class, 'refuse']);
+            Route::post('/{requestId}/resolve-appeal', [RequestExaminationController::class, 'resolveAppeal']);
+        });
     });
 
     Route::get('/auth/me', [AuthController::class, 'me']);      // returns type + data

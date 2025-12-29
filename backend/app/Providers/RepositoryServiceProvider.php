@@ -56,6 +56,12 @@ class RepositoryServiceProvider extends ServiceProvider
             \App\Repositories\Assignment\AssignmentRepositoryInterface::class,
             \App\Repositories\Assignment\AssignmentRepository::class
         );
+
+        // Request
+        $this->app->bind(
+            \App\Repositories\Request\ApplicationRequestRepositoryInterface::class,
+            \App\Repositories\Request\ApplicationRequestRepository::class
+        );
     }
 
     /**

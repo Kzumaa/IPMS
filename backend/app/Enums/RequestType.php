@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Enums;
+
+enum RequestType: string
+{
+    case AMENDMENT = 'AMENDMENT';
+    case ASSIGNMENT = 'ASSIGNMENT';
+    case LICENSE = 'LICENSE';
+    case SPLIT = 'SPLIT';
+    case CONVERSION = 'CONVERSION';
+    case APPEAL = 'APPEAL';
+
+    /**
+     * Get the fee code prefix for this request type.
+     */
+    public function getFeeCodeSuffix(): string
+    {
+        return match ($this) {
+            self::AMENDMENT => 'REQ-AMEND',
+            self::ASSIGNMENT => 'REQ-ASSIGN',
+            self::LICENSE => 'REQ-LICENSE',
+            self::SPLIT => 'REQ-SPLIT',
+            self::APPEAL => 'REQ-APPEAL',
+            self::CONVERSION => 'REQ-CONVERT',
+        };
+    }
+}

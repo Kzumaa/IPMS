@@ -461,6 +461,7 @@
             "allApplications": "Tất cả đơn",
             "myApplications": "Đơn của tôi",
             "dashboard": "Bảng điều khiển",
+            "requests": "Yêu cầu",
             "reports": "Báo cáo"
         },
         "common": {
@@ -511,6 +512,38 @@
             "next": "Sau",
             "page": "Trang {{current}} / {{total}}",
             "assigned": "Đã giao"
+        },
+        "requests": {
+            "title": "Yêu cầu liên quan",
+            "subtitle": "Danh sách yêu cầu cần thẩm định",
+            "loading": "Đang tải yêu cầu...",
+            "noRequests": "Không có yêu cầu nào",
+            "noRequestsDesc": "Hiện không có yêu cầu nào cần thẩm định.",
+            "allTypes": "Tất cả loại",
+            "allStatuses": "Tất cả trạng thái",
+            "clearFilters": "Xóa bộ lọc",
+            "requestId": "Mã yêu cầu",
+            "application": "Đơn đăng ký",
+            "type": "Loại",
+            "status": "Trạng thái",
+            "requestDate": "Ngày yêu cầu",
+            "actions": "Hành động",
+            "viewDetails": "Xem chi tiết",
+            "showing": "Hiển thị {{count}} trong {{total}} yêu cầu",
+            "details": "Chi tiết yêu cầu",
+            "creator": "Người tạo",
+            "processedDate": "Ngày xử lý",
+            "notFound": "Không tìm thấy yêu cầu",
+            "startExamination": "Bắt đầu thẩm định",
+            "approve": "Chấp nhận",
+            "refuse": "Từ chối",
+            "resolveAppeal": "Giải quyết khiếu nại",
+            "resolve": "Giải quyết",
+            "viewApplication": "Xem đơn đăng ký",
+            "confirmApprove": "Xác nhận chấp nhận yêu cầu",
+            "confirmRefuse": "Xác nhận từ chối yêu cầu",
+            "notes": "Ghi chú",
+            "refuseReason": "Lý do từ chối"
         },
         "examination": {
             "title": "Bảng thẩm định",
@@ -605,5 +638,146 @@
         "maxLength": "Tối đa {{max}} ký tự",
         "minLength": "Tối thiểu {{min}} ký tự",
         "fileSize": "File không được quá {{max}}"
+    },
+    "request": {
+        "title": "Yêu cầu liên quan",
+        "noRequests": "Chưa có yêu cầu nào",
+        "noRequestsDesc": "Bạn chưa tạo yêu cầu nào cho đơn này",
+        "create": "Tạo yêu cầu",
+        "createAmendment": "Tạo yêu cầu sửa đổi",
+        "createAssignment": "Tạo yêu cầu chuyển nhượng",
+        "createLicense": "Tạo yêu cầu li-xăng",
+        "createSplit": "Tạo yêu cầu tách đơn",
+        "createAppeal": "Tạo khiếu nại",
+        "submit": "Nộp yêu cầu",
+        "detail": "Chi tiết yêu cầu",
+        "loadError": "Không thể tải thông tin yêu cầu",
+        "notFound": "Không tìm thấy yêu cầu",
+        "backToApplication": "Quay lại đơn",
+        "draftNotice": "Đơn đang ở trạng thái nháp. Bạn cần nộp đơn trước khi tạo các yêu cầu liên quan.",
+        "processedDate": "Ngày xử lý",
+        "creator": "Người tạo",
+        "feeQuote": "Thông tin phí",
+        "totalFee": "Tổng phí",
+        "feeStatus": "Trạng thái",
+        "processingNotes": "Ghi chú xử lý",
+        "table": {
+            "id": "Mã",
+            "type": "Loại",
+            "date": "Ngày",
+            "status": "Trạng thái",
+            "actions": "Hành động"
+        },
+        "types": {
+            "AMENDMENT": "Sửa đổi đơn",
+            "ASSIGNMENT": "Chuyển nhượng",
+            "LICENSE": "Li-xăng",
+            "SPLIT": "Tách đơn",
+            "CONVERSION": "Chuyển đổi",
+            "APPEAL": "Khiếu nại"
+        },
+        "statuses": {
+            "DRAFT": "Bản nháp",
+            "SUBMITTED": "Đã nộp",
+            "EXAMINING": "Đang thẩm định",
+            "APPROVED": "Chấp nhận",
+            "REFUSED": "Từ chối",
+            "RECORDED": "Đã ghi nhận"
+        },
+        "confirm": {
+            "delete": "Bạn có chắc chắn muốn xóa yêu cầu này?",
+            "submit": "Bạn có chắc chắn muốn nộp yêu cầu này? Sau khi nộp, bạn không thể chỉnh sửa."
+        },
+        "amendment": {
+            "details": "Chi tiết sửa đổi",
+            "section": "Phần sửa đổi",
+            "sections": {
+                "BIBLIOGRAPHY": "Thông tin thư mục",
+                "SPECIFICATION": "Bản mô tả",
+                "CLAIMS": "Yêu cầu bảo hộ",
+                "DRAWINGS": "Bản vẽ/Hình ảnh",
+                "REPRESENTATIVE": "Người đại diện"
+            },
+            "changeSummary": "Tóm tắt thay đổi",
+            "changeSummaryPlaceholder": "Mô tả chi tiết những thay đổi bạn muốn thực hiện...",
+            "fieldName": "Tên trường",
+            "fieldNamePlaceholder": "Tên trường cần sửa đổi",
+            "oldValue": "Giá trị cũ",
+            "oldValuePlaceholder": "Giá trị hiện tại cần thay đổi",
+            "newValue": "Giá trị mới",
+            "newValuePlaceholder": "Giá trị mới muốn cập nhật"
+        },
+        "assignment": {
+            "details": "Chi tiết chuyển nhượng",
+            "transferType": "Loại chuyển nhượng",
+            "transferTypes": {
+                "CONTRACT": "Hợp đồng chuyển nhượng",
+                "INHERITANCE": "Thừa kế",
+                "MERGER": "Sáp nhập doanh nghiệp",
+                "COURT_DECISION": "Quyết định của tòa án"
+            },
+            "assignor": "Bên chuyển nhượng",
+            "assignorPlaceholder": "ID người dùng bên chuyển nhượng",
+            "assignee": "Bên nhận chuyển nhượng",
+            "assigneePlaceholder": "ID người dùng bên nhận chuyển nhượng",
+            "contractNumber": "Số hợp đồng",
+            "contractNumberPlaceholder": "Nhập số hợp đồng",
+            "contractDate": "Ngày hợp đồng"
+        },
+        "license": {
+            "details": "Chi tiết li-xăng",
+            "licenseType": "Loại li-xăng",
+            "licenseTypes": {
+                "EXCLUSIVE": "Li-xăng độc quyền",
+                "NON_EXCLUSIVE": "Li-xăng không độc quyền",
+                "COMPULSORY": "Li-xăng bắt buộc"
+            },
+            "duration": "Thời hạn",
+            "licensor": "Bên cấp li-xăng",
+            "licensorPlaceholder": "ID người dùng bên cấp li-xăng",
+            "licensee": "Bên nhận li-xăng",
+            "licenseePlaceholder": "ID người dùng bên nhận li-xăng",
+            "validFrom": "Có hiệu lực từ",
+            "validTo": "Có hiệu lực đến",
+            "scopeTerritory": "Phạm vi lãnh thổ",
+            "scopeTerritoryPlaceholder": "VD: Việt Nam, Đông Nam Á...",
+            "scopeProducts": "Phạm vi sản phẩm",
+            "scopeProductsPlaceholder": "Mô tả các sản phẩm được phép sản xuất...",
+            "contractNumber": "Số hợp đồng",
+            "contractNumberPlaceholder": "Nhập số hợp đồng li-xăng"
+        },
+        "split": {
+            "description": "Mô tả tách đơn",
+            "descriptionPlaceholder": "Mô tả chi tiết phần sáng chế cần tách ra thành đơn riêng...",
+            "infoTitle": "Lưu ý về tách đơn",
+            "infoDescription": "Yêu cầu tách đơn được sử dụng khi đơn ban đầu chứa nhiều sáng chế/kiểu dáng độc lập và cần tách thành các đơn riêng biệt."
+        },
+        "appeal": {
+            "details": "Chi tiết khiếu nại",
+            "type": "Loại khiếu nại",
+            "types": {
+                "DECISION_APPEAL": "Khiếu nại quyết định",
+                "NOTICE_OBJECTION": "Phản đối thông báo"
+            },
+            "targetDecision": "Quyết định khiếu nại",
+            "targetDecisionPlaceholder": "ID quyết định",
+            "targetEvent": "Sự kiện khiếu nại",
+            "targetEventPlaceholder": "ID sự kiện",
+            "noticeDate": "Ngày nhận thông báo",
+            "noticeDateHelp": "Ngày bạn nhận được thông báo/quyết định cần khiếu nại",
+            "grounds": "Lý do khiếu nại",
+            "groundsPlaceholder": "Trình bày chi tiết lý do khiếu nại, bao gồm cơ sở pháp lý và chứng cứ...",
+            "deadline": "Thời hạn khiếu nại",
+            "resolution": "Kết quả giải quyết",
+            "resolutions": {
+                "UPHELD": "Giữ nguyên quyết định",
+                "OVERTURNED": "Hủy bỏ quyết định",
+                "PARTIAL": "Sửa đổi một phần",
+                "WITHDRAWN": "Rút khiếu nại"
+            },
+            "resolvedAt": "Ngày giải quyết",
+            "deadlineWarning": "Thời hạn khiếu nại",
+            "deadlineWarningDesc": "Khiếu nại phải được nộp trong vòng 90 ngày kể từ ngày nhận thông báo/quyết định."
+        }
     }
 }
