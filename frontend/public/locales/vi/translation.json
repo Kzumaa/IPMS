@@ -306,7 +306,8 @@
                     "claims": "Yêu cầu bảo hộ (bắt buộc)",
                     "abstract": "Bản tóm tắt (bắt buộc)",
                     "drawings": "Bản vẽ (không bắt buộc)",
-                    "poa": "Giấy ủy quyền",
+                    "idDescription": "Mô tả kiểu dáng (bắt buộc)",
+                    "idPhotos": "Bộ ảnh kiểu dáng (bắt buộc)",
                     "priority": "Tài liệu ưu tiên"
                 },
                 "metricsTitle": "Chỉ số đơn",
@@ -392,7 +393,6 @@
             "ASSIGNEE": "Người được chuyển nhượng"
         },
         "attachmentTypes": {
-            "FORM": "Tờ khai",
             "DESCRIPTION": "Bản mô tả",
             "CLAIMS": "Yêu cầu bảo hộ",
             "ABSTRACT": "Tóm tắt",
@@ -400,8 +400,6 @@
             "ID_DESCRIPTION": "Mô tả kiểu dáng",
             "ID_PHOTOS_SET": "Bộ ảnh kiểu dáng",
             "PRIORITY_DOC": "Tài liệu ưu tiên",
-            "POA": "Giấy ủy quyền",
-            "PAYMENT_RECEIPT": "Biên lai thanh toán",
             "TRANSLATION": "Bản dịch",
             "OTHER": "Tài liệu khác",
             "OFFICIAL_NOTICE": "Thông báo chính thức",
@@ -445,7 +443,8 @@
         "success": "Thành công",
         "loading": "Đang tải...",
         "noData": "Không có dữ liệu",
-        "actions": "Hành động"
+        "actions": "Hành động",
+        "backToDashboard": "Về trang chủ"
     },
     "pdfViewer": {
         "loadError": "Không thể tải PDF",
@@ -778,6 +777,60 @@
             "resolvedAt": "Ngày giải quyết",
             "deadlineWarning": "Thời hạn khiếu nại",
             "deadlineWarningDesc": "Khiếu nại phải được nộp trong vòng 90 ngày kể từ ngày nhận thông báo/quyết định."
+        }
+    },
+    "timeline": {
+        "title": "Lịch sử đơn",
+        "events": "sự kiện",
+        "empty": "Chưa có sự kiện nào được ghi nhận",
+        "loadError": "Không thể tải lịch sử",
+        "by": "Bởi:",
+        "showMore": "Xem thêm {{count}} sự kiện",
+        "showLess": "Thu gọn"
+    },
+    "payment": {
+        "payNow": "Thanh toán ({{amount}} {{currency}})",
+        "processing": "Đang xử lý...",
+        "redirecting": "Đang chuyển đến trang thanh toán...",
+        "verifying": "Đang xác minh thanh toán...",
+        "invalidSession": "Phiên thanh toán không hợp lệ",
+        "amount": "Số tiền",
+        "status": "Trạng thái",
+        "paidAt": "Thanh toán lúc",
+        "receiptNo": "Số biên lai",
+        "viewApplication": "Xem đơn",
+        "tryAgain": "Thử lại",
+        "payFees": "Thanh toán phí",
+        "unpaidFees": "Phí chưa thanh toán",
+        "paidFees": "Phí đã thanh toán",
+        "noUnpaidFees": "Tất cả phí đã được thanh toán",
+        "paymentHistory": "Lịch sử thanh toán",
+        "noPayments": "Chưa có bản ghi thanh toán",
+        "feePayment": "Thanh toán phí",
+        "viewAll": "Xem tất cả",
+        "applicationFee": "Phí đơn",
+        "success": {
+            "title": "Thanh toán thành công",
+            "message": "Thanh toán của bạn đã được xử lý thành công. Cảm ơn bạn đã thanh toán."
+        },
+        "cancel": {
+            "title": "Thanh toán đã hủy",
+            "message": "Thanh toán của bạn đã bị hủy.",
+            "noCharge": "Không có khoản phí nào được trừ từ tài khoản của bạn."
+        },
+        "error": {
+            "title": "Lỗi thanh toán",
+            "message": "Đã xảy ra lỗi khi xử lý thanh toán của bạn."
+        },
+        "statuses": {
+            "PENDING": "Chờ xử lý",
+            "PROCESSING": "Đang xử lý",
+            "COMPLETED": "Hoàn thành",
+            "FAILED": "Thất bại",
+            "CANCELLED": "Đã hủy",
+            "REFUNDED": "Đã hoàn tiền",
+            "PARTIALLY_REFUNDED": "Hoàn tiền một phần",
+            "EXPIRED": "Hết hạn"
         }
     }
 }

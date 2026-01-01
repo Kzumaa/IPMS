@@ -8,7 +8,10 @@ use App\Http\Controllers\Application\FeeQuoteController;
 use App\Http\Controllers\Application\PriorityClaimController;
 use App\Http\Controllers\Application\ProtectionTitleController;
 use App\Http\Controllers\Application\SntcInfoController;
+use App\Http\Controllers\Application\ApplicationTimelineController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Payment\PaymentController;
+use App\Http\Controllers\Payment\StripeWebhookController;
 use App\Http\Controllers\Request\AmendmentController;
 use App\Http\Controllers\Request\AppealController;
 use App\Http\Controllers\Request\AssignmentController;
@@ -75,6 +78,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/fee-quotes/generate', [FeeQuoteController::class, 'generate']);
         Route::post('/{id}/calculate-fees', [FeeQuoteController::class, 'generate']); // Alias for frontend compatibility
 
+        // Timeline (aggregated events history)
+        Route::get('/{application}/timeline', [ApplicationTimelineController::class, 'index']);
+
         // Examination (staff only)
         Route::post('/{id}/examination/complete', [ApplicationController::class, 'completeExamination']);
         Route::post('/{id}/substantive-examination/complete', [ApplicationController::class, 'completeSubstantiveExamination']);
@@ -130,6 +136,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/protection-titles/{id}/schedule', [ProtectionTitleController::class, 'getSchedule']);
     Route::post('/maintenance-fees/{id}/pay', [ProtectionTitleController::class, 'payFee']);
 
+    // Payment routes
+    Route::prefix('payments')->group(function () {
+        Route::get('/', [PaymentController::class, 'myPayments']);
+        Route::post('/checkout', [PaymentController::class, 'createCheckout']);
+        Route::post('/maintenance/{scheduleId}/checkout', [PaymentController::class, 'createMaintenanceCheckout']);
+        Route::get('/status/{sessionId}', [PaymentController::class, 'status']);
+        Route::get('/{id}', [PaymentController::class, 'show']);
+        Route::post('/{id}/refund', [PaymentController::class, 'refund']);
+    });
+
+    // Application-scoped payments
+    Route::get('/applications/{applicationId}/payments', [PaymentController::class, 'index']);
+
     // Staff-specific routes
     Route::prefix('staff')->group(function () {
         Route::get('/applications', [StaffController::class, 'listApplications']);
@@ -165,4 +184,5 @@ Route::prefix('auth/staff')->group(function () {
     Route::post('/login', [AuthController::class, 'loginStaff']);            // staff login
 });
 
-
+// Stripe webhook (no auth required - signature verified in controller)
+Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle']);

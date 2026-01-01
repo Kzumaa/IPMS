@@ -43,11 +43,6 @@ class RequestAppeal extends Model
         return $this->belongsTo(DecisionRecord::class, 'target_decision_id');
     }
 
-    public function targetEvent(): BelongsTo
-    {
-        return $this->belongsTo(ApplicationEvent::class, 'target_event_id');
-    }
-
     /**
      * Check if the appeal is within the deadline.
      */

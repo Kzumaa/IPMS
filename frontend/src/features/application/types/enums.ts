@@ -32,20 +32,26 @@ export const PartyType = {
 
 export type PartyType = typeof PartyType[keyof typeof PartyType];
 
-// Attachment Types (aligned with backend enum)
+// Attachment Types (aligned with backend DocType enum)
 export const AttachmentType = {
-    FORM: 'FORM',
-    DESCRIPTION: 'DESCRIPTION',           // Patent specification/description
+    // Core application documents (Patent/Utility)
+    DESCRIPTION: 'DESCRIPTION',
     CLAIMS: 'CLAIMS',
     ABSTRACT: 'ABSTRACT',
     DRAWINGS: 'DRAWINGS',
-    ID_DESCRIPTION: 'ID_DESCRIPTION',      // Industrial design description
-    ID_PHOTOS_SET: 'ID_PHOTOS_SET',        // Industrial design photos
-    PRIORITY_DOC: 'PRIORITY_DOC',          // Priority document
-    POA: 'POA',                            // Power of Attorney
-    PAYMENT_RECEIPT: 'PAYMENT_RECEIPT',
+
+    // Industrial Design specific
+    ID_DESCRIPTION: 'ID_DESCRIPTION',
+    ID_PHOTOS_SET: 'ID_PHOTOS_SET',
+
+    // Priority claim support
+    PRIORITY_DOC: 'PRIORITY_DOC',
+
+    // Support documents
     TRANSLATION: 'TRANSLATION',
     OTHER: 'OTHER',
+
+    // Official/Admin documents (staff only)
     OFFICIAL_NOTICE: 'OFFICIAL_NOTICE',
     GAZETTE: 'GAZETTE',
     DECISION: 'DECISION',
@@ -53,6 +59,32 @@ export const AttachmentType = {
 } as const;
 
 export type AttachmentType = typeof AttachmentType[keyof typeof AttachmentType];
+
+// Helper function to get appropriate doc types for an application type
+export function getDocTypesForAppType(appType: AppType): AttachmentType[] {
+    const common: AttachmentType[] = [
+        AttachmentType.PRIORITY_DOC,
+        AttachmentType.TRANSLATION,
+        AttachmentType.OTHER,
+    ];
+
+    if (appType === AppType.INDUSTRIAL_DESIGN) {
+        return [
+            AttachmentType.ID_DESCRIPTION,
+            AttachmentType.ID_PHOTOS_SET,
+            ...common,
+        ];
+    }
+
+    // Patent/Utility
+    return [
+        AttachmentType.DESCRIPTION,
+        AttachmentType.CLAIMS,
+        AttachmentType.ABSTRACT,
+        AttachmentType.DRAWINGS,
+        ...common,
+    ];
+}
 
 // Display mappings
 export const AppTypeLabels: Record<AppType, string> = {
@@ -82,7 +114,6 @@ export const PartyTypeLabels: Record<PartyType, string> = {
 };
 
 export const AttachmentTypeLabels: Record<AttachmentType, string> = {
-    [AttachmentType.FORM]: 'Tờ khai',
     [AttachmentType.DESCRIPTION]: 'Bản mô tả',
     [AttachmentType.CLAIMS]: 'Yêu cầu bảo hộ',
     [AttachmentType.ABSTRACT]: 'Tóm tắt',
@@ -90,8 +121,6 @@ export const AttachmentTypeLabels: Record<AttachmentType, string> = {
     [AttachmentType.ID_DESCRIPTION]: 'Mô tả kiểu dáng',
     [AttachmentType.ID_PHOTOS_SET]: 'Bộ ảnh kiểu dáng',
     [AttachmentType.PRIORITY_DOC]: 'Tài liệu ưu tiên',
-    [AttachmentType.POA]: 'Giấy ủy quyền',
-    [AttachmentType.PAYMENT_RECEIPT]: 'Biên lai thanh toán',
     [AttachmentType.TRANSLATION]: 'Bản dịch',
     [AttachmentType.OTHER]: 'Tài liệu khác',
     [AttachmentType.OFFICIAL_NOTICE]: 'Thông báo chính thức',

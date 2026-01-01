@@ -307,7 +307,8 @@
                     "claims": "Claims (required)",
                     "abstract": "Abstract (required)",
                     "drawings": "Drawings (optional)",
-                    "poa": "Power of Attorney",
+                    "idDescription": "Design Description (required)",
+                    "idPhotos": "Design Photos Set (required)",
                     "priority": "Priority document"
                 },
                 "metricsTitle": "Application Metrics",
@@ -393,7 +394,6 @@
             "ASSIGNEE": "Assignee"
         },
         "attachmentTypes": {
-            "FORM": "Application Form",
             "DESCRIPTION": "Specification",
             "CLAIMS": "Claims",
             "ABSTRACT": "Abstract",
@@ -401,8 +401,6 @@
             "ID_DESCRIPTION": "Design Description",
             "ID_PHOTOS_SET": "Design Photos Set",
             "PRIORITY_DOC": "Priority Document",
-            "POA": "Power of Attorney",
-            "PAYMENT_RECEIPT": "Payment Receipt",
             "TRANSLATION": "Translation",
             "OTHER": "Other",
             "OFFICIAL_NOTICE": "Official Notice",
@@ -446,7 +444,8 @@
         "success": "Success",
         "loading": "Loading...",
         "noData": "No data",
-        "actions": "Actions"
+        "actions": "Actions",
+        "backToDashboard": "Back to Dashboard"
     },
     "pdfViewer": {
         "loadError": "Failed to Load PDF",
@@ -650,11 +649,8 @@
                 "ABSTRACT": "Abstract",
                 "DRAWINGS": "Drawings",
                 "PRIORITY_DOC": "Priority Document",
-                "POA": "Power of Attorney",
-                "FORM": "Application Form",
                 "ID_DESCRIPTION": "Design Description",
                 "ID_PHOTOS_SET": "Design Photos Set",
-                "PAYMENT_RECEIPT": "Payment Receipt",
                 "TRANSLATION": "Translation",
                 "OFFICIAL_NOTICE": "Official Notice",
                 "GAZETTE": "Gazette",
@@ -816,6 +812,60 @@
             "resolvedAt": "Resolved Date",
             "deadlineWarning": "Appeal Deadline",
             "deadlineWarningDesc": "Appeals must be filed within 90 days from the date of receiving the notice/decision."
+        }
+    },
+    "timeline": {
+        "title": "Application History",
+        "events": "events",
+        "empty": "No events recorded yet",
+        "loadError": "Failed to load timeline",
+        "by": "By:",
+        "showMore": "Show {{count}} more events",
+        "showLess": "Show less"
+    },
+    "payment": {
+        "payNow": "Pay Now ({{amount}} {{currency}})",
+        "processing": "Processing...",
+        "redirecting": "Redirecting to payment...",
+        "verifying": "Verifying payment...",
+        "invalidSession": "Invalid payment session",
+        "amount": "Amount",
+        "status": "Status",
+        "paidAt": "Paid At",
+        "receiptNo": "Receipt No",
+        "viewApplication": "View Application",
+        "tryAgain": "Try Again",
+        "payFees": "Pay Fees",
+        "unpaidFees": "Unpaid Fees",
+        "paidFees": "Paid Fees",
+        "noUnpaidFees": "All fees have been paid",
+        "paymentHistory": "Payment History",
+        "noPayments": "No payment records",
+        "feePayment": "Fee Payment",
+        "viewAll": "View All",
+        "applicationFee": "Application Fee",
+        "success": {
+            "title": "Payment Successful",
+            "message": "Your payment has been processed successfully. Thank you for your payment."
+        },
+        "cancel": {
+            "title": "Payment Cancelled",
+            "message": "Your payment was cancelled.",
+            "noCharge": "No charges were made to your account."
+        },
+        "error": {
+            "title": "Payment Error",
+            "message": "There was an error processing your payment."
+        },
+        "statuses": {
+            "PENDING": "Pending",
+            "PROCESSING": "Processing",
+            "COMPLETED": "Completed",
+            "FAILED": "Failed",
+            "CANCELLED": "Cancelled",
+            "REFUNDED": "Refunded",
+            "PARTIALLY_REFUNDED": "Partially Refunded",
+            "EXPIRED": "Expired"
         }
     }
 }

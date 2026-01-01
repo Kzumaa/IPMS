@@ -20,6 +20,7 @@ export const sntcInfoSchema = z.object({
 
 // Party validation schema (all fields required except ID number)
 export const partySchema = z.object({
+    id: z.number().optional(), // Party ID for update/delete operations
     party_type: z.enum(PartyTypeValues as [PartyType, ...PartyType[]]),
     name: z.string().min(1, 'Tên là bắt buộc').max(255, 'Tên không được quá 255 ký tự'),
     address: z.string().min(1, 'Địa chỉ là bắt buộc').max(500, 'Địa chỉ không được quá 500 ký tự'),

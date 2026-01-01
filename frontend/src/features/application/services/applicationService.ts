@@ -9,6 +9,7 @@ import type {
     PriorityClaim,
     SntcInfo,
     UserSearchResult,
+    TimelineEvent,
     CreateApplicationDTO,
     CreatePartyDTO,
     CreateProtectionTitleDTO,
@@ -27,9 +28,15 @@ function transformPartyToBackend(data: CreatePartyDTO) {
         snapshot_name: data.name,
         snapshot_address: data.address,
         snapshot_email: data.email || null,
-        // Backend expects 2-character country code for nationality field
+        phone: data.phone || null,
+        id_number: data.id_number || null,
+        id_type: data.id_type || null,
+        // Backend 'nationality' is 2-char country code
         nationality: data.country_code || null,
+        // Backend 'nationality_text' is full nationality text like "Việt Nam"
+        nationality_text: data.nationality || null,
         is_primary: data.is_primary ?? false,
+        user_id: data.user_id || null,
     };
 }
 
@@ -90,9 +97,15 @@ export const applicationService = {
         if (data.name !== undefined) backendData.snapshot_name = data.name;
         if (data.address !== undefined) backendData.snapshot_address = data.address;
         if (data.email !== undefined) backendData.snapshot_email = data.email;
-        // Backend expects 2-character country code for nationality field
+        if (data.phone !== undefined) backendData.phone = data.phone;
+        if (data.id_number !== undefined) backendData.id_number = data.id_number;
+        if (data.id_type !== undefined) backendData.id_type = data.id_type;
+        // Backend 'nationality' is 2-char country code
         if (data.country_code !== undefined) backendData.nationality = data.country_code;
+        // Backend 'nationality_text' is full nationality text
+        if (data.nationality !== undefined) backendData.nationality_text = data.nationality;
         if (data.is_primary !== undefined) backendData.is_primary = data.is_primary;
+        if (data.user_id !== undefined) backendData.user_id = data.user_id;
 
         const response = await axiosClient.put(`${BASE_URL}/${applicationId}/parties/${partyId}`, backendData);
         return response.data;
@@ -209,6 +222,12 @@ export const applicationService = {
     // User Search (for adding co-applicants)
     async searchUserByEmail(email: string): Promise<ApiResponse<UserSearchResult[]>> {
         const response = await axiosClient.get(`/users/search?email=${encodeURIComponent(email)}`);
+        return response.data;
+    },
+
+    // Timeline (aggregated events history)
+    async getTimeline(applicationId: number): Promise<ApiResponse<TimelineEvent[]>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/timeline`);
         return response.data;
     },
 };

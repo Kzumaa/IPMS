@@ -27,6 +27,7 @@ import {
     CreateAppealPage,
     RequestDetailPage,
 } from './pages/request';
+import { PaymentSuccessPage, PaymentCancelPage } from './pages/payment';
 
 const router = createBrowserRouter([
     {
@@ -155,6 +156,15 @@ const router = createBrowserRouter([
                     {
                         path: 'messages',
                         element: <MessagesPage />,
+                    },
+                    // Payment routes
+                    {
+                        path: 'payments/success',
+                        element: <PaymentSuccessPage />,
+                    },
+                    {
+                        path: 'payments/cancel',
+                        element: <PaymentCancelPage />,
                     },
                 ],
             },

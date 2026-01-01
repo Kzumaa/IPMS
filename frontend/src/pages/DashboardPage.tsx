@@ -1,26 +1,74 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { fetchApplications } from '../features/application/store/applicationSlice';
 
 const DashboardPage: React.FC = () => {
+    const { t } = useTranslation();
+    const dispatch = useAppDispatch();
+    const { applications, loading } = useAppSelector(state => state.application);
+
+    useEffect(() => {
+        dispatch(fetchApplications({ page: 1, per_page: 100 }));
+    }, [dispatch]);
+
+    // Calculate statistics from real data
+    const stats = useMemo(() => {
+        const activeStatuses = ['SUBMITTED', 'FORMALITY_EXAM', 'PUBLISHED', 'SUB_EXAM_REQ', 'SUB_EXAM', 'WAITING_RESPONSE'];
+        const activeApplications = applications.filter(app => activeStatuses.includes(app.status));
+
+        let totalUnpaidAmount = 0;
+        let unpaidCount = 0;
+
+        applications.forEach(app => {
+            if (app.fee_quotes) {
+                app.fee_quotes.forEach(quote => {
+                    if (quote.status === 'FINAL' || quote.status === 'DRAFT') {
+                        totalUnpaidAmount += quote.total_amount;
+                        unpaidCount++;
+                    }
+                });
+            }
+        });
+
+        return {
+            activeApplications: activeApplications.length,
+            totalApplications: applications.length,
+            unpaidAmount: totalUnpaidAmount,
+            unpaidCount
+        };
+    }, [applications]);
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('vi-VN').format(amount) + ' VND';
+    };
+
     return (
         <div className="flex flex-1 flex-col p-6">
             <div className="mb-6">
-                <h1 className="text-slate-900 dark:text-white text-3xl font-bold leading-tight tracking-tight">Dashboard</h1>
+                <h1 className="text-slate-900 dark:text-white text-3xl font-bold leading-tight tracking-tight">{t('dashboard.nav.dashboard')}</h1>
                 <p className="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal mt-1">Overview of your IP portfolio and recent activities.</p>
             </div>
 
             {/* Summary Widgets */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white dark:bg-[#111521] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <Link to="/app/applications" className="bg-white dark:bg-[#111521] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
                             <span className="material-symbols-outlined">description</span>
                         </div>
                         <div>
                             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Active Applications</p>
-                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">12</h3>
+                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                                {loading ? '...' : stats.activeApplications}
+                            </h3>
+                            <p className="text-xs text-slate-400 dark:text-slate-500">
+                                {stats.totalApplications} total
+                            </p>
                         </div>
                     </div>
-                </div>
+                </Link>
 
                 <div className="bg-white dark:bg-[#111521] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <div className="flex items-center gap-4">
@@ -29,22 +77,29 @@ const DashboardPage: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Upcoming Deadlines</p>
-                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">3</h3>
+                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">-</h3>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#111521] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <Link to="/app/fees" className="bg-white dark:bg-[#111521] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg text-red-600 dark:text-red-400">
+                        <div className={`p-3 rounded-lg ${stats.unpaidCount > 0 ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'}`}>
                             <span className="material-symbols-outlined">payments</span>
                         </div>
                         <div>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Unpaid Fees</p>
-                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">$1,250</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{t('payment.unpaidFees')}</p>
+                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                                {loading ? '...' : (stats.unpaidAmount > 0 ? formatCurrency(stats.unpaidAmount) : t('payment.noUnpaidFees'))}
+                            </h3>
+                            {stats.unpaidCount > 0 && (
+                                <p className="text-xs text-red-500 dark:text-red-400">
+                                    {stats.unpaidCount} {t('payment.unpaidFees').toLowerCase()}
+                                </p>
+                            )}
                         </div>
                     </div>
-                </div>
+                </Link>
             </div>
 
             {/* Recent Activity */}

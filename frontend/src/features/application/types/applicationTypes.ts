@@ -45,8 +45,9 @@ export interface ApplicationParty {
     id_type: string | null;
     is_primary: boolean;
     share_percentage: number | null;
+    user_id: number | null;
     created_at: string;
-    updated_at: string;
+    updated_at: string | null;
 }
 
 export interface ApplicationAttachment {
@@ -184,10 +185,11 @@ export interface CreatePartyDTO {
     country_code?: string;
     email?: string;
     phone?: string;
-    id_number?: string;
-    id_type?: string;
+    id_number?: string | null;
+    id_type?: string | null;
     is_primary?: boolean;
-    share_percentage?: number;
+    share_percentage?: number | null;
+    user_id?: number | null;
 }
 
 export interface CreateProtectionTitleDTO {
@@ -227,4 +229,45 @@ export interface ApplicationFilters {
     search?: string;
     page?: number;
     per_page?: number;
+}
+
+// Timeline Event Types
+export type TimelineEventCategory = 'system' | 'examination' | 'decision' | 'request';
+
+export type TimelineEventType =
+    // Application lifecycle events
+    | 'APPLICATION_CREATED'
+    | 'APPLICATION_SUBMITTED'
+    // Examination events
+    | 'FORMALITY_EXAM'
+    | 'SUBSTANTIVE_EXAM'
+    // Decision events
+    | 'GRANT'
+    | 'REFUSAL'
+    // Request events
+    | 'REQUEST_AMENDMENT'
+    | 'REQUEST_ASSIGNMENT'
+    | 'REQUEST_LICENSE'
+    | 'REQUEST_SPLIT'
+    | 'REQUEST_CONVERSION'
+    | 'REQUEST_APPEAL';
+
+export type TimelineEventColor = 'gray' | 'blue' | 'green' | 'red' | 'amber' | 'purple' | 'indigo';
+
+export interface TimelineEventActor {
+    id: number;
+    name: string;
+}
+
+export interface TimelineEvent {
+    id: string;
+    type: TimelineEventType;
+    category: TimelineEventCategory;
+    title: string;
+    description: string | null;
+    date: string;
+    actor: TimelineEventActor | null;
+    data: Record<string, unknown> | null;
+    icon: string | null;
+    color: TimelineEventColor;
 }

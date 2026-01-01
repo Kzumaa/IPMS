@@ -10,7 +10,8 @@ class ApplicationParty extends Model
     public $timestamps = false;
     protected $fillable = [
         'application_id', 'role', 'user_id', 'snapshot_name', 'snapshot_address', 'snapshot_email',
-        'nationality', 'is_primary', 'valid_from', 'valid_to', 'source_request_id'
+        'phone', 'id_number', 'id_type', 'nationality', 'nationality_text', 'is_primary',
+        'valid_from', 'valid_to', 'source_request_id'
     ];
 
 

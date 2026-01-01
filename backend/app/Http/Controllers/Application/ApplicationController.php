@@ -61,7 +61,7 @@ class ApplicationController extends Controller
             $search = $validated['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'ILIKE', "%{$search}%")
-                  ->orWhere('app_no', 'ILIKE', "%{$search}%");
+                    ->orWhere('app_no', 'ILIKE', "%{$search}%");
             });
         }
 
@@ -96,7 +96,14 @@ class ApplicationController extends Controller
 
     public function show($id)
     {
-        $application = Application::with(['metrics', 'parties', 'payments.receiptFile', 'attachments.file'])->findOrFail($id);
+        $application = Application::with([
+            'metrics',
+            'parties',
+            'payments.receiptFile',
+            'attachments.file',
+            'feeQuotes',
+            'priorityClaims',
+        ])->findOrFail($id);
         $this->authorize('view', $application);
         return response()->json(['data' => new ApplicationResource($application)]);
     }
@@ -107,6 +114,7 @@ class ApplicationController extends Controller
         $this->authorize('update', $application);
 
         $validated = $request->validate([
+            'app_type' => 'string|in:PATENT,UTILITY,INDUSTRIAL_DESIGN',
             'title' => 'string|max:1000',
             'applicant_is_inventor' => 'boolean',
             'publication_early_requested' => 'boolean',
@@ -127,7 +135,10 @@ class ApplicationController extends Controller
 
         $application = $this->applicationService->updateApplication($application, $validated);
 
-        return response()->json($application);
+        // Reload with all relations for complete response
+        $application->load(['metrics', 'parties', 'attachments.file', 'feeQuotes', 'priorityClaims']);
+
+        return response()->json(['data' => new ApplicationResource($application)]);
     }
 
     public function destroy($id)
@@ -216,7 +227,7 @@ class ApplicationController extends Controller
         // Authorization: In real app, check if user has DECISION_MAKER role.
         // For now, reuse 'examine' or allow if user is staff.
         // Let's assume any staff can trigger this for now for simplicity, or reuse 'examine' policy.
-        $this->authorize('examine', $application); 
+        $this->authorize('examine', $application);
 
         $validated = $request->validate([
             'type' => 'required|in:GRANT,REFUSE',
@@ -243,7 +254,7 @@ class ApplicationController extends Controller
             if (!$attachment->is_current) continue;
 
             $result = $this->fileMetricService->analyze($attachment->file, $application, $attachment->doc_type);
-            
+
             $results[] = [
                 'file_id' => $attachment->file_id,
                 'filename' => $attachment->file->filename,

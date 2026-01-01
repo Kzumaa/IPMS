@@ -21,7 +21,7 @@ class Application extends Model
 
 
     protected $casts = [
-        'filing_date' => 'date',
+        'filing_date' => 'datetime',
         'applicant_is_inventor' => 'bool',
         'publication_early_requested' => 'bool',
         'pub_delay_months' => 'integer',
@@ -96,6 +96,21 @@ class Application extends Model
     public function requests(): HasMany
     {
         return $this->hasMany(ApplicationRequest::class);
+    }
+
+    public function formalityExamRecords(): HasMany
+    {
+        return $this->hasMany(FormalityExamRecord::class);
+    }
+
+    public function substantiveExamRecords(): HasMany
+    {
+        return $this->hasMany(SubstantiveExamRecord::class);
+    }
+
+    public function decisionRecords(): HasMany
+    {
+        return $this->hasMany(DecisionRecord::class);
     }
 
     /**

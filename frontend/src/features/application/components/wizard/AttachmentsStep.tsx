@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AttachmentType, AppType } from '../../types/enums';
+import { AttachmentType, AppType, getDocTypesForAppType } from '../../types/enums';
 import type { ApplicationAttachment, ApplicationMetric } from '../../types/applicationTypes';
 import ConfirmDialog from '../../../../components/ConfirmDialog';
 import { useAppDispatch } from '../../../../store/hooks';
@@ -21,7 +21,6 @@ interface AttachmentsStepProps {
     // Contextual info for conditional validation
     isPct?: boolean;
     hasPriorityClaim?: boolean;
-    hasRepresentative?: boolean;
     // Metrics
     appType: AppType;
     applicationId?: number;
@@ -44,14 +43,15 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({
     // isPct is available for future use when PCT-specific docs are needed
     isPct: _isPct = false,
     hasPriorityClaim = false,
-    hasRepresentative = false,
     appType,
     applicationId,
     existingMetrics,
 }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const [selectedType, setSelectedType] = useState<AttachmentType>(AttachmentType.DESCRIPTION);
+    // Set initial selected type based on app type
+    const initialType = appType === AppType.INDUSTRIAL_DESIGN ? AttachmentType.ID_DESCRIPTION : AttachmentType.DESCRIPTION;
+    const [selectedType, setSelectedType] = useState<AttachmentType>(initialType);
     const [description, setDescription] = useState('');
     const [dragActive, setDragActive] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -108,21 +108,36 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({
         }));
     }, [attachments]);
 
-    // Get attachment type options from translations
-    const attachmentTypeOptions = Object.keys(AttachmentType).map((key) => ({
-        value: key as AttachmentType,
-        label: t(`application.attachmentTypes.${key}`),
-    }));
+    // Get attachment type options filtered by app type
+    const attachmentTypeOptions = useMemo(() => {
+        const allowedTypes = getDocTypesForAppType(appType);
+        return allowedTypes.map((type) => ({
+            value: type,
+            label: t(`application.attachmentTypes.${type}`),
+        }));
+    }, [appType, t]);
 
-    // Define required documents based on context
+    // Define required documents based on app type and context
     const requiredDocuments: RequiredDocument[] = useMemo(() => {
-        const docs: RequiredDocument[] = [
-            { type: AttachmentType.DESCRIPTION, labelKey: 'application.steps.attachments.requiredDocs.specification', required: true },
-            { type: AttachmentType.CLAIMS, labelKey: 'application.steps.attachments.requiredDocs.claims', required: true },
-            { type: AttachmentType.ABSTRACT, labelKey: 'application.steps.attachments.requiredDocs.abstract', required: true },
-            { type: AttachmentType.DRAWINGS, labelKey: 'application.steps.attachments.requiredDocs.drawings', required: false },
-        ];
+        const docs: RequiredDocument[] = [];
 
+        if (appType === AppType.INDUSTRIAL_DESIGN) {
+            // Industrial Design required docs
+            docs.push(
+                { type: AttachmentType.ID_DESCRIPTION, labelKey: 'application.steps.attachments.requiredDocs.idDescription', required: true },
+                { type: AttachmentType.ID_PHOTOS_SET, labelKey: 'application.steps.attachments.requiredDocs.idPhotos', required: true },
+            );
+        } else {
+            // Patent/Utility required docs
+            docs.push(
+                { type: AttachmentType.DESCRIPTION, labelKey: 'application.steps.attachments.requiredDocs.specification', required: true },
+                { type: AttachmentType.CLAIMS, labelKey: 'application.steps.attachments.requiredDocs.claims', required: true },
+                { type: AttachmentType.ABSTRACT, labelKey: 'application.steps.attachments.requiredDocs.abstract', required: true },
+                { type: AttachmentType.DRAWINGS, labelKey: 'application.steps.attachments.requiredDocs.drawings', required: false },
+            );
+        }
+
+        // Conditional: Priority document
         if (hasPriorityClaim) {
             docs.push({
                 type: AttachmentType.PRIORITY_DOC,
@@ -132,17 +147,8 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({
             });
         }
 
-        if (hasRepresentative) {
-            docs.push({
-                type: AttachmentType.POA,
-                labelKey: 'application.steps.attachments.requiredDocs.poa',
-                required: true,
-                condition: 'application.steps.attachments.conditionPoa',
-            });
-        }
-
         return docs;
-    }, [hasPriorityClaim, hasRepresentative]);
+    }, [appType, hasPriorityClaim]);
 
     // Check which required documents are missing
     const missingDocuments = useMemo(() => {
@@ -485,8 +491,8 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({
                 {/* Industrial Design Metrics - Fields appear based on uploaded files */}
                 {appType === AppType.INDUSTRIAL_DESIGN && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Show fields only if DRAWINGS or DESCRIPTION uploaded */}
-                        {(uploadedTypes.has(AttachmentType.DRAWINGS) || uploadedTypes.has(AttachmentType.DESCRIPTION)) && (
+                        {/* Show fields only if ID_DESCRIPTION or ID_PHOTOS_SET uploaded */}
+                        {(uploadedTypes.has(AttachmentType.ID_DESCRIPTION) || uploadedTypes.has(AttachmentType.ID_PHOTOS_SET)) && (
                             <>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">

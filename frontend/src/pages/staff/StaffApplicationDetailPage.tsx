@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchApplication } from "@/features/application/store/applicationSlice";
-import { ApplicationStatusBadge } from "@/features/application/components";
+import { ApplicationStatusBadge, ApplicationTimeline } from "@/features/application/components";
 import ExaminationPanel from "@/features/staff/components/ExaminationPanel";
 import ApplicationDocumentViewer from "@/features/staff/components/ApplicationDocumentViewer";
 
@@ -254,6 +254,11 @@ const StaffApplicationDetailPage: React.FC = () => {
               attachments={attachments}
               onSuccess={handleExaminationSuccess}
             />
+          )}
+
+          {/* Application Timeline */}
+          {currentApplication.id && (
+            <ApplicationTimeline applicationId={currentApplication.id} />
           )}
         </div>
       </main>

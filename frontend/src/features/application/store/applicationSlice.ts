@@ -376,7 +376,10 @@ export const applicationSlice = createSlice({
                 state.loading = false;
                 state.currentApplication = action.payload;
                 if (action.payload.parties) {
-                    state.parties = action.payload.parties;
+                    // Sort parties so primary applicant comes first
+                    state.parties = [...action.payload.parties].sort(
+                        (a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0)
+                    );
                 }
                 if (action.payload.attachments) {
                     state.attachments = action.payload.attachments;
