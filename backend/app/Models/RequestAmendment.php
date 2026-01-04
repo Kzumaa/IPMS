@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\AmendmentSection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class RequestAmendment extends Model
 {
@@ -21,6 +22,7 @@ class RequestAmendment extends Model
         'field_name',
         'old_value',
         'new_value',
+        'pending_version_id',
     ];
 
     protected $casts = [
@@ -30,5 +32,18 @@ class RequestAmendment extends Model
     public function request(): BelongsTo
     {
         return $this->belongsTo(ApplicationRequest::class, 'request_id');
+    }
+
+    public function pendingVersion(): BelongsTo
+    {
+        return $this->belongsTo(ApplicationPendingVersion::class, 'pending_version_id');
+    }
+
+    /**
+     * Check if this amendment has a pending version (edit-mode amendment).
+     */
+    public function hasPendingVersion(): bool
+    {
+        return $this->pending_version_id !== null;
     }
 }

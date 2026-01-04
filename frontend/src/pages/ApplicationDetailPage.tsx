@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -10,9 +10,12 @@ import {
   ApplicationStatusBadge,
   ApplicantDocumentViewer,
   ApplicationTimeline,
+  VersionHistory,
+  SplitApplicationModal,
 } from "../features/application/components";
 import { RequestsSection } from "../features/request/components";
 import { PaymentButton } from "../features/payment/components";
+import { ApplicationStatus } from "../features/application/types/enums";
 
 const formatDate = (dateString: string | null): string => {
   if (!dateString) return "-";
@@ -30,6 +33,19 @@ const ApplicationDetailPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { currentApplication, parties, attachments, loading, error } =
     useAppSelector((state) => state.application);
+  const [showSplitModal, setShowSplitModal] = useState(false);
+
+  // Check if application can be split (not in terminal states)
+  const terminalStates: ApplicationStatus[] = [
+    ApplicationStatus.GRANTED,
+    ApplicationStatus.REFUSED,
+    ApplicationStatus.WITHDRAWN,
+    ApplicationStatus.DRAFT,
+  ];
+  const canSplit = currentApplication && !terminalStates.includes(currentApplication.status as ApplicationStatus);
+
+  // Check if application can be amended (submitted but not in terminal states)
+  const canAmend = currentApplication && !terminalStates.includes(currentApplication.status as ApplicationStatus);
 
   console.log(currentApplication);
 
@@ -138,6 +154,29 @@ const ApplicationDetailPage: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-3">
+            {canAmend && (
+              <Link
+                to={`/app/applications/${currentApplication.id}/amend`}
+                className="flex items-center px-4 py-2 text-sm font-medium text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-600 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+              >
+                <span className="material-symbols-outlined mr-2 !text-lg">
+                  edit_note
+                </span>
+                {t("application.detail.amend", "Amend")}
+              </Link>
+            )}
+            {canSplit && (
+              <button
+                type="button"
+                onClick={() => setShowSplitModal(true)}
+                className="flex items-center px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                <span className="material-symbols-outlined mr-2 !text-lg">
+                  call_split
+                </span>
+                {t("application.detail.split", "Split Application")}
+              </button>
+            )}
             {currentApplication.status === "DRAFT" && (
               <>
                 <Link
@@ -239,6 +278,9 @@ const ApplicationDetailPage: React.FC = () => {
 
             {/* Application Timeline */}
             <ApplicationTimeline applicationId={currentApplication.id!} />
+
+            {/* Version History */}
+            <VersionHistory applicationId={currentApplication.id!} />
           </div>
 
           {/* Sidebar */}
@@ -392,6 +434,15 @@ const ApplicationDetailPage: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Split Application Modal */}
+      {currentApplication && (
+        <SplitApplicationModal
+          application={currentApplication}
+          isOpen={showSplitModal}
+          onClose={() => setShowSplitModal(false)}
+        />
+      )}
     </div>
   );
 };

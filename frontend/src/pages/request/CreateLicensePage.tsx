@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { createLicense } from '../../features/request/store/requestSlice';
+import { fetchApplication } from '../../features/application/store/applicationSlice';
 import { LicenseForm } from '../../features/request/components/forms';
 import type { LicenseFormData } from '../../features/request/schemas/requestSchemas';
 import type { CreateLicenseDTO } from '../../features/request/types/requestTypes';
+import { ApplicationStatus } from '../../features/application/types/enums';
 
 const CreateLicensePage: React.FC = () => {
   const { t } = useTranslation();
@@ -13,7 +15,19 @@ const CreateLicensePage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.request);
+  const { currentApplication } = useAppSelector((state) => state.application);
+  const { user } = useAppSelector((state) => state.auth);
   const applicationId = parseInt(id || '0', 10);
+  const currentUserId = user?.id;
+
+  useEffect(() => {
+    if (applicationId) {
+      dispatch(fetchApplication(applicationId));
+    }
+  }, [applicationId, dispatch]);
+
+  // Validate application status
+  const canCreateLicense = currentApplication?.status === ApplicationStatus.GRANTED;
 
   const handleSubmit = async (data: LicenseFormData) => {
     const result = await dispatch(createLicense({ applicationId, data: data as CreateLicenseDTO }));
@@ -48,9 +62,43 @@ const CreateLicensePage: React.FC = () => {
           </div>
         )}
 
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700 max-w-2xl">
-          <LicenseForm onSubmit={handleSubmit} onCancel={handleCancel} loading={loading} />
-        </div>
+        {!canCreateLicense && currentApplication && (
+          <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+            <div className="flex items-start gap-3">
+              <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 !text-xl">
+                warning
+              </span>
+              <div>
+                <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  {t('request.license.notGranted', 'License Not Available')}
+                </h3>
+                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                  {t('request.license.notGrantedDesc', 'License requests can only be created for applications that have been granted. Current status: {{status}}', {
+                    status: t(`application.statuses.${currentApplication.status}`),
+                  })}
+                </p>
+                <Link
+                  to={`/app/applications/${applicationId}`}
+                  className="inline-flex items-center mt-3 text-sm font-medium text-amber-800 dark:text-amber-200 hover:text-amber-900 dark:hover:text-amber-100"
+                >
+                  <span className="material-symbols-outlined mr-1 !text-base">arrow_back</span>
+                  {t('common.backToApplication', 'Back to Application')}
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {canCreateLicense && (
+          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700 max-w-2xl">
+            <LicenseForm
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+              loading={loading}
+              currentUserId={currentUserId}
+            />
+          </div>
+        )}
       </main>
     </div>
   );

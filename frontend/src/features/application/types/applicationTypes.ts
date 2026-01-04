@@ -231,6 +231,181 @@ export interface ApplicationFilters {
     per_page?: number;
 }
 
+// Application Version Types
+export interface ApplicationVersion {
+    id: number;
+    application_id: number;
+    version_number: number;
+    amendment_request_id: number | null;
+    snapshot_data: ApplicationSnapshot;
+    change_summary: string | null;
+    field_changes: Record<string, FieldChange> | null;
+    created_by: number;
+    created_at: string;
+    created_by_user?: User;
+}
+
+export interface ApplicationSnapshot {
+    title: string;
+    app_type: AppType;
+    status: ApplicationStatus;
+    is_pct: boolean;
+    pct_number: string | null;
+    pct_filing_date: string | null;
+    pct_publication_date: string | null;
+    national_phase_entry_date: string | null;
+    parties: ApplicationParty[];
+    priority_claims: PriorityClaim[];
+    ipc_classes: IpcClass[];
+    locarno_classes: LocarnoClass[];
+    metrics: ApplicationMetric | null;
+    attachments: AttachmentSnapshot[];
+}
+
+export interface IpcClass {
+    id: number;
+    application_id: number;
+    section: string;
+    class_code: string;
+    subclass: string | null;
+    group: string | null;
+    subgroup: string | null;
+    label: string | null;
+    assigned_by_type: 'USER' | 'STAFF' | null;
+    assigned_by_id: number | null;
+    assigned_at: string | null;
+}
+
+export interface LocarnoClass {
+    id: number;
+    application_id: number;
+    class_code: string;
+    subclass: string | null;
+    label: string | null;
+    assigned_by_type: 'USER' | 'STAFF' | null;
+    assigned_by_id: number | null;
+    assigned_at: string | null;
+}
+
+export interface AttachmentSnapshot {
+    id: number;
+    doc_type: AttachmentType;
+    original_filename: string;
+    page_count: number | null;
+}
+
+export interface VersionComparison {
+    version_a: number;
+    version_b: number;
+    changes: VersionChanges;
+}
+
+export interface VersionChanges {
+    title?: { old: string; new: string };
+    parties?: { added: ApplicationParty[]; removed: ApplicationParty[] };
+    priority_claims?: { added: PriorityClaim[]; removed: PriorityClaim[] };
+    ipc_classes?: { added: IpcClass[]; removed: IpcClass[] };
+    locarno_classes?: { added: LocarnoClass[]; removed: LocarnoClass[] };
+    metrics?: { old: ApplicationMetric | null; new: ApplicationMetric | null };
+    attachments?: { added: AttachmentSnapshot[]; removed: AttachmentSnapshot[] };
+}
+
+// Split Application Types
+export interface SplitApplicationDTO {
+    title?: string;
+    claims_to_split?: number[];
+}
+
+// Amendment Editing Types (Edit-mode amendment)
+export interface AmendmentData {
+    application_id: number;
+    current_version: number;
+    data: ApplicationSnapshot;
+    readonly_fields: string[];
+    editable_fields: string[];
+}
+
+export interface ProposedAmendmentData {
+    title?: string;
+    applicant_is_inventor?: boolean;
+    publication_early_requested?: boolean;
+    pub_delay_months?: number;
+    parties?: SnapshotParty[];
+    attachments?: AttachmentSnapshot[];
+    priority_claims?: SnapshotPriorityClaim[];
+    metrics?: Partial<ApplicationMetric>;
+}
+
+export interface SnapshotParty {
+    id?: number;
+    role: string;
+    user_id?: number | null;
+    snapshot_name: string;
+    snapshot_email: string;
+    snapshot_address?: string;
+    phone?: string | null;
+    id_number?: string | null;
+    id_type?: string | null;
+    nationality?: string | null;
+    nationality_text?: string | null;
+    is_primary?: boolean;
+}
+
+export interface SnapshotPriorityClaim {
+    id?: number;
+    country_code: string;
+    app_no: string;
+    filing_date: string;
+}
+
+export interface NewAttachment {
+    file: File;
+    doc_type: string;
+}
+
+export interface CreateEditModeAmendmentDTO {
+    proposed_data: ProposedAmendmentData;
+    change_summary: string;
+    new_attachments?: NewAttachment[];
+    removed_attachment_ids?: number[];
+}
+
+export interface PendingVersion {
+    id: number;
+    application_id: number;
+    request_id: number;
+    version_number: number;
+    proposed_data: ProposedAmendmentData;
+    changed_fields: string[];
+    field_changes: Record<string, FieldChange>;
+    changes_count: number;
+    created_by: number;
+    created_at: string;
+    creator?: User;
+}
+
+export interface FieldChange {
+    old: unknown;
+    new: unknown;
+}
+
+export interface PartyChanges {
+    added: SnapshotParty[];
+    removed: SnapshotParty[];
+    modified: Array<{ old: SnapshotParty; new: SnapshotParty }>;
+}
+
+export interface AttachmentChanges {
+    added: AttachmentSnapshot[];
+    removed: AttachmentSnapshot[];
+    replaced: Array<{ doc_type: string; old_count: number; new_count: number }>;
+}
+
+export interface PriorityClaimChanges {
+    added: SnapshotPriorityClaim[];
+    removed: SnapshotPriorityClaim[];
+}
+
 // Timeline Event Types
 export type TimelineEventCategory = 'system' | 'examination' | 'decision' | 'request';
 

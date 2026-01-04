@@ -24,6 +24,7 @@ class RequestAppeal extends Model
         'deadline',
         'resolved_at',
         'resolution',
+        'appeal_number',
     ];
 
     protected $casts = [
@@ -31,6 +32,7 @@ class RequestAppeal extends Model
         'resolution' => AppealResolution::class,
         'deadline' => 'date',
         'resolved_at' => 'date',
+        'appeal_number' => 'integer',
     ];
 
     public function request(): BelongsTo

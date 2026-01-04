@@ -16,24 +16,27 @@ use Illuminate\Support\Facades\Auth;
 
 class ApplicationService
 {
-    protected $assignmentService;
-    protected $quoteGenerator;
-    protected $applicationRepository;
-    protected $applicationMetricRepository;
-    protected $applicationPartyRepository;
+    protected AssignmentService $assignmentService;
+    protected QuoteGenerator $quoteGenerator;
+    protected ApplicationRepositoryInterface $applicationRepository;
+    protected ApplicationMetricRepositoryInterface $applicationMetricRepository;
+    protected ApplicationPartyRepositoryInterface $applicationPartyRepository;
+    protected VersioningService $versioningService;
 
     public function __construct(
         AssignmentService $assignmentService,
         QuoteGenerator $quoteGenerator,
         ApplicationRepositoryInterface $applicationRepository,
         ApplicationMetricRepositoryInterface $applicationMetricRepository,
-        ApplicationPartyRepositoryInterface $applicationPartyRepository
+        ApplicationPartyRepositoryInterface $applicationPartyRepository,
+        VersioningService $versioningService
     ) {
         $this->assignmentService = $assignmentService;
         $this->quoteGenerator = $quoteGenerator;
         $this->applicationRepository = $applicationRepository;
         $this->applicationMetricRepository = $applicationMetricRepository;
         $this->applicationPartyRepository = $applicationPartyRepository;
+        $this->versioningService = $versioningService;
     }
     public function createApplication(array $data): Application
     {
@@ -141,8 +144,13 @@ class ApplicationService
                 'status' => ApplicationStatus::SUBMITTED,
                 'filing_date' => now(), // Set filing date on submission
                 'deadlines' => $deadlines,
-                'file_validation_results' => null // Clear errors on success
+                'file_validation_results' => null, // Clear errors on success
+                'current_version' => 1,
             ]);
+
+            // 4. Create initial version snapshot
+            $this->versioningService->createInitialVersion($application, Auth::id());
+
             $this->assignmentService->assignToFormalityExaminer($application);
             return $application;
         });
@@ -238,5 +246,76 @@ class ApplicationService
         $deadlines['substantive_exam'] = $acceptanceDate->copy()->addMonths(9)->toIso8601String();
 
         $this->applicationRepository->update($application, ['deadlines' => $deadlines]);
+    }
+
+    /**
+     * Split an application into a new draft application.
+     * The new application references the original via origin_application_id.
+     *
+     * @param Application $original The original application to split from
+     * @param int $userId The user creating the split
+     * @param array $modifications Optional modifications for the new application (e.g., title)
+     * @return Application The newly created draft application
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function splitApplication(Application $original, int $userId, array $modifications = []): Application
+    {
+        // Validate: Cannot split GRANTED or DECLINED applications
+        if (in_array($original->status, [ApplicationStatus::GRANTED, ApplicationStatus::DECLINED])) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'application' => 'Cannot split an application that has been granted or refused.',
+            ]);
+        }
+
+        return DB::transaction(function () use ($original, $userId, $modifications) {
+            // Create new application in DRAFT status
+            $newApplication = $this->applicationRepository->create([
+                'app_type' => $original->app_type,
+                'title' => $modifications['title'] ?? $original->title . ' (Split)',
+                'status' => ApplicationStatus::DRAFT,
+                'created_by' => $userId,
+                'applicant_is_inventor' => $original->applicant_is_inventor,
+                'publication_early_requested' => $original->publication_early_requested,
+                'pub_delay_months' => $original->pub_delay_months,
+                'origin_application_id' => $original->id,
+            ]);
+
+            // Create default metrics
+            $this->applicationMetricRepository->create([
+                'application_id' => $newApplication->id,
+            ]);
+
+            // Copy active parties from original
+            $original->load('activeParties');
+            foreach ($original->activeParties as $party) {
+                $this->applicationPartyRepository->create([
+                    'application_id' => $newApplication->id,
+                    'role' => $party->role,
+                    'user_id' => $party->user_id,
+                    'snapshot_name' => $party->snapshot_name,
+                    'snapshot_email' => $party->snapshot_email,
+                    'snapshot_address' => $party->snapshot_address,
+                    'phone' => $party->phone,
+                    'id_number' => $party->id_number,
+                    'id_type' => $party->id_type,
+                    'nationality' => $party->nationality,
+                    'nationality_text' => $party->nationality_text,
+                    'is_primary' => $party->is_primary,
+                    'valid_from' => now()->toDateString(),
+                ]);
+            }
+
+            // Copy priority claims from original
+            foreach ($original->priorityClaims as $claim) {
+                $newApplication->priorityClaims()->create([
+                    'country_code' => $claim->country_code,
+                    'app_no' => $claim->app_no,
+                    'filing_date' => $claim->filing_date,
+                    'kind' => $claim->kind,
+                ]);
+            }
+
+            return $newApplication->refresh();
+        });
     }
 }

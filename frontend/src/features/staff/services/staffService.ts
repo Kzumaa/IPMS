@@ -54,6 +54,7 @@ export interface StaffRequest {
         field_name?: string;
         old_value?: string;
         new_value?: string;
+        pending_version_id?: number;
     };
     assignment?: {
         transfer_type: string;
@@ -89,6 +90,53 @@ export interface StaffRequest {
 export interface AppealResolutionRequest {
     resolution: 'UPHELD' | 'OVERTURNED' | 'PARTIAL' | 'WITHDRAWN';
     notes?: string;
+}
+
+export interface ClassificationSummary {
+    application_id: number;
+    ipc_classes: IpcClassInfo[];
+    locarno_classes: LocarnoClassInfo[];
+    can_assign: boolean;
+    status: string;
+}
+
+export interface IpcClassInfo {
+    id?: number;
+    section: string;
+    class_code: string;
+    subclass?: string | null;
+    group?: string | null;
+    subgroup?: string | null;
+    label?: string | null;
+    assigned_by_type?: 'USER' | 'STAFF' | null;
+    assigned_by_id?: number | null;
+    assigned_at?: string | null;
+}
+
+export interface LocarnoClassInfo {
+    id?: number;
+    class_code: string;
+    subclass?: string | null;
+    label?: string | null;
+    assigned_by_type?: 'USER' | 'STAFF' | null;
+    assigned_by_id?: number | null;
+    assigned_at?: string | null;
+}
+
+export interface ClassificationAssignRequest {
+    ipc_classes?: Array<{
+        section: string;
+        class_code: string;
+        subclass?: string;
+        group?: string;
+        subgroup?: string;
+        label?: string;
+    }>;
+    locarno_classes?: Array<{
+        class_code: string;
+        subclass?: string;
+        label?: string;
+    }>;
 }
 
 const staffService = {
@@ -168,6 +216,17 @@ const staffService = {
 
     async resolveAppeal(requestId: number, data: AppealResolutionRequest): Promise<ApiResponse<StaffRequest>> {
         const response = await axiosClient.post(`${BASE_URL}/requests/${requestId}/resolve-appeal`, data);
+        return response.data;
+    },
+
+    // Classification Assignment
+    async getClassificationSummary(applicationId: number): Promise<ApiResponse<ClassificationSummary>> {
+        const response = await axiosClient.get(`${BASE_URL}/applications/${applicationId}/classification`);
+        return response.data;
+    },
+
+    async assignClassification(applicationId: number, data: ClassificationAssignRequest): Promise<ApiResponse<any>> {
+        const response = await axiosClient.post(`${BASE_URL}/applications/${applicationId}/assign-classification`, data);
         return response.data;
     },
 };

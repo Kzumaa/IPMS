@@ -9,6 +9,7 @@ import DashboardPage from './pages/DashboardPage';
 import ApplicationsPage from './pages/ApplicationsPage';
 import NewApplicationPage from './pages/NewApplicationPage';
 import ApplicationDetailPage from './pages/ApplicationDetailPage';
+import AmendApplicationPage from './pages/AmendApplicationPage';
 import AssetsPage from './pages/AssetsPage';
 import FeesPage from './pages/FeesPage';
 import MessagesPage from './pages/MessagesPage';
@@ -119,6 +120,10 @@ const router = createBrowserRouter([
                     {
                         path: 'applications/:id/edit',
                         element: <NewApplicationPage />,
+                    },
+                    {
+                        path: 'applications/:id/amend',
+                        element: <AmendApplicationPage />,
                     },
                     // Request routes
                     {

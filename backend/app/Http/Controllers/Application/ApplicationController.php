@@ -191,6 +191,40 @@ class ApplicationController extends Controller
         return response()->json($application);
     }
 
+    /**
+     * Split an application into a new draft application.
+     */
+    public function split(Request $request, $id)
+    {
+        $application = Application::with(['activeParties', 'priorityClaims'])->findOrFail($id);
+        $this->authorize('update', $application);
+
+        // Cannot split GRANTED or DECLINED applications
+        if (in_array($application->status, [ApplicationStatus::GRANTED, ApplicationStatus::DECLINED])) {
+            return response()->json([
+                'message' => 'Cannot split an application that has been granted or declined.',
+            ], 400);
+        }
+
+        $validated = $request->validate([
+            'title' => 'nullable|string|max:1000',
+        ]);
+
+        $newApplication = $this->applicationService->splitApplication(
+            $application,
+            Auth::id(),
+            $validated
+        );
+
+        // Load relationships for response
+        $newApplication->load(['metrics', 'parties', 'priorityClaims']);
+
+        return response()->json([
+            'data' => new ApplicationResource($newApplication),
+            'message' => 'Application split successfully.',
+        ], 201);
+    }
+
     public function completeExamination(Request $request, $id)
     {
         $application = Application::findOrFail($id);

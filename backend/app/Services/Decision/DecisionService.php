@@ -62,9 +62,9 @@ class DecisionService
                 // Generate Maintenance Schedule
                 $this->maintenanceService->generateSchedule($title);
             } elseif ($type === 'REFUSE') {
-                // Ensure status is REFUSED
-                if ($application->status !== ApplicationStatus::REFUSED) {
-                    $this->applicationRepository->update($application, ['status' => ApplicationStatus::REFUSED]);
+                // Ensure status is DECLINED
+                if ($application->status !== ApplicationStatus::DECLINED) {
+                    $this->applicationRepository->update($application, ['status' => ApplicationStatus::DECLINED]);
                 }
             }
 

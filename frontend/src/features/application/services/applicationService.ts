@@ -17,6 +17,12 @@ import type {
     ApplicationFilters,
     PaginatedResponse,
     ApiResponse,
+    ApplicationVersion,
+    VersionComparison,
+    SplitApplicationDTO,
+    AmendmentData,
+    CreateEditModeAmendmentDTO,
+    PendingVersion,
 } from '../types/applicationTypes';
 
 const BASE_URL = '/applications';
@@ -228,6 +234,76 @@ export const applicationService = {
     // Timeline (aggregated events history)
     async getTimeline(applicationId: number): Promise<ApiResponse<TimelineEvent[]>> {
         const response = await axiosClient.get(`${BASE_URL}/${applicationId}/timeline`);
+        return response.data;
+    },
+
+    // Version History
+    async getVersionHistory(applicationId: number): Promise<ApiResponse<ApplicationVersion[]>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/versions`);
+        return response.data;
+    },
+
+    async getVersion(applicationId: number, versionNumber: number): Promise<ApiResponse<ApplicationVersion>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/versions/${versionNumber}`);
+        return response.data;
+    },
+
+    async compareVersions(applicationId: number, versionA: number, versionB: number): Promise<ApiResponse<VersionComparison>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/versions/${versionA}/compare/${versionB}`);
+        return response.data;
+    },
+
+    // Split Application
+    async splitApplication(applicationId: number, data?: SplitApplicationDTO): Promise<ApiResponse<Application>> {
+        const response = await axiosClient.post(`${BASE_URL}/${applicationId}/split`, data || {});
+        return response.data;
+    },
+
+    // Edit-mode Amendment (versioning)
+    async getAmendmentData(applicationId: number): Promise<ApiResponse<AmendmentData>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/amendment-data`);
+        return response.data;
+    },
+
+    async createEditModeAmendment(applicationId: number, data: CreateEditModeAmendmentDTO): Promise<ApiResponse<unknown>> {
+        // Check if we have file uploads
+        const hasFiles = data.new_attachments && data.new_attachments.length > 0;
+
+        if (hasFiles) {
+            // Use FormData for file uploads
+            const formData = new FormData();
+            formData.append('proposed_data', JSON.stringify(data.proposed_data));
+            formData.append('change_summary', data.change_summary);
+
+            if (data.removed_attachment_ids && data.removed_attachment_ids.length > 0) {
+                formData.append('removed_attachment_ids', JSON.stringify(data.removed_attachment_ids));
+            }
+
+            // Append each file with its doc_type
+            data.new_attachments!.forEach((attachment, index) => {
+                formData.append(`attachments[${index}][file]`, attachment.file);
+                formData.append(`attachments[${index}][doc_type]`, attachment.doc_type);
+            });
+
+            const response = await axiosClient.post(`${BASE_URL}/${applicationId}/amendments/edit-mode`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data;
+        } else {
+            // No files, send JSON
+            const response = await axiosClient.post(`${BASE_URL}/${applicationId}/amendments/edit-mode`, {
+                proposed_data: data.proposed_data,
+                change_summary: data.change_summary,
+                removed_attachment_ids: data.removed_attachment_ids || [],
+            });
+            return response.data;
+        }
+    },
+
+    async getPendingVersion(applicationId: number): Promise<ApiResponse<PendingVersion | null>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/pending-version`);
         return response.data;
     },
 };

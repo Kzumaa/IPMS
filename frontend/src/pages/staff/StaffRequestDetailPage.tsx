@@ -11,6 +11,8 @@ import {
     clearCurrentRequest,
 } from '@/features/staff/store/staffSlice';
 import { RequestStatusBadge, RequestTypeBadge } from '@/features/request/components';
+import type { RequestType, RequestStatus } from '@/features/request/types/enums';
+import PendingVersionComparison from '@/features/staff/components/PendingVersionComparison';
 
 export default function StaffRequestDetailPage() {
     const { t } = useTranslation();
@@ -134,8 +136,8 @@ export default function StaffRequestDetailPage() {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <RequestTypeBadge type={currentRequest.type} />
-                    <RequestStatusBadge status={currentRequest.status} />
+                    <RequestTypeBadge type={currentRequest.type as RequestType} />
+                    <RequestStatusBadge status={currentRequest.status as RequestStatus} />
                 </div>
             </div>
 
@@ -204,6 +206,11 @@ export default function StaffRequestDetailPage() {
                                 )}
                             </dl>
                         </div>
+                    )}
+
+                    {/* Pending Version Comparison for Edit-mode Amendments */}
+                    {currentRequest.type === 'AMENDMENT' && currentRequest.amendment?.pending_version_id && (
+                        <PendingVersionComparison applicationId={currentRequest.application_id} />
                     )}
 
                     {currentRequest.assignment && (

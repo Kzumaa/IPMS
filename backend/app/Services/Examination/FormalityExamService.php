@@ -49,8 +49,9 @@ class FormalityExamService
                 // Generate application number on formal acceptance
                 $appNo = $this->generateApplicationNumber($application);
 
+                // Transition to FORMALITY_PASSED - publication happens later when conditions are met
                 $this->applicationRepository->update($application, [
-                    'status' => ApplicationStatus::PUBLISHED,
+                    'status' => ApplicationStatus::FORMALITY_PASSED,
                     'app_no' => $appNo,
                 ]);
 
@@ -58,7 +59,7 @@ class FormalityExamService
                 // (sets publication and substantive exam deadlines based on acceptance date)
                 $this->applicationService->recalculateDeadlinesOnAcceptance($application);
             } else {
-                $this->applicationRepository->update($application, ['status' => ApplicationStatus::REFUSED]);
+                $this->applicationRepository->update($application, ['status' => ApplicationStatus::DECLINED]);
             }
 
             // 4. Complete Assignment

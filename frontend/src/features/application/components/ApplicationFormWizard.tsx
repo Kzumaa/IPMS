@@ -339,7 +339,6 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                         isLoading={loading}
                         isPct={basicInfo.is_pct}
                         hasPriorityClaim={hasPriorityClaim}
-                        hasRepresentative={false}
                         appType={basicInfo.app_type}
                         applicationId={currentApplication?.id}
                         existingMetrics={currentApplication?.metrics}

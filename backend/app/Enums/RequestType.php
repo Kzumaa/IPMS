@@ -11,7 +11,9 @@ enum RequestType: string
     case LICENSE = 'LICENSE';
     case SPLIT = 'SPLIT';
     case CONVERSION = 'CONVERSION';
-    case APPEAL = 'APPEAL';
+    case COMPLAINT = 'COMPLAINT';
+    case RENEWAL = 'RENEWAL';
+    case TERMINATION = 'TERMINATION';
 
     /**
      * Get the fee code prefix for this request type.
@@ -23,8 +25,10 @@ enum RequestType: string
             self::ASSIGNMENT => 'REQ-ASSIGN',
             self::LICENSE => 'REQ-LICENSE',
             self::SPLIT => 'REQ-SPLIT',
-            self::APPEAL => 'REQ-APPEAL',
             self::CONVERSION => 'REQ-CONVERT',
+            self::COMPLAINT => 'REQ-COMPLAINT',
+            self::RENEWAL => 'REQ-RENEWAL',
+            self::TERMINATION => 'REQ-TERMINATE',
         };
     }
 }

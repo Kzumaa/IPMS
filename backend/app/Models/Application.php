@@ -16,7 +16,8 @@ class Application extends Model
     protected $fillable = [
         'app_no', 'app_type', 'title', 'filing_date', 'status', 'applicant_is_inventor',
         'publication_early_requested', 'pub_delay_months', 'receiving_org_id',
-        'current_assignee_id', 'created_by', 'deadlines', 'file_validation_results'
+        'current_assignee_id', 'created_by', 'deadlines', 'file_validation_results',
+        'current_version', 'origin_application_id'
     ];
 
 
@@ -29,6 +30,7 @@ class Application extends Model
         'status' => ApplicationStatus::class,
         'deadlines' => 'array',
         'file_validation_results' => 'array',
+        'current_version' => 'integer',
     ];
 
 
@@ -113,11 +115,53 @@ class Application extends Model
         return $this->hasMany(DecisionRecord::class);
     }
 
+    public function protectionTitle(): HasOne
+    {
+        return $this->hasOne(ProtectionTitle::class);
+    }
+
     /**
      * Get active (current) parties only.
      */
     public function activeParties(): HasMany
     {
         return $this->hasMany(ApplicationParty::class)->whereNull('valid_to');
+    }
+
+    // Version tracking relationships
+
+    /**
+     * Get all versions of this application.
+     */
+    public function versions(): HasMany
+    {
+        return $this->hasMany(ApplicationVersion::class);
+    }
+
+    /**
+     * Get the latest version.
+     */
+    public function latestVersion(): HasOne
+    {
+        return $this->hasOne(ApplicationVersion::class)
+            ->orderByDesc('version_number');
+    }
+
+    // Split application relationships
+
+    /**
+     * Get the original application this was split from.
+     */
+    public function originApplication(): BelongsTo
+    {
+        return $this->belongsTo(Application::class, 'origin_application_id');
+    }
+
+    /**
+     * Get applications that were split from this one.
+     */
+    public function splitApplications(): HasMany
+    {
+        return $this->hasMany(Application::class, 'origin_application_id');
     }
 }

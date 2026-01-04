@@ -5,7 +5,9 @@ export const RequestType = {
   LICENSE: 'LICENSE',
   SPLIT: 'SPLIT',
   CONVERSION: 'CONVERSION',
-  APPEAL: 'APPEAL',
+  COMPLAINT: 'COMPLAINT',
+  RENEWAL: 'RENEWAL',
+  TERMINATION: 'TERMINATION',
 } as const;
 
 export type RequestType = (typeof RequestType)[keyof typeof RequestType];
@@ -18,7 +20,9 @@ export const RequestTypeLabels: Record<RequestType, string> = {
   LICENSE: 'Li-xăng',
   SPLIT: 'Tách đơn',
   CONVERSION: 'Chuyển đổi',
-  APPEAL: 'Khiếu nại',
+  COMPLAINT: 'Khiếu nại',
+  RENEWAL: 'Gia hạn',
+  TERMINATION: 'Chấm dứt',
 };
 
 // Request Status Enum
@@ -110,7 +114,23 @@ export const LicenseTypeLabels: Record<LicenseType, string> = {
   COMPULSORY: 'Li-xăng bắt buộc',
 };
 
-// Appeal Type Enum
+// Complaint Resolution Enum
+export const ComplaintResolution = {
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+} as const;
+
+export type ComplaintResolution = (typeof ComplaintResolution)[keyof typeof ComplaintResolution];
+
+export const ComplaintResolutionValues = Object.values(ComplaintResolution);
+
+export const ComplaintResolutionLabels: Record<ComplaintResolution, string> = {
+  ACCEPTED: 'Chấp nhận khiếu nại',
+  REJECTED: 'Từ chối khiếu nại',
+};
+
+// Deprecated: Keep for backwards compatibility during migration
+// TODO: Remove after all code is migrated
 export const AppealType = {
   DECISION_APPEAL: 'DECISION_APPEAL',
   NOTICE_OBJECTION: 'NOTICE_OBJECTION',
@@ -118,14 +138,6 @@ export const AppealType = {
 
 export type AppealType = (typeof AppealType)[keyof typeof AppealType];
 
-export const AppealTypeValues = Object.values(AppealType);
-
-export const AppealTypeLabels: Record<AppealType, string> = {
-  DECISION_APPEAL: 'Khiếu nại quyết định',
-  NOTICE_OBJECTION: 'Phản đối thông báo',
-};
-
-// Appeal Resolution Enum
 export const AppealResolution = {
   UPHELD: 'UPHELD',
   OVERTURNED: 'OVERTURNED',
@@ -134,12 +146,3 @@ export const AppealResolution = {
 } as const;
 
 export type AppealResolution = (typeof AppealResolution)[keyof typeof AppealResolution];
-
-export const AppealResolutionValues = Object.values(AppealResolution);
-
-export const AppealResolutionLabels: Record<AppealResolution, string> = {
-  UPHELD: 'Giữ nguyên quyết định',
-  OVERTURNED: 'Hủy bỏ quyết định',
-  PARTIAL: 'Sửa đổi một phần',
-  WITHDRAWN: 'Rút khiếu nại',
-};

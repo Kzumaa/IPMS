@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { licenseSchema, type LicenseFormData } from '../../schemas/requestSchemas';
 import { LicenseTypeValues, LicenseTypeLabels } from '../../types/enums';
+import LicenseeSearch from '../LicenseeSearch';
+import type { UserSearchResult } from '@/features/application/types/applicationTypes';
 
 interface LicenseFormProps {
   defaultValues?: Partial<LicenseFormData>;
   onSubmit: (data: LicenseFormData) => void;
   onCancel: () => void;
   loading?: boolean;
+  currentUserId?: number;
 }
 
 const LicenseForm: React.FC<LicenseFormProps> = ({
@@ -17,16 +20,20 @@ const LicenseForm: React.FC<LicenseFormProps> = ({
   onSubmit,
   onCancel,
   loading = false,
+  currentUserId,
 }) => {
   const { t } = useTranslation();
+  const [selectedLicensee, setSelectedLicensee] = useState<UserSearchResult | null>(null);
+
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LicenseFormData>({
     resolver: zodResolver(licenseSchema),
     defaultValues: {
-      licensor_user_id: defaultValues?.licensor_user_id || 0,
+      licensor_user_id: defaultValues?.licensor_user_id || currentUserId || 0,
       licensee_user_id: defaultValues?.licensee_user_id || 0,
       license_type: defaultValues?.license_type || 'NON_EXCLUSIVE',
       valid_from: defaultValues?.valid_from || '',
@@ -36,6 +43,11 @@ const LicenseForm: React.FC<LicenseFormProps> = ({
       contract_number: defaultValues?.contract_number || '',
     },
   });
+
+  const handleLicenseeChange = (user: UserSearchResult | null) => {
+    setSelectedLicensee(user);
+    setValue('licensee_user_id', user?.id || 0);
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -65,51 +77,32 @@ const LicenseForm: React.FC<LicenseFormProps> = ({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Licensor User ID */}
-        <div>
-          <label
-            htmlFor="licensor_user_id"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-          >
-            {t('request.license.licensor')} <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="number"
-            id="licensor_user_id"
-            {...register('licensor_user_id', { valueAsNumber: true })}
-            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
-              bg-white dark:bg-slate-700 text-slate-900 dark:text-white
-              focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder={t('request.license.licensorPlaceholder')}
-          />
-          {errors.licensor_user_id && (
-            <p className="mt-1 text-sm text-red-600">{errors.licensor_user_id.message}</p>
-          )}
-        </div>
-
-        {/* Licensee User ID */}
-        <div>
-          <label
-            htmlFor="licensee_user_id"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-          >
-            {t('request.license.licensee')} <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="number"
-            id="licensee_user_id"
-            {...register('licensee_user_id', { valueAsNumber: true })}
-            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
-              bg-white dark:bg-slate-700 text-slate-900 dark:text-white
-              focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder={t('request.license.licenseePlaceholder')}
-          />
-          {errors.licensee_user_id && (
-            <p className="mt-1 text-sm text-red-600">{errors.licensee_user_id.message}</p>
-          )}
+      {/* Info about license parties */}
+      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+        <div className="flex items-start gap-2">
+          <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 !text-lg mt-0.5">
+            info
+          </span>
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            {t('request.license.partiesInfo', 'The licensor (you) will grant the licensee the right to use this IP. The licensee must be a registered user in the system.')}
+          </p>
         </div>
       </div>
+
+      {/* Licensor - hidden field, auto-filled with current user */}
+      <input type="hidden" {...register('licensor_user_id', { valueAsNumber: true })} />
+
+      {/* Licensee Search */}
+      <LicenseeSearch
+        value={selectedLicensee}
+        onChange={handleLicenseeChange}
+        disabled={loading}
+        error={errors.licensee_user_id?.message}
+        excludeUserId={currentUserId}
+        label={t('request.license.licensee', 'Licensee')}
+        required
+        placeholder={t('request.license.searchLicensee', 'Search for licensee by email...')}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Valid From */}

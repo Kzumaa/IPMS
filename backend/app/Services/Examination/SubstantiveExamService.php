@@ -41,7 +41,7 @@ class SubstantiveExamService
             // 2. Update Application Status
             $status = match ($result) {
                 'ACCEPTABLE' => ApplicationStatus::GRANTED,
-                'REJECTED' => ApplicationStatus::REFUSED,
+                'REJECTED' => ApplicationStatus::DECLINED,
                 'OBJECTION' => ApplicationStatus::WAITING_RESPONSE,
                 default => $application->status,
             };

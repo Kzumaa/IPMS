@@ -65,9 +65,19 @@ class ApplicationRequest extends Model
         return $this->hasOne(RequestLicense::class, 'request_id');
     }
 
-    public function appeal(): HasOne
+    public function complaint(): HasOne
     {
-        return $this->hasOne(RequestAppeal::class, 'request_id');
+        return $this->hasOne(RequestComplaint::class, 'request_id');
+    }
+
+    public function renewal(): HasOne
+    {
+        return $this->hasOne(RequestRenewal::class, 'request_id');
+    }
+
+    public function termination(): HasOne
+    {
+        return $this->hasOne(RequestTermination::class, 'request_id');
     }
 
     // Attachments linked to this request
@@ -115,7 +125,9 @@ class ApplicationRequest extends Model
             RequestType::AMENDMENT => $this->amendment,
             RequestType::ASSIGNMENT => $this->assignment,
             RequestType::LICENSE => $this->license,
-            RequestType::APPEAL => $this->appeal,
+            RequestType::COMPLAINT => $this->complaint,
+            RequestType::RENEWAL => $this->renewal,
+            RequestType::TERMINATION => $this->termination,
             default => null,
         };
     }

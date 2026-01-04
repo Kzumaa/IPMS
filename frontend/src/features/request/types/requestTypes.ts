@@ -4,6 +4,7 @@ import type {
   AmendmentSection,
   TransferType,
   LicenseType,
+  ComplaintResolution,
   AppealType,
   AppealResolution,
 } from './enums';
@@ -57,6 +58,7 @@ export interface AmendmentDetail {
   field_name?: string;
   old_value?: string;
   new_value?: string;
+  pending_version_id?: number;
 }
 
 // Assignment Detail
@@ -82,7 +84,7 @@ export interface LicenseDetail {
   licensee?: UserRef;
 }
 
-// Appeal Detail
+// Appeal Detail (deprecated - use ComplaintDetail)
 export interface AppealDetail {
   appeal_type: AppealType;
   appeal_type_label: string;
@@ -92,6 +94,32 @@ export interface AppealDetail {
   resolved_at?: string;
   resolution?: AppealResolution;
   resolution_label?: string;
+}
+
+// Complaint Detail (replaces Appeal per SRS Section 3.2)
+export interface ComplaintDetail {
+  grounds: string;
+  deadline: string;
+  complaint_number: number;
+  is_within_deadline: boolean;
+  previous_status?: string;
+  resolved_at?: string;
+  resolution?: ComplaintResolution;
+  resolution_label?: string;
+  remaining_complaints: number;
+}
+
+// Renewal Detail
+export interface RenewalDetail {
+  renewal_years: number;
+  current_expiration_date: string;
+  new_expiration_date: string;
+}
+
+// Termination Detail
+export interface TerminationDetail {
+  reason?: string;
+  effective_date: string;
 }
 
 // Main Application Request interface
@@ -114,7 +142,10 @@ export interface ApplicationRequest {
   amendment?: AmendmentDetail;
   assignment?: AssignmentDetail;
   license?: LicenseDetail;
-  appeal?: AppealDetail;
+  appeal?: AppealDetail; // Deprecated - use complaint
+  complaint?: ComplaintDetail;
+  renewal?: RenewalDetail;
+  termination?: TerminationDetail;
 
   // Fee quote
   fee_quote?: RequestFeeQuote;
@@ -168,6 +199,19 @@ export interface CreateAppealDTO {
   target_event_id?: number;
   notice_date?: string;
   grounds: string;
+}
+
+export interface CreateComplaintDTO {
+  grounds: string;
+}
+
+export interface CreateRenewalDTO {
+  renewal_years: number;
+}
+
+export interface CreateTerminationDTO {
+  reason?: string;
+  effective_date?: string;
 }
 
 // API Response wrapper

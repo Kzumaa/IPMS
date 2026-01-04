@@ -6,6 +6,7 @@ namespace App\Services\Request;
 
 use App\Enums\AppealResolution;
 use App\Enums\AppealType;
+use App\Enums\ApplicationStatus;
 use App\Enums\RequestType;
 use App\Models\Application;
 use App\Models\ApplicationRequest;
@@ -19,6 +20,7 @@ use Illuminate\Validation\ValidationException;
 class AppealService extends BaseRequestService
 {
     private const APPEAL_DEADLINE_DAYS = 90;
+    private const MAX_APPEALS = 3;
 
     public function __construct(ApplicationRequestRepositoryInterface $requestRepository)
     {
@@ -33,6 +35,69 @@ class AppealService extends BaseRequestService
     protected function getFeeCodeSuffix(): string
     {
         return 'REQ-APPEAL';
+    }
+
+    /**
+     * Override validation to add max appeals check.
+     */
+    protected function validateCanCreateRequest(Application $application): void
+    {
+        parent::validateCanCreateRequest($application);
+
+        // Check max appeals for the latest decision
+        $latestDecision = $application->decisionRecords()
+            ->where('decision_type', 'REFUSE')
+            ->latest('decision_date')
+            ->first();
+
+        if ($latestDecision) {
+            $appealCount = $this->countAppealsForDecision($application, $latestDecision->id);
+            if ($appealCount >= self::MAX_APPEALS) {
+                throw ValidationException::withMessages([
+                    'appeal' => 'Maximum number of appeals (' . self::MAX_APPEALS . ') has been reached for this decision.',
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Count the number of appeals for a specific decision.
+     */
+    public function countAppealsForDecision(Application $application, int $decisionId): int
+    {
+        return $application->requests()
+            ->where('type', RequestType::APPEAL)
+            ->whereHas('appeal', function ($query) use ($decisionId) {
+                $query->where('target_decision_id', $decisionId);
+            })
+            ->count();
+    }
+
+    /**
+     * Get the next appeal number for a decision.
+     */
+    private function getNextAppealNumber(Application $application, int $decisionId): int
+    {
+        $count = $this->countAppealsForDecision($application, $decisionId);
+        return $count + 1;
+    }
+
+    /**
+     * Get remaining appeal count for an application.
+     */
+    public function getRemainingAppeals(Application $application): int
+    {
+        $latestDecision = $application->decisionRecords()
+            ->where('decision_type', 'REFUSE')
+            ->latest('decision_date')
+            ->first();
+
+        if (!$latestDecision) {
+            return self::MAX_APPEALS;
+        }
+
+        $appealCount = $this->countAppealsForDecision($application, $latestDecision->id);
+        return max(0, self::MAX_APPEALS - $appealCount);
     }
 
     /**
@@ -59,7 +124,10 @@ class AppealService extends BaseRequestService
             ]);
         }
 
-        return DB::transaction(function () use ($application, $userId, $decision, $grounds, $deadline) {
+        // Get next appeal number
+        $appealNumber = $this->getNextAppealNumber($application, $decision->id);
+
+        return DB::transaction(function () use ($application, $userId, $decision, $grounds, $deadline, $appealNumber) {
             $request = $this->createRequest($application, $userId);
 
             RequestAppeal::create([
@@ -68,7 +136,11 @@ class AppealService extends BaseRequestService
                 'appeal_type' => AppealType::DECISION_APPEAL,
                 'grounds' => $grounds,
                 'deadline' => $deadline,
+                'appeal_number' => $appealNumber,
             ]);
+
+            // Update application status to APPEAL_PENDING
+            $application->update(['status' => ApplicationStatus::APPEAL_PENDING]);
 
             $this->generateFeeQuote($request);
 
@@ -112,6 +184,22 @@ class AppealService extends BaseRequestService
     }
 
     /**
+     * Start examination of an appeal (staff action).
+     */
+    public function startExamination(ApplicationRequest $request, int $staffId): ApplicationRequest
+    {
+        return DB::transaction(function () use ($request, $staffId) {
+            // Update application status to APPEAL_EXAMINING
+            $request->application->update(['status' => ApplicationStatus::APPEAL_EXAMINING]);
+
+            return $this->requestRepository->update($request, [
+                'status' => \App\Enums\RequestStatus::EXAMINING,
+                'processed_by' => $staffId,
+            ]);
+        });
+    }
+
+    /**
      * Resolve an appeal with a specific resolution.
      */
     public function resolveAppeal(
@@ -121,24 +209,35 @@ class AppealService extends BaseRequestService
         ?string $notes = null
     ): ApplicationRequest {
         return DB::transaction(function () use ($request, $staffId, $resolution, $notes) {
+            $application = $request->application;
+
             // Update appeal record
             $request->appeal->update([
                 'resolved_at' => now()->toDateString(),
                 'resolution' => $resolution,
             ]);
 
-            // Apply resolution effects
-            if ($resolution === AppealResolution::OVERTURNED) {
+            // Update application status based on resolution
+            $newAppStatus = match ($resolution) {
+                AppealResolution::OVERTURNED => ApplicationStatus::SUB_EXAM, // Re-examine
+                AppealResolution::PARTIAL => ApplicationStatus::SUB_EXAM, // Re-examine with modifications
+                AppealResolution::UPHELD => ApplicationStatus::REFUSED, // Decision stands
+                AppealResolution::WITHDRAWN => ApplicationStatus::REFUSED, // Decision stands
+            };
+            $application->update(['status' => $newAppStatus]);
+
+            // Apply approval changes if overturned
+            if ($resolution === AppealResolution::OVERTURNED || $resolution === AppealResolution::PARTIAL) {
                 $this->applyApprovalChanges($request);
             }
 
-            // Update request status based on resolution
-            $status = $resolution === AppealResolution::WITHDRAWN
+            // Update request status
+            $requestStatus = $resolution === AppealResolution::WITHDRAWN
                 ? \App\Enums\RequestStatus::REFUSED
                 : \App\Enums\RequestStatus::APPROVED;
 
             return $this->requestRepository->update($request, [
-                'status' => $status,
+                'status' => $requestStatus,
                 'processed_date' => now()->toDateString(),
                 'processed_by' => $staffId,
                 'processing_notes' => $notes,
@@ -157,14 +256,8 @@ class AppealService extends BaseRequestService
             return;
         }
 
-        // If the appeal overturns a refusal decision, the application should go back
-        // to a state where it can be re-examined or granted.
-        // This is a simplified implementation - real logic would depend on business rules.
-        if ($appeal->appeal_type === AppealType::DECISION_APPEAL && $appeal->resolution === AppealResolution::OVERTURNED) {
-            $request->application->update([
-                'status' => \App\Enums\ApplicationStatus::SUB_EXAM,
-            ]);
-        }
+        // The application has already been set to SUB_EXAM in resolveAppeal.
+        // Additional business logic can be added here if needed.
     }
 
     /**

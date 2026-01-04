@@ -37,10 +37,10 @@ class SplitService extends BaseRequestService
     {
         parent::validateCanCreateRequest($application);
 
-        // Cannot split if already granted or refused
-        if (in_array($application->status, [ApplicationStatus::GRANTED, ApplicationStatus::REFUSED])) {
+        // Cannot split if already granted or declined
+        if (in_array($application->status, [ApplicationStatus::GRANTED, ApplicationStatus::DECLINED])) {
             throw ValidationException::withMessages([
-                'application' => 'Cannot split an application that has been granted or refused.',
+                'application' => 'Cannot split an application that has been granted or declined.',
             ]);
         }
     }

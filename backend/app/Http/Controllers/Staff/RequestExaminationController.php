@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Staff;
 
-use App\Enums\AppealResolution;
+use App\Enums\ComplaintResolution;
 use App\Enums\RequestStatus;
 use App\Enums\RequestType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ApplicationRequestResource;
 use App\Models\ApplicationRequest;
 use App\Services\Request\AmendmentService;
-use App\Services\Request\AppealService;
 use App\Services\Request\AssignmentService;
+use App\Services\Request\ComplaintService;
 use App\Services\Request\LicenseService;
+use App\Services\Request\RenewalService;
 use App\Services\Request\SplitService;
+use App\Services\Request\TerminationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,20 +27,26 @@ class RequestExaminationController extends Controller
     protected AssignmentService $assignmentService;
     protected LicenseService $licenseService;
     protected SplitService $splitService;
-    protected AppealService $appealService;
+    protected ComplaintService $complaintService;
+    protected RenewalService $renewalService;
+    protected TerminationService $terminationService;
 
     public function __construct(
         AmendmentService $amendmentService,
         AssignmentService $assignmentService,
         LicenseService $licenseService,
         SplitService $splitService,
-        AppealService $appealService
+        ComplaintService $complaintService,
+        RenewalService $renewalService,
+        TerminationService $terminationService
     ) {
         $this->amendmentService = $amendmentService;
         $this->assignmentService = $assignmentService;
         $this->licenseService = $licenseService;
         $this->splitService = $splitService;
-        $this->appealService = $appealService;
+        $this->complaintService = $complaintService;
+        $this->renewalService = $renewalService;
+        $this->terminationService = $terminationService;
     }
 
     /**
@@ -59,7 +67,9 @@ class RequestExaminationController extends Controller
             'amendment',
             'assignment',
             'license',
-            'appeal',
+            'complaint',
+            'renewal',
+            'termination',
             'feeQuote',
         ]);
 
@@ -105,8 +115,9 @@ class RequestExaminationController extends Controller
             'license',
             'license.licensor',
             'license.licensee',
-            'appeal',
-            'appeal.targetDecision',
+            'complaint',
+            'renewal',
+            'termination',
             'attachments',
             'attachments.file',
             'feeQuote',
@@ -161,7 +172,7 @@ class RequestExaminationController extends Controller
         );
 
         return response()->json([
-            'data' => new ApplicationRequestResource($approvedRequest->load(['amendment', 'assignment', 'license', 'appeal'])),
+            'data' => new ApplicationRequestResource($approvedRequest->load(['amendment', 'assignment', 'license', 'complaint', 'renewal', 'termination'])),
             'message' => 'Request approved successfully.',
         ]);
     }
@@ -192,49 +203,51 @@ class RequestExaminationController extends Controller
     }
 
     /**
-     * Resolve an appeal with specific resolution.
+     * Resolve a complaint with specific resolution.
      */
-    public function resolveAppeal(Request $request, int $requestId): JsonResponse
+    public function resolveComplaint(Request $request, int $requestId): JsonResponse
     {
         $applicationRequest = ApplicationRequest::findOrFail($requestId);
 
-        if ($applicationRequest->type !== RequestType::APPEAL) {
+        if ($applicationRequest->type !== RequestType::COMPLAINT) {
             return response()->json([
-                'message' => 'This endpoint is only for appeal requests.',
+                'message' => 'This endpoint is only for complaint requests.',
             ], 400);
         }
 
         $staffId = Auth::guard('staff')->id();
 
         $validated = $request->validate([
-            'resolution' => 'required|string|in:' . implode(',', array_column(AppealResolution::cases(), 'value')),
+            'resolution' => 'required|string|in:' . implode(',', array_column(ComplaintResolution::cases(), 'value')),
             'notes' => 'nullable|string|max:5000',
         ]);
 
-        $resolvedRequest = $this->appealService->resolveAppeal(
+        $resolvedRequest = $this->complaintService->resolveComplaint(
             $applicationRequest,
             $staffId,
-            AppealResolution::from($validated['resolution']),
+            ComplaintResolution::from($validated['resolution']),
             $validated['notes'] ?? null
         );
 
         return response()->json([
-            'data' => new ApplicationRequestResource($resolvedRequest->load(['appeal'])),
-            'message' => 'Appeal resolved.',
+            'data' => new ApplicationRequestResource($resolvedRequest->load(['complaint'])),
+            'message' => 'Complaint resolved.',
         ]);
     }
 
     /**
      * Get the appropriate service for a request type.
      */
-    private function getServiceForType(RequestType $type): AmendmentService|AssignmentService|LicenseService|SplitService|AppealService
+    private function getServiceForType(RequestType $type): AmendmentService|AssignmentService|LicenseService|SplitService|ComplaintService|RenewalService|TerminationService
     {
         return match ($type) {
             RequestType::AMENDMENT => $this->amendmentService,
             RequestType::ASSIGNMENT => $this->assignmentService,
             RequestType::LICENSE => $this->licenseService,
             RequestType::SPLIT => $this->splitService,
-            RequestType::APPEAL => $this->appealService,
+            RequestType::COMPLAINT => $this->complaintService,
+            RequestType::RENEWAL => $this->renewalService,
+            RequestType::TERMINATION => $this->terminationService,
             default => $this->amendmentService,
         };
     }

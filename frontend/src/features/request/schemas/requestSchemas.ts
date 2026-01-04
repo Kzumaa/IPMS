@@ -120,3 +120,31 @@ export const appealSchema = appealBaseSchema.refine(
 );
 
 export type AppealFormData = z.infer<typeof appealBaseSchema>;
+
+// Complaint Schema (replaces Appeal per SRS Section 3.2)
+export const complaintSchema = z.object({
+  grounds: z
+    .string()
+    .min(50, 'Lý do khiếu nại phải có ít nhất 50 ký tự')
+    .max(10000, 'Lý do khiếu nại không được quá 10000 ký tự'),
+});
+
+export type ComplaintFormData = z.infer<typeof complaintSchema>;
+
+// Renewal Schema
+export const renewalSchema = z.object({
+  renewal_years: z
+    .number({ message: 'Vui lòng nhập số năm gia hạn' })
+    .min(1, 'Số năm gia hạn tối thiểu là 1')
+    .max(20, 'Số năm gia hạn tối đa là 20'),
+});
+
+export type RenewalFormData = z.infer<typeof renewalSchema>;
+
+// Termination Schema
+export const terminationSchema = z.object({
+  reason: z.string().max(5000, 'Lý do chấm dứt không được quá 5000 ký tự').optional(),
+  effective_date: z.string().optional(),
+});
+
+export type TerminationFormData = z.infer<typeof terminationSchema>;

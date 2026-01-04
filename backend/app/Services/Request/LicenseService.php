@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\Request;
 
+use App\Enums\ApplicationStatus;
 use App\Enums\LicenseType;
 use App\Enums\RequestType;
 use App\Models\Application;
 use App\Models\ApplicationParty;
 use App\Models\ApplicationRequest;
+use App\Models\FeeQuote;
 use App\Models\RequestLicense;
 use App\Models\User;
 use App\Repositories\Request\ApplicationRequestRepositoryInterface;
@@ -30,7 +32,95 @@ class LicenseService extends BaseRequestService
 
     protected function getFeeCodeSuffix(): string
     {
-        return 'REQ-LICENSE';
+        return 'LICENSE'; // Used as prefix for fee lookup
+    }
+
+    /**
+     * Validate that a license request can be created.
+     * License can only be created for GRANTED applications.
+     */
+    protected function validateCanCreateRequest(Application $application): void
+    {
+        parent::validateCanCreateRequest($application);
+
+        // Application must be GRANTED to create a license
+        if ($application->status !== ApplicationStatus::GRANTED) {
+            throw ValidationException::withMessages([
+                'application' => 'License requests can only be created for granted applications.',
+            ]);
+        }
+    }
+
+    /**
+     * Generate fee quote with multiple license fee components.
+     * Total: 590,000 VND (120k + 230k + 120k + 120k)
+     */
+    public function generateFeeQuote(ApplicationRequest $request, string $lawVersion = 'TT263-2016'): FeeQuote
+    {
+        $application = $request->application;
+
+        // Get app type prefix
+        $prefix = match ($application->app_type->value) {
+            'PATENT' => 'PAT',
+            'UTILITY' => 'UTL',
+            'INDUSTRIAL_DESIGN' => 'ID',
+            default => 'PAT',
+        };
+
+        // Fee codes for license
+        $feeCodes = [
+            "{$prefix}-LICENSE-CERT",  // Certificate fee
+            "{$prefix}-LICENSE-EXAM",  // Examination fee
+            "{$prefix}-LICENSE-PUB",   // Publication fee
+            "{$prefix}-LICENSE-REG",   // Registration fee
+        ];
+
+        // Get all fees from catalog
+        $fees = DB::table('fee_catalog')
+            ->whereIn('code', $feeCodes)
+            ->where('law_version', $lawVersion)
+            ->get()
+            ->keyBy('code');
+
+        if ($fees->count() !== 4) {
+            throw ValidationException::withMessages([
+                'fee' => 'License fee codes not found in catalog.',
+            ]);
+        }
+
+        // Calculate total
+        $totalAmount = $fees->sum('unit_price');
+
+        // Get next version for this application
+        $nextVersion = FeeQuote::where('application_id', $application->id)->max('version') + 1;
+
+        return DB::transaction(function () use ($request, $application, $fees, $feeCodes, $totalAmount, $nextVersion, $lawVersion) {
+            // Create fee quote
+            $feeQuote = FeeQuote::create([
+                'application_id' => $application->id,
+                'request_id' => $request->id,
+                'version' => $nextVersion,
+                'currency' => 'VND',
+                'total_amount' => $totalAmount,
+                'status' => 'PENDING',
+                'law_version' => $lawVersion,
+            ]);
+
+            // Create fee quote lines for each component
+            foreach ($feeCodes as $code) {
+                $fee = $fees[$code];
+                $feeQuote->lines()->create([
+                    'fee_code' => $fee->code,
+                    'label' => $fee->label,
+                    'units' => 1,
+                    'unit_price' => $fee->unit_price,
+                    'amount' => $fee->unit_price,
+                    'source' => 'AUTO',
+                ]);
+            }
+
+            return $feeQuote;
+        });
     }
 
     /**

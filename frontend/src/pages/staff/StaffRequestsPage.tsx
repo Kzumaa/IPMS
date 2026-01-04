@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchRequests } from '@/features/staff/store/staffSlice';
 import { RequestStatusBadge, RequestTypeBadge } from '@/features/request/components';
+import type { RequestType, RequestStatus } from '@/features/request/types/enums';
 
 const RequestTypeOptions = ['AMENDMENT', 'ASSIGNMENT', 'LICENSE', 'SPLIT', 'APPEAL'];
 const RequestStatusOptions = ['SUBMITTED', 'EXAMINING', 'APPROVED', 'REFUSED', 'RECORDED'];
@@ -163,10 +164,10 @@ export default function StaffRequestsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <RequestTypeBadge type={request.type} />
+                                                <RequestTypeBadge type={request.type as RequestType} />
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <RequestStatusBadge status={request.status} />
+                                                <RequestStatusBadge status={request.status as RequestStatus} />
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                                 {formatDate(request.request_date)}
