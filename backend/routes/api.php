@@ -49,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/submit', [ApplicationController::class, 'submit']);
         Route::post('/{id}/analyze', [ApplicationController::class, 'analyze']);
         Route::post('/{id}/split', [ApplicationController::class, 'split']);
+        Route::post('/{id}/publish', [ApplicationController::class, 'publish']);
 
         // Parties
         Route::get('/{id}/parties', [ApplicationPartyController::class, 'index']);

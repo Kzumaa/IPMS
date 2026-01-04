@@ -6,7 +6,7 @@ import { PartyType, AttachmentType } from '../types/enums';
 
 // Map doc_type to display label
 const docTypeLabels: Record<string, string> = {
-    'DESCRIPTION': 'Description',
+    'DESCRIPTION': 'Specification',
     'CLAIMS': 'Claims',
     'ABSTRACT': 'Abstract',
     'DRAWINGS': 'Drawings',

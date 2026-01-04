@@ -138,6 +138,11 @@ export const AppealType = {
 
 export type AppealType = (typeof AppealType)[keyof typeof AppealType];
 
+export const AppealTypeLabels: Record<AppealType, string> = {
+  DECISION_APPEAL: 'Khiếu nại quyết định',
+  NOTICE_OBJECTION: 'Phản đối thông báo',
+};
+
 export const AppealResolution = {
   UPHELD: 'UPHELD',
   OVERTURNED: 'OVERTURNED',
@@ -146,3 +151,10 @@ export const AppealResolution = {
 } as const;
 
 export type AppealResolution = (typeof AppealResolution)[keyof typeof AppealResolution];
+
+export const AppealResolutionLabels: Record<AppealResolution, string> = {
+  UPHELD: 'Giữ nguyên quyết định',
+  OVERTURNED: 'Hủy bỏ quyết định',
+  PARTIAL: 'Chấp nhận một phần',
+  WITHDRAWN: 'Rút khiếu nại',
+};

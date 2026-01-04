@@ -178,7 +178,10 @@ class AmendmentVersionService
             $updateData = [];
             foreach (self::SCALAR_FIELDS as $field) {
                 if ($pending->hasFieldChanged($field)) {
-                    $updateData[$field] = $proposed[$field] ?? null;
+                    // For boolean fields, use false as default instead of null
+                    $isBooleanField = in_array($field, ['applicant_is_inventor', 'publication_early_requested']);
+                    $default = $isBooleanField ? false : null;
+                    $updateData[$field] = $proposed[$field] ?? $default;
                 }
             }
 
@@ -288,7 +291,18 @@ class AmendmentVersionService
             return $a !== $b;
         }
 
-        return $a !== $b;
+        // Normalize boolean values - treat false and null as equivalent
+        $normalizeBoolean = function ($value) {
+            if (is_bool($value) || $value === null) {
+                return (bool) $value; // false and null both become false
+            }
+            return $value;
+        };
+
+        $normalizedA = $normalizeBoolean($a);
+        $normalizedB = $normalizeBoolean($b);
+
+        return $normalizedA !== $normalizedB;
     }
 
     private function compareParties(array $current, array $proposed): array
@@ -376,10 +390,16 @@ class AmendmentVersionService
                 $added = array_diff($proposedIds, $currentIds);
 
                 if (!empty($removed) || !empty($added)) {
+                    // Get old and new file details
+                    $oldFiles = collect($docs)->whereIn('file_id', $removed)->values()->toArray();
+                    $newFiles = collect($proposedByType[$docType])->whereIn('file_id', $added)->values()->toArray();
+
                     $changes['replaced'][] = [
                         'doc_type' => $docType,
                         'old_count' => count($docs),
                         'new_count' => count($proposedByType[$docType]),
+                        'old_files' => $oldFiles,
+                        'new_files' => $newFiles,
                     ];
                 }
             }

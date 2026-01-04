@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             FeeCatalogSeeder::class,
             RequestFeeCatalogSeeder::class,
             FeeRulesSeeder::class,
+            StaffSeeder::class,
+            ApplicantSeeder::class,
         ]);
     }
 }

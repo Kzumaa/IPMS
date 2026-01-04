@@ -91,6 +91,9 @@ class AmendmentController extends Controller
             abort(404, 'Amendment request not found.');
         }
 
+        // Load pending version for edit-mode amendments
+        $request->load('amendment.pendingVersion');
+
         return response()->json([
             'data' => new ApplicationRequestResource($request),
         ]);
@@ -232,8 +235,17 @@ class AmendmentController extends Controller
             ], 422);
         }
 
-        // Get uploaded files
-        $uploadedFiles = $request->file('attachments', []);
+        // Get uploaded files with their doc_types
+        $uploadedFiles = [];
+        $attachmentsInput = $request->input('attachments', []);
+        foreach ($attachmentsInput as $index => $item) {
+            if ($request->hasFile("attachments.{$index}.file")) {
+                $uploadedFiles[] = [
+                    'file' => $request->file("attachments.{$index}.file"),
+                    'doc_type' => $item['doc_type'] ?? 'OTHER',
+                ];
+            }
+        }
 
         // Create the amendment request with pending version
         $amendmentRequest = $this->amendmentService->createEditModeAmendment(

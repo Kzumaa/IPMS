@@ -100,7 +100,9 @@ class ApplicationController extends Controller
             'metrics',
             'parties',
             'payments.receiptFile',
-            'attachments.file',
+            'attachments' => function ($query) {
+                $query->where('is_current', true)->with('file');
+            },
             'feeQuotes',
             'priorityClaims',
         ])->findOrFail($id);
@@ -310,6 +312,49 @@ class ApplicationController extends Controller
             'application_metrics' => $application->metrics,
             'file_results' => $results,
             'warning' => $hasWarnings ? 'Some files require manual verification.' : null
+        ]);
+    }
+
+    /**
+     * Publish application (FORMALITY_PASSED → PUBLISHED).
+     * Requires publication fee to be paid.
+     */
+    public function publish(Request $request, $id)
+    {
+        $application = Application::with(['feeQuotes.lines'])->findOrFail($id);
+        $this->authorize('examine', $application);
+
+        // Validate status
+        if ($application->status !== ApplicationStatus::FORMALITY_PASSED) {
+            return response()->json([
+                'message' => 'Application must be in FORMALITY_PASSED status.',
+            ], 400);
+        }
+
+        // Check publication fee is paid
+        $publicationFeePaid = $application->feeQuotes()
+            ->where('status', 'PAID')
+            ->whereHas('lines', function ($query) {
+                $query->where(function ($q) {
+                    $q->where('fee_code', 'LIKE', '%PUB%')
+                      ->orWhere('label', 'LIKE', '%Publication%')
+                      ->orWhere('label', 'LIKE', '%Công bố%');
+                });
+            })
+            ->exists();
+
+        if (!$publicationFeePaid) {
+            return response()->json([
+                'message' => 'Publication fee must be paid.',
+            ], 400);
+        }
+
+        // Update status
+        $application->update(['status' => ApplicationStatus::PUBLISHED]);
+
+        return response()->json([
+            'data' => new ApplicationResource($application),
+            'message' => 'Application published successfully.',
         ]);
     }
 }

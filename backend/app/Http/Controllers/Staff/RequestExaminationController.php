@@ -10,6 +10,7 @@ use App\Enums\RequestType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ApplicationRequestResource;
 use App\Models\ApplicationRequest;
+use App\Models\RequestExaminationRecord;
 use App\Services\Request\AmendmentService;
 use App\Services\Request\AssignmentService;
 use App\Services\Request\ComplaintService;
@@ -142,9 +143,20 @@ class RequestExaminationController extends Controller
             ], 400);
         }
 
+        $staffId = Auth::id();
+
         $request->update([
             'status' => RequestStatus::EXAMINING,
-            'processed_by' => Auth::guard('staff')->id(),
+            'processed_by' => $staffId,
+        ]);
+
+        // Create examination record
+        RequestExaminationRecord::create([
+            'request_id' => $request->id,
+            'examined_by' => $staffId,
+            'action' => 'STARTED',
+            'notes' => 'Started examination',
+            'examined_at' => now(),
         ]);
 
         return response()->json([
@@ -158,7 +170,7 @@ class RequestExaminationController extends Controller
     public function approve(Request $request, int $requestId): JsonResponse
     {
         $applicationRequest = ApplicationRequest::findOrFail($requestId);
-        $staffId = Auth::guard('staff')->id();
+        $staffId = Auth::id();
 
         $validated = $request->validate([
             'notes' => 'nullable|string|max:5000',
@@ -170,6 +182,15 @@ class RequestExaminationController extends Controller
             $staffId,
             $validated['notes'] ?? null
         );
+
+        // Create examination record
+        RequestExaminationRecord::create([
+            'request_id' => $approvedRequest->id,
+            'examined_by' => $staffId,
+            'action' => 'APPROVED',
+            'notes' => $validated['notes'] ?? 'Request approved',
+            'examined_at' => now(),
+        ]);
 
         return response()->json([
             'data' => new ApplicationRequestResource($approvedRequest->load(['amendment', 'assignment', 'license', 'complaint', 'renewal', 'termination'])),
@@ -183,7 +204,7 @@ class RequestExaminationController extends Controller
     public function refuse(Request $request, int $requestId): JsonResponse
     {
         $applicationRequest = ApplicationRequest::findOrFail($requestId);
-        $staffId = Auth::guard('staff')->id();
+        $staffId = Auth::id();
 
         $validated = $request->validate([
             'notes' => 'required|string|max:5000',
@@ -195,6 +216,15 @@ class RequestExaminationController extends Controller
             $staffId,
             $validated['notes']
         );
+
+        // Create examination record
+        RequestExaminationRecord::create([
+            'request_id' => $refusedRequest->id,
+            'examined_by' => $staffId,
+            'action' => 'REFUSED',
+            'notes' => $validated['notes'],
+            'examined_at' => now(),
+        ]);
 
         return response()->json([
             'data' => new ApplicationRequestResource($refusedRequest),
@@ -215,7 +245,7 @@ class RequestExaminationController extends Controller
             ], 400);
         }
 
-        $staffId = Auth::guard('staff')->id();
+        $staffId = Auth::id();
 
         $validated = $request->validate([
             'resolution' => 'required|string|in:' . implode(',', array_column(ComplaintResolution::cases(), 'value')),

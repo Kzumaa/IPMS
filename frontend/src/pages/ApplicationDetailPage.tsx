@@ -13,7 +13,6 @@ import {
   VersionHistory,
   SplitApplicationModal,
 } from "../features/application/components";
-import { RequestsSection } from "../features/request/components";
 import { PaymentButton } from "../features/payment/components";
 import { ApplicationStatus } from "../features/application/types/enums";
 
@@ -38,14 +37,18 @@ const ApplicationDetailPage: React.FC = () => {
   // Check if application can be split (not in terminal states)
   const terminalStates: ApplicationStatus[] = [
     ApplicationStatus.GRANTED,
-    ApplicationStatus.REFUSED,
+    ApplicationStatus.DECLINED,
     ApplicationStatus.WITHDRAWN,
     ApplicationStatus.DRAFT,
   ];
-  const canSplit = currentApplication && !terminalStates.includes(currentApplication.status as ApplicationStatus);
+  const canSplit =
+    currentApplication &&
+    !terminalStates.includes(currentApplication.status as ApplicationStatus);
 
   // Check if application can be amended (submitted but not in terminal states)
-  const canAmend = currentApplication && !terminalStates.includes(currentApplication.status as ApplicationStatus);
+  const canAmend =
+    currentApplication &&
+    !terminalStates.includes(currentApplication.status as ApplicationStatus);
 
   console.log(currentApplication);
 
@@ -270,12 +273,6 @@ const ApplicationDetailPage: React.FC = () => {
 
             {/* Note: Abstract, description, and claims are uploaded as attachments */}
 
-            {/* Requests Section */}
-            <RequestsSection
-              applicationId={currentApplication.id!}
-              applicationStatus={currentApplication.status}
-            />
-
             {/* Application Timeline */}
             <ApplicationTimeline applicationId={currentApplication.id!} />
 
@@ -364,61 +361,70 @@ const ApplicationDetailPage: React.FC = () => {
             </div>
 
             {/* Fee Payment */}
-            {currentApplication.fee_quotes && currentApplication.fee_quotes.length > 0 && (
-              <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    {t("payment.feePayment")}
-                  </h3>
-                  <Link
-                    to="/app/fees"
-                    className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-                  >
-                    {t("payment.viewAll")}
-                  </Link>
-                </div>
-                <div className="space-y-3">
-                  {currentApplication.fee_quotes.map((quote) => {
-                    const isPaid = quote.status === "PAID";
-                    const isPayable = quote.status === "FINAL" || quote.status === "DRAFT";
-                    return (
-                      <div
-                        key={quote.id}
-                        className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
-                      >
-                        <div>
-                          <p className="text-sm font-medium text-slate-900 dark:text-white">
-                            {t("payment.applicationFee")} v{quote.version}
-                          </p>
-                          <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                            {new Intl.NumberFormat("vi-VN").format(quote.total_amount)} {quote.currency}
-                          </p>
+            {currentApplication.fee_quotes &&
+              currentApplication.fee_quotes.length > 0 && (
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                      {t("payment.feePayment")}
+                    </h3>
+                    <Link
+                      to="/app/fees"
+                      className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    >
+                      {t("payment.viewAll")}
+                    </Link>
+                  </div>
+                  <div className="space-y-3">
+                    {currentApplication.fee_quotes.map((quote) => {
+                      const isPaid = quote.status === "PAID";
+                      const isPayable =
+                        quote.status === "FINAL" ||
+                        quote.status === "DRAFT" ||
+                        quote.status === "PENDING";
+                      return (
+                        <div
+                          key={quote.id}
+                          className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">
+                              {t("payment.applicationFee")} v{quote.version}
+                            </p>
+                            <p className="text-lg font-semibold text-slate-900 dark:text-white">
+                              {new Intl.NumberFormat("vi-VN").format(
+                                quote.total_amount
+                              )}{" "}
+                              {quote.currency}
+                            </p>
+                          </div>
+                          <div>
+                            {isPaid ? (
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
+                                <span className="material-symbols-outlined mr-1 !text-sm">
+                                  check_circle
+                                </span>
+                                {t("payment.statuses.PAID")}
+                              </span>
+                            ) : isPayable ? (
+                              <PaymentButton
+                                feeQuoteId={quote.id}
+                                amount={quote.total_amount}
+                                currency={quote.currency}
+                                size="sm"
+                              />
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-600 dark:text-slate-300">
+                                {quote.status}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          {isPaid ? (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
-                              <span className="material-symbols-outlined mr-1 !text-sm">check_circle</span>
-                              {t("payment.statuses.PAID")}
-                            </span>
-                          ) : isPayable ? (
-                            <PaymentButton
-                              feeQuoteId={quote.id}
-                              amount={quote.total_amount}
-                              currency={quote.currency}
-                              size="sm"
-                            />
-                          ) : (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-600 dark:text-slate-300">
-                              {quote.status}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Attachments */}
             <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">

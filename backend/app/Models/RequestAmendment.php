@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\AmendmentSection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class RequestAmendment extends Model
 {
@@ -26,7 +24,7 @@ class RequestAmendment extends Model
     ];
 
     protected $casts = [
-        'section' => AmendmentSection::class,
+        'section' => 'array',
     ];
 
     public function request(): BelongsTo

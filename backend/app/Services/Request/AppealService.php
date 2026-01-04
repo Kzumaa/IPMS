@@ -221,8 +221,8 @@ class AppealService extends BaseRequestService
             $newAppStatus = match ($resolution) {
                 AppealResolution::OVERTURNED => ApplicationStatus::SUB_EXAM, // Re-examine
                 AppealResolution::PARTIAL => ApplicationStatus::SUB_EXAM, // Re-examine with modifications
-                AppealResolution::UPHELD => ApplicationStatus::REFUSED, // Decision stands
-                AppealResolution::WITHDRAWN => ApplicationStatus::REFUSED, // Decision stands
+                AppealResolution::UPHELD => ApplicationStatus::DECLINED, // Decision stands
+                AppealResolution::WITHDRAWN => ApplicationStatus::DECLINED, // Decision stands
             };
             $application->update(['status' => $newAppStatus]);
 

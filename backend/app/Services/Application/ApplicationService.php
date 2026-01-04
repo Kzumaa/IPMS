@@ -263,7 +263,7 @@ class ApplicationService
         // Validate: Cannot split GRANTED or DECLINED applications
         if (in_array($original->status, [ApplicationStatus::GRANTED, ApplicationStatus::DECLINED])) {
             throw \Illuminate\Validation\ValidationException::withMessages([
-                'application' => 'Cannot split an application that has been granted or refused.',
+                'application' => 'Cannot split an application that has been granted or declined.',
             ]);
         }
 

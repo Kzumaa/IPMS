@@ -56,7 +56,7 @@ class StaffClassificationController extends Controller
                 'recalculate_fees' => 'boolean',
             ]);
 
-            $staffId = Auth::guard('staff')->id();
+            $staffId = Auth::id();
             $application = $this->classificationService->assignIpcClasses(
                 $application,
                 $validated['ipc_classes'],
@@ -73,7 +73,7 @@ class StaffClassificationController extends Controller
                 'recalculate_fees' => 'boolean',
             ]);
 
-            $staffId = Auth::guard('staff')->id();
+            $staffId = Auth::id();
             $application = $this->classificationService->assignLocarnoClasses(
                 $application,
                 $validated['locarno_classes'],

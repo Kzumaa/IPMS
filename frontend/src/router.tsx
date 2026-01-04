@@ -21,11 +21,13 @@ import StaffRequestsPage from './pages/staff/StaffRequestsPage';
 import StaffRequestDetailPage from './pages/staff/StaffRequestDetailPage';
 import { ProtectedRoute, PublicRoute } from './components/AuthRoutes';
 import {
-    CreateAmendmentPage,
     CreateAssignmentPage,
     CreateLicensePage,
     CreateSplitPage,
     CreateAppealPage,
+    CreateComplaintPage,
+    CreateRenewalPage,
+    CreateTerminationPage,
     RequestDetailPage,
 } from './pages/request';
 import { PaymentSuccessPage, PaymentCancelPage } from './pages/payment';
@@ -127,10 +129,6 @@ const router = createBrowserRouter([
                     },
                     // Request routes
                     {
-                        path: 'applications/:id/requests/amendments/new',
-                        element: <CreateAmendmentPage />,
-                    },
-                    {
                         path: 'applications/:id/requests/assignments/new',
                         element: <CreateAssignmentPage />,
                     },
@@ -145,6 +143,18 @@ const router = createBrowserRouter([
                     {
                         path: 'applications/:id/requests/appeals/new',
                         element: <CreateAppealPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/complaints/new',
+                        element: <CreateComplaintPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/renewals/new',
+                        element: <CreateRenewalPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/terminations/new',
+                        element: <CreateTerminationPage />,
                     },
                     {
                         path: 'applications/:id/requests/:type/:requestId',

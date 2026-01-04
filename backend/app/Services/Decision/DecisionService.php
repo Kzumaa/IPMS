@@ -12,6 +12,7 @@ use App\Repositories\ProtectionTitle\ProtectionTitleRepositoryInterface;
 use App\Services\Maintenance\MaintenanceService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class DecisionService
 {
@@ -34,6 +35,13 @@ class DecisionService
 
     public function recordDecision(Application $application, string $type, ?string $notes): DecisionRecord
     {
+        // Block decision if application is under post-grant amendment review
+        if ($application->status === ApplicationStatus::UNDER_AMENDMENT) {
+            throw ValidationException::withMessages([
+                'status' => 'Cannot perform examination while post-grant amendment is under review.',
+            ]);
+        }
+
         return DB::transaction(function () use ($application, $type, $notes) {
             // 1. Create Decision Record
             $record = $this->decisionRecordRepository->create([

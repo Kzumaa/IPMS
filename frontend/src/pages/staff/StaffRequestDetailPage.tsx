@@ -177,9 +177,19 @@ export default function StaffRequestDetailPage() {
                             <h2 className="text-lg font-semibold mb-4">{t('request.amendment.details')}</h2>
                             <dl className="space-y-4">
                                 <div>
-                                    <dt className="text-sm font-medium text-gray-500">{t('request.amendment.section')}</dt>
-                                    <dd className="mt-1 text-sm text-gray-900">
-                                        {t(`request.amendment.sections.${currentRequest.amendment.section}`)}
+                                    <dt className="text-sm font-medium text-gray-500">{t('request.amendment.sections', 'Affected Sections')}</dt>
+                                    <dd className="mt-1">
+                                        <div className="flex flex-wrap gap-2">
+                                            {Array.isArray(currentRequest.amendment.section) && currentRequest.amendment.section.length > 0 ? (
+                                                currentRequest.amendment.section.map((sec: string, idx: number) => (
+                                                    <span key={idx} className="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded">
+                                                        {sec.replace(/_/g, ' ')}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-sm text-gray-500">-</span>
+                                            )}
+                                        </div>
                                     </dd>
                                 </div>
                                 <div>

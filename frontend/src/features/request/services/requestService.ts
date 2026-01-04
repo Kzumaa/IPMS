@@ -8,6 +8,9 @@ import type {
   CreateLicenseDTO,
   CreateSplitDTO,
   CreateAppealDTO,
+  CreateComplaintDTO,
+  CreateRenewalDTO,
+  CreateTerminationDTO,
 } from '../types/requestTypes';
 
 const BASE_URL = '/applications';
@@ -143,14 +146,91 @@ export const requestService = {
     return response.data;
   },
 
+  // ==================== COMPLAINT ====================
+  async getComplaints(applicationId: number): Promise<ApiResponse<ApplicationRequest[]>> {
+    const response = await axiosClient.get(`${BASE_URL}/${applicationId}/requests/complaints`);
+    return response.data;
+  },
+
+  async getComplaint(applicationId: number, requestId: number): Promise<ApiResponse<ApplicationRequest>> {
+    const response = await axiosClient.get(`${BASE_URL}/${applicationId}/requests/complaints/${requestId}`);
+    return response.data;
+  },
+
+  async createComplaint(applicationId: number, data: CreateComplaintDTO): Promise<ApiResponse<ApplicationRequest>> {
+    const response = await axiosClient.post(`${BASE_URL}/${applicationId}/requests/complaints`, data);
+    return response.data;
+  },
+
+  async deleteComplaint(applicationId: number, requestId: number): Promise<void> {
+    await axiosClient.delete(`${BASE_URL}/${applicationId}/requests/complaints/${requestId}`);
+  },
+
+  async submitComplaint(applicationId: number, requestId: number): Promise<ApiResponse<ApplicationRequest>> {
+    const response = await axiosClient.post(`${BASE_URL}/${applicationId}/requests/complaints/${requestId}/submit`);
+    return response.data;
+  },
+
+  // ==================== RENEWAL ====================
+  async getRenewals(applicationId: number): Promise<ApiResponse<ApplicationRequest[]>> {
+    const response = await axiosClient.get(`${BASE_URL}/${applicationId}/requests/renewals`);
+    return response.data;
+  },
+
+  async getRenewal(applicationId: number, requestId: number): Promise<ApiResponse<ApplicationRequest>> {
+    const response = await axiosClient.get(`${BASE_URL}/${applicationId}/requests/renewals/${requestId}`);
+    return response.data;
+  },
+
+  async createRenewal(applicationId: number, data: CreateRenewalDTO): Promise<ApiResponse<ApplicationRequest>> {
+    const response = await axiosClient.post(`${BASE_URL}/${applicationId}/requests/renewals`, data);
+    return response.data;
+  },
+
+  async deleteRenewal(applicationId: number, requestId: number): Promise<void> {
+    await axiosClient.delete(`${BASE_URL}/${applicationId}/requests/renewals/${requestId}`);
+  },
+
+  async submitRenewal(applicationId: number, requestId: number): Promise<ApiResponse<ApplicationRequest>> {
+    const response = await axiosClient.post(`${BASE_URL}/${applicationId}/requests/renewals/${requestId}/submit`);
+    return response.data;
+  },
+
+  // ==================== TERMINATION ====================
+  async getTerminations(applicationId: number): Promise<ApiResponse<ApplicationRequest[]>> {
+    const response = await axiosClient.get(`${BASE_URL}/${applicationId}/requests/terminations`);
+    return response.data;
+  },
+
+  async getTermination(applicationId: number, requestId: number): Promise<ApiResponse<ApplicationRequest>> {
+    const response = await axiosClient.get(`${BASE_URL}/${applicationId}/requests/terminations/${requestId}`);
+    return response.data;
+  },
+
+  async createTermination(applicationId: number, data: CreateTerminationDTO): Promise<ApiResponse<ApplicationRequest>> {
+    const response = await axiosClient.post(`${BASE_URL}/${applicationId}/requests/terminations`, data);
+    return response.data;
+  },
+
+  async deleteTermination(applicationId: number, requestId: number): Promise<void> {
+    await axiosClient.delete(`${BASE_URL}/${applicationId}/requests/terminations/${requestId}`);
+  },
+
+  async submitTermination(applicationId: number, requestId: number): Promise<ApiResponse<ApplicationRequest>> {
+    const response = await axiosClient.post(`${BASE_URL}/${applicationId}/requests/terminations/${requestId}/submit`);
+    return response.data;
+  },
+
   // ==================== GENERIC HELPERS ====================
   async getAllRequests(applicationId: number): Promise<ApplicationRequest[]> {
-    const [amendments, assignments, licenses, splits, appeals] = await Promise.all([
+    const [amendments, assignments, licenses, splits, complaints, renewals, terminations] = await Promise.all([
       this.getAmendments(applicationId).catch(() => ({ data: [] })),
       this.getAssignments(applicationId).catch(() => ({ data: [] })),
       this.getLicenses(applicationId).catch(() => ({ data: [] })),
       this.getSplits(applicationId).catch(() => ({ data: [] })),
-      this.getAppeals(applicationId).catch(() => ({ data: [] })),
+      this.getComplaints(applicationId).catch(() => ({ data: [] })),
+      this.getRenewals(applicationId).catch(() => ({ data: [] })),
+      this.getTerminations(applicationId).catch(() => ({ data: [] })),
     ]);
 
     return [
@@ -158,7 +238,9 @@ export const requestService = {
       ...assignments.data,
       ...licenses.data,
       ...splits.data,
-      ...appeals.data,
+      ...complaints.data,
+      ...renewals.data,
+      ...terminations.data,
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
 };

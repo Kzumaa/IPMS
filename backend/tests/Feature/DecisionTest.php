@@ -67,7 +67,7 @@ class DecisionTest extends TestCase
     {
         $application = Application::factory()->create([
             'created_by' => $this->user->id,
-            'status' => 'REFUSED', // Already marked as refused by Substantive Exam
+            'status' => 'DECLINED', // Already marked as declined by Substantive Exam
             'current_assignee_id' => $this->examiner->id,
         ]);
 

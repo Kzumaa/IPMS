@@ -185,7 +185,7 @@ class ApplicationTimelineController extends Controller
                 'id' => "decision_{$record->id}",
                 'type' => $record->type === 'GRANT' ? 'GRANT' : 'REFUSAL',
                 'category' => 'decision',
-                'title' => $isGrant ? 'Patent Granted' : 'Application Refused',
+                'title' => $isGrant ? 'Patent Granted' : 'Application Declined',
                 'description' => $record->notes,
                 'date' => $record->decision_date->toIso8601String(),
                 'actor' => null,

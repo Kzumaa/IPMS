@@ -19,6 +19,7 @@ enum ApplicationStatus: string
     case GRANTED = 'GRANTED';
     case DECLINED = 'DECLINED';
     case WITHDRAWN = 'WITHDRAWN';
+    case UNDER_AMENDMENT = 'UNDER_AMENDMENT';
     case WAITING_RESPONSE = 'WAITING_RESPONSE';
     case TERMINATED = 'TERMINATED';
     case COMPLAINING = 'COMPLAINING';

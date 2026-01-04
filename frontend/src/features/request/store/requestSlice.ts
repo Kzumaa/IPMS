@@ -9,6 +9,9 @@ import type {
   CreateLicenseDTO,
   CreateSplitDTO,
   CreateAppealDTO,
+  CreateComplaintDTO,
+  CreateRenewalDTO,
+  CreateTerminationDTO,
 } from '../types/requestTypes';
 import type { RequestType } from '../types/enums';
 
@@ -388,6 +391,204 @@ export const submitAppeal = createAsyncThunk(
   }
 );
 
+// ==================== COMPLAINT THUNKS ====================
+export const fetchComplaints = createAsyncThunk(
+  'request/fetchComplaints',
+  async (applicationId: number, { rejectWithValue }) => {
+    try {
+      const response = await requestService.getComplaints(applicationId);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể tải danh sách khiếu nại');
+    }
+  }
+);
+
+export const fetchComplaint = createAsyncThunk(
+  'request/fetchComplaint',
+  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
+    try {
+      const response = await requestService.getComplaint(applicationId, requestId);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể tải thông tin khiếu nại');
+    }
+  }
+);
+
+export const createComplaint = createAsyncThunk(
+  'request/createComplaint',
+  async ({ applicationId, data }: { applicationId: number; data: CreateComplaintDTO }, { rejectWithValue }) => {
+    try {
+      const response = await requestService.createComplaint(applicationId, data);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể tạo khiếu nại');
+    }
+  }
+);
+
+export const deleteComplaint = createAsyncThunk(
+  'request/deleteComplaint',
+  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
+    try {
+      await requestService.deleteComplaint(applicationId, requestId);
+      return requestId;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể xóa khiếu nại');
+    }
+  }
+);
+
+export const submitComplaint = createAsyncThunk(
+  'request/submitComplaint',
+  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
+    try {
+      const response = await requestService.submitComplaint(applicationId, requestId);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể nộp khiếu nại');
+    }
+  }
+);
+
+// ==================== RENEWAL THUNKS ====================
+export const fetchRenewals = createAsyncThunk(
+  'request/fetchRenewals',
+  async (applicationId: number, { rejectWithValue }) => {
+    try {
+      const response = await requestService.getRenewals(applicationId);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể tải danh sách gia hạn');
+    }
+  }
+);
+
+export const fetchRenewal = createAsyncThunk(
+  'request/fetchRenewal',
+  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
+    try {
+      const response = await requestService.getRenewal(applicationId, requestId);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể tải thông tin gia hạn');
+    }
+  }
+);
+
+export const createRenewal = createAsyncThunk(
+  'request/createRenewal',
+  async ({ applicationId, data }: { applicationId: number; data: CreateRenewalDTO }, { rejectWithValue }) => {
+    try {
+      const response = await requestService.createRenewal(applicationId, data);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể tạo yêu cầu gia hạn');
+    }
+  }
+);
+
+export const deleteRenewal = createAsyncThunk(
+  'request/deleteRenewal',
+  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
+    try {
+      await requestService.deleteRenewal(applicationId, requestId);
+      return requestId;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể xóa yêu cầu gia hạn');
+    }
+  }
+);
+
+export const submitRenewal = createAsyncThunk(
+  'request/submitRenewal',
+  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
+    try {
+      const response = await requestService.submitRenewal(applicationId, requestId);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể nộp yêu cầu gia hạn');
+    }
+  }
+);
+
+// ==================== TERMINATION THUNKS ====================
+export const fetchTerminations = createAsyncThunk(
+  'request/fetchTerminations',
+  async (applicationId: number, { rejectWithValue }) => {
+    try {
+      const response = await requestService.getTerminations(applicationId);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể tải danh sách chấm dứt');
+    }
+  }
+);
+
+export const fetchTermination = createAsyncThunk(
+  'request/fetchTermination',
+  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
+    try {
+      const response = await requestService.getTermination(applicationId, requestId);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể tải thông tin chấm dứt');
+    }
+  }
+);
+
+export const createTermination = createAsyncThunk(
+  'request/createTermination',
+  async ({ applicationId, data }: { applicationId: number; data: CreateTerminationDTO }, { rejectWithValue }) => {
+    try {
+      const response = await requestService.createTermination(applicationId, data);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể tạo yêu cầu chấm dứt');
+    }
+  }
+);
+
+export const deleteTermination = createAsyncThunk(
+  'request/deleteTermination',
+  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
+    try {
+      await requestService.deleteTermination(applicationId, requestId);
+      return requestId;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể xóa yêu cầu chấm dứt');
+    }
+  }
+);
+
+export const submitTermination = createAsyncThunk(
+  'request/submitTermination',
+  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
+    try {
+      const response = await requestService.submitTermination(applicationId, requestId);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể nộp yêu cầu chấm dứt');
+    }
+  }
+);
+
 // ==================== GENERIC REQUEST THUNK ====================
 export const fetchRequest = createAsyncThunk(
   'request/fetchRequest',
@@ -412,6 +613,15 @@ export const fetchRequest = createAsyncThunk(
           break;
         case 'APPEAL':
           response = await requestService.getAppeal(applicationId, requestId);
+          break;
+        case 'COMPLAINT':
+          response = await requestService.getComplaint(applicationId, requestId);
+          break;
+        case 'RENEWAL':
+          response = await requestService.getRenewal(applicationId, requestId);
+          break;
+        case 'TERMINATION':
+          response = await requestService.getTermination(applicationId, requestId);
           break;
         default:
           throw new Error('Loại yêu cầu không hợp lệ');
@@ -746,6 +956,150 @@ export const requestSlice = createSlice({
         state.currentRequest = action.payload;
       })
       .addCase(submitAppeal.rejected, (state, action) => {
+        state.submitting = false;
+        state.error = action.payload as string;
+      })
+      // ==================== COMPLAINT ====================
+      .addCase(fetchComplaints.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requests = [
+          ...state.requests.filter((r) => r.type !== 'COMPLAINT'),
+          ...action.payload,
+        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      })
+      .addCase(fetchComplaint.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentRequest = action.payload;
+      })
+      .addCase(createComplaint.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createComplaint.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requests.unshift(action.payload);
+        state.currentRequest = action.payload;
+      })
+      .addCase(createComplaint.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteComplaint.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requests = state.requests.filter((r) => r.id !== action.payload);
+        if (state.currentRequest?.id === action.payload) {
+          state.currentRequest = null;
+        }
+      })
+      .addCase(submitComplaint.pending, (state) => {
+        state.submitting = true;
+        state.error = null;
+      })
+      .addCase(submitComplaint.fulfilled, (state, action) => {
+        state.submitting = false;
+        const index = state.requests.findIndex((r) => r.id === action.payload.id);
+        if (index !== -1) {
+          state.requests[index] = action.payload;
+        }
+        state.currentRequest = action.payload;
+      })
+      .addCase(submitComplaint.rejected, (state, action) => {
+        state.submitting = false;
+        state.error = action.payload as string;
+      })
+      // ==================== RENEWAL ====================
+      .addCase(fetchRenewals.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requests = [
+          ...state.requests.filter((r) => r.type !== 'RENEWAL'),
+          ...action.payload,
+        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      })
+      .addCase(fetchRenewal.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentRequest = action.payload;
+      })
+      .addCase(createRenewal.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createRenewal.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requests.unshift(action.payload);
+        state.currentRequest = action.payload;
+      })
+      .addCase(createRenewal.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteRenewal.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requests = state.requests.filter((r) => r.id !== action.payload);
+        if (state.currentRequest?.id === action.payload) {
+          state.currentRequest = null;
+        }
+      })
+      .addCase(submitRenewal.pending, (state) => {
+        state.submitting = true;
+        state.error = null;
+      })
+      .addCase(submitRenewal.fulfilled, (state, action) => {
+        state.submitting = false;
+        const index = state.requests.findIndex((r) => r.id === action.payload.id);
+        if (index !== -1) {
+          state.requests[index] = action.payload;
+        }
+        state.currentRequest = action.payload;
+      })
+      .addCase(submitRenewal.rejected, (state, action) => {
+        state.submitting = false;
+        state.error = action.payload as string;
+      })
+      // ==================== TERMINATION ====================
+      .addCase(fetchTerminations.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requests = [
+          ...state.requests.filter((r) => r.type !== 'TERMINATION'),
+          ...action.payload,
+        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      })
+      .addCase(fetchTermination.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentRequest = action.payload;
+      })
+      .addCase(createTermination.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createTermination.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requests.unshift(action.payload);
+        state.currentRequest = action.payload;
+      })
+      .addCase(createTermination.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteTermination.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requests = state.requests.filter((r) => r.id !== action.payload);
+        if (state.currentRequest?.id === action.payload) {
+          state.currentRequest = null;
+        }
+      })
+      .addCase(submitTermination.pending, (state) => {
+        state.submitting = true;
+        state.error = null;
+      })
+      .addCase(submitTermination.fulfilled, (state, action) => {
+        state.submitting = false;
+        const index = state.requests.findIndex((r) => r.id === action.payload.id);
+        if (index !== -1) {
+          state.requests[index] = action.payload;
+        }
+        state.currentRequest = action.payload;
+      })
+      .addCase(submitTermination.rejected, (state, action) => {
         state.submitting = false;
         state.error = action.payload as string;
       });

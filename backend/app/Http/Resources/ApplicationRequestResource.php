@@ -42,12 +42,19 @@ class ApplicationRequestResource extends JsonResource
 
             // Type-specific details
             'amendment' => $this->whenLoaded('amendment', fn() => [
-                'section' => $this->amendment->section->value,
-                'section_label' => $this->amendment->section->label(),
+                'section' => $this->amendment->section, // Now an array of section strings
                 'change_summary' => $this->amendment->change_summary,
                 'field_name' => $this->amendment->field_name,
                 'old_value' => $this->amendment->old_value,
                 'new_value' => $this->amendment->new_value,
+                'pending_version_id' => $this->amendment->pending_version_id,
+                'pending_version' => $this->whenLoaded('amendment.pendingVersion', fn() => [
+                    'id' => $this->amendment->pendingVersion->id,
+                    'version_number' => $this->amendment->pendingVersion->version_number,
+                    'changed_fields' => $this->amendment->pendingVersion->changed_fields,
+                    'field_changes' => $this->amendment->pendingVersion->field_changes,
+                    'created_at' => $this->amendment->pendingVersion->created_at?->toIso8601String(),
+                ]),
             ]),
 
             'assignment' => $this->whenLoaded('assignment', fn() => [

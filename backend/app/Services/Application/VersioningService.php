@@ -110,8 +110,9 @@ class VersioningService
                 'id' => $att->id,
                 'doc_type' => $att->doc_type,
                 'file_id' => $att->file_id,
-                'original_filename' => $att->original_filename ?? $att->file?->original_name,
-                'file_name' => $att->file?->original_name,
+                'original_filename' => $att->file?->filename,
+                'file_name' => $att->file?->filename,
+                'filename' => $att->file?->filename, // Add this for consistency
                 'page_count' => $att->page_count,
                 'is_current' => $att->is_current,
             ])->toArray(),

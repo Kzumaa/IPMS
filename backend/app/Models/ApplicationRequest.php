@@ -65,6 +65,11 @@ class ApplicationRequest extends Model
         return $this->hasOne(RequestLicense::class, 'request_id');
     }
 
+    public function appeal(): HasOne
+    {
+        return $this->hasOne(RequestAppeal::class, 'request_id');
+    }
+
     public function complaint(): HasOne
     {
         return $this->hasOne(RequestComplaint::class, 'request_id');
@@ -92,6 +97,13 @@ class ApplicationRequest extends Model
     public function feeQuote(): HasOne
     {
         return $this->hasOne(FeeQuote::class, 'request_id');
+    }
+
+    // Examination records (audit trail)
+
+    public function examinationRecords(): HasMany
+    {
+        return $this->hasMany(RequestExaminationRecord::class, 'request_id');
     }
 
     // Helper methods
@@ -125,6 +137,7 @@ class ApplicationRequest extends Model
             RequestType::AMENDMENT => $this->amendment,
             RequestType::ASSIGNMENT => $this->assignment,
             RequestType::LICENSE => $this->license,
+            RequestType::APPEAL => $this->appeal,
             RequestType::COMPLAINT => $this->complaint,
             RequestType::RENEWAL => $this->renewal,
             RequestType::TERMINATION => $this->termination,

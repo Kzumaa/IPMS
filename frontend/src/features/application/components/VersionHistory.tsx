@@ -101,6 +101,7 @@ const VersionHistory: React.FC<VersionHistoryProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedVersions, setSelectedVersions] = useState<number[]>([]);
+  const [viewingVersion, setViewingVersion] = useState<ApplicationVersion | null>(null);
 
   useEffect(() => {
     const fetchVersions = async () => {
@@ -258,7 +259,7 @@ const VersionHistory: React.FC<VersionHistoryProps> = ({
                           ? 'bg-green-50 dark:bg-green-900/20'
                           : 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700'
                       }`}
-                      onClick={() => onViewVersion?.(version)}
+                      onClick={() => setViewingVersion(version)}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
@@ -336,6 +337,353 @@ const VersionHistory: React.FC<VersionHistoryProps> = ({
         <p className="mt-4 text-sm text-slate-500 dark:text-slate-400 text-center">
           {t('version.selectAnother', 'Select one more version to compare')}
         </p>
+      )}
+
+      {/* Version Details Modal */}
+      {viewingVersion && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setViewingVersion(null)}>
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+              <div>
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+                  {t('version.versionNumber', 'Version {{number}}', { number: viewingVersion.version_number })}
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                  {formatDate(viewingVersion.created_at)}
+                </p>
+              </div>
+              <button
+                onClick={() => setViewingVersion(null)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <span className="material-symbols-outlined text-slate-500">close</span>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-150px)]">
+              {/* Change Summary */}
+              {viewingVersion.change_summary && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                    {t('version.changeSummary', 'Change Summary')}
+                  </h4>
+                  <p className="text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg whitespace-pre-wrap">
+                    {viewingVersion.change_summary}
+                  </p>
+                </div>
+              )}
+
+              {/* Meta Information */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                {viewingVersion.amendment_request_id && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      {t('version.requestId', 'Request ID')}
+                    </h4>
+                    <p className="text-sm text-slate-900 dark:text-white">
+                      #{viewingVersion.amendment_request_id}
+                    </p>
+                  </div>
+                )}
+                {viewingVersion.created_by_user && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      {t('version.createdBy', 'Created By')}
+                    </h4>
+                    <p className="text-sm text-slate-900 dark:text-white">
+                      {viewingVersion.created_by_user.name || viewingVersion.created_by_user.email}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Field Changes */}
+              {viewingVersion.field_changes && Object.keys(viewingVersion.field_changes).length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                    {t('version.detailedChanges', 'Detailed Changes')}
+                  </h4>
+                  <div className="space-y-3">
+                    {Object.entries(viewingVersion.field_changes).map(([fieldPath, change]) => (
+                      <div key={fieldPath} className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4">
+                        <h5 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                          {getFieldLabel(fieldPath)}
+                        </h5>
+
+                        {/* Handle party changes with detailed info */}
+                        {fieldPath === 'parties' && typeof change === 'object' && (change.added || change.removed || change.modified) ? (
+                          (() => {
+                            const getPartyDisplayName = (party: any): string => {
+                              return party.snapshot_name || party.name || "Unknown";
+                            };
+
+                            const getPartyRole = (party: any): string => {
+                              return party.role || party.party_type || "Unknown Role";
+                            };
+
+                            const renderPartyDetails = (party: any) => {
+                              const name = getPartyDisplayName(party);
+                              const email = party.snapshot_email || party.email;
+                              const address = party.snapshot_address || party.address;
+                              const phone = party.phone;
+                              const idNumber = party.id_number;
+                              const nationality = party.nationality_text || party.nationality || party.country_code;
+                              const role = getPartyRole(party);
+
+                              return (
+                                <div className="text-xs space-y-0.5">
+                                  <div className="font-semibold">{name} ({role})</div>
+                                  {email && <div className="text-slate-600 dark:text-slate-400">Email: {email}</div>}
+                                  {phone && <div className="text-slate-600 dark:text-slate-400">Phone: {phone}</div>}
+                                  {address && <div className="text-slate-600 dark:text-slate-400">Address: {address}</div>}
+                                  {idNumber && <div className="text-slate-600 dark:text-slate-400">ID: {idNumber}</div>}
+                                  {nationality && <div className="text-slate-600 dark:text-slate-400">Nationality: {nationality}</div>}
+                                </div>
+                              );
+                            };
+
+                            const renderPartyFieldChanges = (oldParty: any, newParty: any) => {
+                              const fields = [
+                                { key: ['snapshot_name', 'name'], label: 'Name' },
+                                { key: ['snapshot_email', 'email'], label: 'Email' },
+                                { key: ['phone'], label: 'Phone' },
+                                { key: ['snapshot_address', 'address'], label: 'Address' },
+                                { key: ['id_number'], label: 'ID Number' },
+                                { key: ['id_type'], label: 'ID Type' },
+                                { key: ['nationality', 'country_code'], label: 'Nationality' },
+                                { key: ['role', 'party_type'], label: 'Role' },
+                              ];
+
+                              const changes: Array<{ label: string; oldValue: string; newValue: string }> = [];
+
+                              fields.forEach(({ key, label }) => {
+                                const keys = Array.isArray(key) ? key : [key];
+                                let oldValue = null;
+                                let newValue = null;
+
+                                for (const k of keys) {
+                                  if (oldValue === null && oldParty[k] !== undefined) oldValue = oldParty[k];
+                                  if (newValue === null && newParty[k] !== undefined) newValue = newParty[k];
+                                }
+
+                                if (oldValue !== newValue) {
+                                  changes.push({
+                                    label,
+                                    oldValue: oldValue || '-',
+                                    newValue: newValue || '-',
+                                  });
+                                }
+                              });
+
+                              return changes;
+                            };
+
+                            return (
+                              <div className="space-y-3">
+                                {/* Added Parties */}
+                                {change.added && change.added.length > 0 && (
+                                  <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded">
+                                    <p className="text-xs font-semibold text-green-600 dark:text-green-400 mb-2">
+                                      {t('version.added', 'Added')} ({change.added.length})
+                                    </p>
+                                    <div className="space-y-2">
+                                      {change.added.map((party: any, idx: number) => (
+                                        <div key={idx} className="border-l-2 border-green-400 pl-2">
+                                          {renderPartyDetails(party)}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Removed Parties */}
+                                {change.removed && change.removed.length > 0 && (
+                                  <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                                    <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-2">
+                                      {t('version.removed', 'Removed')} ({change.removed.length})
+                                    </p>
+                                    <div className="space-y-2">
+                                      {change.removed.map((party: any, idx: number) => (
+                                        <div key={idx} className="border-l-2 border-red-400 pl-2 line-through opacity-70">
+                                          {renderPartyDetails(party)}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Modified Parties */}
+                                {change.modified && change.modified.length > 0 && (
+                                  <div className="bg-amber-50 dark:bg-amber-900/20 p-2 rounded">
+                                    <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mb-2">
+                                      {t('version.modified', 'Modified')} ({change.modified.length})
+                                    </p>
+                                    <div className="space-y-3">
+                                      {change.modified.map((mod: any, idx: number) => {
+                                        const fieldChanges = renderPartyFieldChanges(mod.old, mod.new);
+                                        return (
+                                          <div key={idx} className="border-l-2 border-amber-400 pl-2">
+                                            <div className="text-xs font-semibold text-amber-800 dark:text-amber-200 mb-2">
+                                              {getPartyDisplayName(mod.old || mod.new)} ({getPartyRole(mod.old || mod.new)})
+                                            </div>
+                                            {fieldChanges.length > 0 ? (
+                                              <div className="space-y-2">
+                                                {fieldChanges.map((fc, fcIdx) => (
+                                                  <div key={fcIdx} className="grid grid-cols-2 gap-2 text-xs">
+                                                    <div>
+                                                      <div className="text-slate-500 dark:text-slate-400 mb-0.5">{fc.label}</div>
+                                                      <div className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 px-2 py-1 rounded line-through">
+                                                        {fc.oldValue}
+                                                      </div>
+                                                    </div>
+                                                    <div>
+                                                      <div className="text-slate-500 dark:text-slate-400 mb-0.5">&nbsp;</div>
+                                                      <div className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-2 py-1 rounded">
+                                                        {fc.newValue}
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            ) : (
+                                              <div className="text-xs text-slate-500 dark:text-slate-400 italic">
+                                                No field changes detected
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()
+                        ) : fieldPath === 'attachments' && typeof change === 'object' && (change.added || change.removed || change.replaced) ? (
+                          <div className="space-y-3">
+                            {/* Added files */}
+                            {change.added && change.added.length > 0 && (
+                              <div className="text-sm">
+                                <span className="font-medium text-green-600 dark:text-green-400">
+                                  {t('version.added', 'Added')} ({change.added.length}):
+                                </span>
+                                <ul className="list-disc list-inside ml-2 mt-1 text-slate-600 dark:text-slate-400">
+                                  {change.added.map((doc: any, idx: number) => (
+                                    <li key={idx}>
+                                      {doc.filename || doc.doc_type || 'Document'}
+                                      {doc.doc_type && doc.filename && ` (${doc.doc_type})`}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Removed files */}
+                            {change.removed && change.removed.length > 0 && (
+                              <div className="text-sm">
+                                <span className="font-medium text-red-600 dark:text-red-400">
+                                  {t('version.removed', 'Removed')} ({change.removed.length}):
+                                </span>
+                                <ul className="list-disc list-inside ml-2 mt-1 text-slate-600 dark:text-slate-400">
+                                  {change.removed.map((doc: any, idx: number) => (
+                                    <li key={idx} className="line-through">
+                                      {doc.filename || doc.doc_type || 'Document'}
+                                      {doc.doc_type && doc.filename && ` (${doc.doc_type})`}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Replaced files */}
+                            {change.replaced && change.replaced.length > 0 && (
+                              <div className="text-sm">
+                                <span className="font-medium text-amber-600 dark:text-amber-400">
+                                  {t('version.replaced', 'Replaced')} ({change.replaced.length}):
+                                </span>
+                                {change.replaced.map((replacement: any, idx: number) => (
+                                  <div key={idx} className="mt-2 ml-2 border-l-2 border-amber-300 dark:border-amber-700 pl-3">
+                                    <div className="font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                      {replacement.doc_type}
+                                    </div>
+
+                                    {/* Old files */}
+                                    {replacement.old_files && replacement.old_files.length > 0 && (
+                                      <div className="mb-2">
+                                        <span className="text-red-600 dark:text-red-400 text-xs">
+                                          {t('version.old', 'Old')}:
+                                        </span>
+                                        <ul className="list-disc list-inside ml-2 mt-0.5 text-slate-600 dark:text-slate-400">
+                                          {replacement.old_files.map((file: any, fileIdx: number) => (
+                                            <li key={fileIdx} className="line-through">
+                                              {file.filename || 'Unknown file'}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+
+                                    {/* New files */}
+                                    {replacement.new_files && replacement.new_files.length > 0 && (
+                                      <div>
+                                        <span className="text-green-600 dark:text-green-400 text-xs">
+                                          {t('version.new', 'New')}:
+                                        </span>
+                                        <ul className="list-disc list-inside ml-2 mt-0.5 text-slate-600 dark:text-slate-400">
+                                          {replacement.new_files.map((file: any, fileIdx: number) => (
+                                            <li key={fileIdx}>
+                                              {file.filename || 'Unknown file'}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : (change as any).old !== undefined || (change as any).new !== undefined ? (
+                          /* Simple value changes */
+                          <div className="flex items-center gap-3 text-sm">
+                            <div className="flex-1">
+                              <span className="text-xs text-slate-500 dark:text-slate-400">{t('version.old', 'Old')}</span>
+                              <p className="text-red-600 dark:text-red-400 line-through">
+                                {formatValue((change as any).old)}
+                              </p>
+                            </div>
+                            <span className="material-symbols-outlined text-slate-400 !text-base">arrow_forward</span>
+                            <div className="flex-1">
+                              <span className="text-xs text-slate-500 dark:text-slate-400">{t('version.new', 'New')}</span>
+                              <p className="text-green-600 dark:text-green-400">
+                                {formatValue((change as any).new)}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
+                            {t('version.noDetails', 'No details available')}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(!viewingVersion.field_changes || Object.keys(viewingVersion.field_changes).length === 0) && !viewingVersion.change_summary && (
+                <div className="text-center py-8">
+                  <span className="material-symbols-outlined text-slate-400 text-4xl mb-2">info</span>
+                  <p className="text-slate-500 dark:text-slate-400">
+                    {t('version.noChanges', 'No detailed changes recorded for this version')}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

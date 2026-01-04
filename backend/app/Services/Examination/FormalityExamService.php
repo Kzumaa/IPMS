@@ -13,6 +13,7 @@ use App\Repositories\Assignment\AssignmentRepositoryInterface;
 use App\Services\Application\ApplicationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class FormalityExamService
 {
@@ -34,6 +35,13 @@ class FormalityExamService
     }
     public function processExaminationResult(Application $application, string $result, ?string $notes): FormalityExamRecord
     {
+        // Block examination if application is under post-grant amendment review
+        if ($application->status === ApplicationStatus::UNDER_AMENDMENT) {
+            throw ValidationException::withMessages([
+                'status' => 'Cannot perform examination while post-grant amendment is under review.',
+            ]);
+        }
+
         return DB::transaction(function () use ($application, $result, $notes) {
             // 1. Create Exam Record
             $record = $this->formalityExamRecordRepository->create([

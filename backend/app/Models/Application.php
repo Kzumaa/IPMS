@@ -14,7 +14,7 @@ class Application extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'app_no', 'app_type', 'title', 'filing_date', 'status', 'applicant_is_inventor',
+        'app_no', 'app_type', 'title', 'filing_date', 'status', 'previous_status', 'applicant_is_inventor',
         'publication_early_requested', 'pub_delay_months', 'receiving_org_id',
         'current_assignee_id', 'created_by', 'deadlines', 'file_validation_results',
         'current_version', 'origin_application_id'
@@ -28,6 +28,7 @@ class Application extends Model
         'pub_delay_months' => 'integer',
         'app_type' => AppType::class,
         'status' => ApplicationStatus::class,
+        'previous_status' => ApplicationStatus::class,
         'deadlines' => 'array',
         'file_validation_results' => 'array',
         'current_version' => 'integer',
