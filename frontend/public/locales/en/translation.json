@@ -362,6 +362,8 @@
                     "missingSpecification": "Missing specification document",
                     "missingClaims": "Missing claims document",
                     "missingAbstract": "Missing abstract document",
+                    "missingIdDescription": "Missing design description document",
+                    "missingIdPhotos": "Missing design photos set",
                     "missingApplicant": "No applicant added",
                     "missingPriorityDoc": "Missing priority document (required for priority claim)",
                     "missingPOA": "Missing power of attorney (required when using representative)",
@@ -371,7 +373,7 @@
             }
         },
         "appTypes": {
-            "PATENT": "Patent",
+            "PATENT": "Patent / Utility Solution",
             "UTILITY": "Utility Solution",
             "INDUSTRIAL_DESIGN": "Industrial Design"
         },

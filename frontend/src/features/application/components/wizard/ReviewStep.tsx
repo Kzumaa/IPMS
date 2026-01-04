@@ -56,9 +56,14 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
         return new Set(attachments.map(att => att.attachment_type));
     }, [attachments]);
 
+    // Patent/Utility document checks
     const hasSpecification = uploadedTypes.has(AttachmentType.DESCRIPTION);
     const hasClaims = uploadedTypes.has(AttachmentType.CLAIMS);
     const hasAbstract = uploadedTypes.has(AttachmentType.ABSTRACT);
+
+    // Industrial Design document checks
+    const hasIdDescription = uploadedTypes.has(AttachmentType.ID_DESCRIPTION);
+    const hasIdPhotosSet = uploadedTypes.has(AttachmentType.ID_PHOTOS_SET);
 
     // Check if priority documents are needed (now uses priority_claims array)
     const hasPriorityClaim = !!(application?.priority_claims && application.priority_claims.length > 0) ||
@@ -73,9 +78,19 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
 
     if (!application?.title) validationIssues.push(t('application.steps.review.validation.missingTitle'));
     if (!application?.app_type) validationIssues.push(t('application.steps.review.validation.missingType'));
-    if (!hasSpecification) validationIssues.push(t('application.steps.review.validation.missingSpecification'));
-    if (!hasClaims) validationIssues.push(t('application.steps.review.validation.missingClaims'));
-    if (!hasAbstract) validationIssues.push(t('application.steps.review.validation.missingAbstract'));
+
+    // Document validation based on application type
+    if (isIndustrialDesign) {
+        // Industrial Design requires ID_DESCRIPTION and ID_PHOTOS_SET
+        if (!hasIdDescription) validationIssues.push(t('application.steps.review.validation.missingIdDescription'));
+        if (!hasIdPhotosSet) validationIssues.push(t('application.steps.review.validation.missingIdPhotos'));
+    } else {
+        // Patent/Utility requires DESCRIPTION, CLAIMS, ABSTRACT
+        if (!hasSpecification) validationIssues.push(t('application.steps.review.validation.missingSpecification'));
+        if (!hasClaims) validationIssues.push(t('application.steps.review.validation.missingClaims'));
+        if (!hasAbstract) validationIssues.push(t('application.steps.review.validation.missingAbstract'));
+    }
+
     if (applicants.length === 0) validationIssues.push(t('application.steps.review.validation.missingApplicant'));
     if (hasPriorityClaim && !hasPriorityDocument) validationIssues.push(t('application.steps.review.validation.missingPriorityDoc'));
     if (!hasMetrics) validationIssues.push(t('application.steps.review.validation.missingMetrics'));

@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ApplicationSnapshot, ProposedAmendmentData, SnapshotParty, NewAttachment } from '../types/applicationTypes';
 import { useAmendmentTracking } from '../hooks/useAmendmentTracking';
-import { PartyType, AttachmentType } from '../types/enums';
+import { PartyType, AttachmentType, AppType, getDocTypesForAppType } from '../types/enums';
 
 // Map doc_type to display label
 const docTypeLabels: Record<string, string> = {
@@ -15,6 +15,8 @@ const docTypeLabels: Record<string, string> = {
     'ASSIGNMENT': 'Assignment Document',
     'DECLARATION': 'Declaration',
     'SEQUENCE': 'Sequence Listing',
+    'ID_DESCRIPTION': 'Design Description',
+    'ID_PHOTOS_SET': 'Design Photos Set',
     'ID_PHOTOS': 'ID Photos',
     'OTHER': 'Other',
 };
@@ -55,11 +57,17 @@ const AmendmentEditor: React.FC<AmendmentEditorProps> = ({
     const [changeSummary, setChangeSummary] = useState('');
     const [showConfirmation, setShowConfirmation] = useState(false);
 
+    // Get allowed document types based on application type
+    const appType = originalData.app_type as AppType;
+    const allowedDocTypes = useMemo(() => getDocTypesForAppType(appType), [appType]);
+
     // Attachment handling - declare state before using in hasAnyChanges
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [newAttachments, setNewAttachments] = useState<Array<{ file: File; doc_type: string }>>([]);
     const [removedAttachmentIds, setRemovedAttachmentIds] = useState<Set<number>>(new Set());
-    const [selectedDocType, setSelectedDocType] = useState<string>(AttachmentType.DESCRIPTION);
+    // Set initial selected doc type based on app type
+    const initialDocType = appType === AppType.INDUSTRIAL_DESIGN ? AttachmentType.ID_DESCRIPTION : AttachmentType.DESCRIPTION;
+    const [selectedDocType, setSelectedDocType] = useState<string>(initialDocType);
 
     const isChanged = (fieldPath: string) => changedFields.has(fieldPath);
 
@@ -454,15 +462,15 @@ const AmendmentEditor: React.FC<AmendmentEditorProps> = ({
                             onChange={(e) => setSelectedDocType(e.target.value)}
                             className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:text-white text-sm"
                         >
-                            <option value={AttachmentType.DESCRIPTION}>{docTypeLabels.DESCRIPTION}</option>
-                            <option value={AttachmentType.CLAIMS}>{docTypeLabels.CLAIMS}</option>
-                            <option value={AttachmentType.ABSTRACT}>{docTypeLabels.ABSTRACT}</option>
-                            <option value={AttachmentType.DRAWINGS}>{docTypeLabels.DRAWINGS}</option>
-                            <option value={AttachmentType.PRIORITY_DOC}>{docTypeLabels.PRIORITY_DOC}</option>
+                            {allowedDocTypes.map((docType) => (
+                                <option key={docType} value={docType}>
+                                    {docTypeLabels[docType] || docType}
+                                </option>
+                            ))}
+                            {/* Additional common document types */}
                             <option value="POA">{docTypeLabels.POA}</option>
                             <option value="ASSIGNMENT">{docTypeLabels.ASSIGNMENT}</option>
                             <option value="DECLARATION">{docTypeLabels.DECLARATION}</option>
-                            <option value={AttachmentType.OTHER}>{docTypeLabels.OTHER}</option>
                         </select>
                         <input
                             ref={fileInputRef}
@@ -497,59 +505,93 @@ const AmendmentEditor: React.FC<AmendmentEditorProps> = ({
                     )}
                 </h3>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                            {t('application.metrics.descriptionPages', 'Description Pages')}
-                        </label>
-                        <input
-                            type="number"
-                            min="0"
-                            value={proposedData.metrics?.description_pages || ''}
-                            onChange={(e) => setFieldValue('metrics.description_pages', parseInt(e.target.value) || 0)}
-                            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:text-white"
-                        />
-                    </div>
+                {/* Patent/Utility Metrics */}
+                {appType !== AppType.INDUSTRIAL_DESIGN && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                {t('application.metrics.descriptionPages', 'Description Pages')}
+                            </label>
+                            <input
+                                type="number"
+                                min="0"
+                                value={proposedData.metrics?.description_pages || ''}
+                                onChange={(e) => setFieldValue('metrics.description_pages', parseInt(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:text-white"
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                            {t('application.metrics.claimsTotal', 'Total Claims')}
-                        </label>
-                        <input
-                            type="number"
-                            min="0"
-                            value={proposedData.metrics?.claims_total || ''}
-                            onChange={(e) => setFieldValue('metrics.claims_total', parseInt(e.target.value) || 0)}
-                            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:text-white"
-                        />
-                    </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                {t('application.metrics.claimsTotal', 'Total Claims')}
+                            </label>
+                            <input
+                                type="number"
+                                min="0"
+                                value={proposedData.metrics?.claims_total || ''}
+                                onChange={(e) => setFieldValue('metrics.claims_total', parseInt(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:text-white"
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                            {t('application.metrics.independentClaims', 'Independent Claims')}
-                        </label>
-                        <input
-                            type="number"
-                            min="0"
-                            value={proposedData.metrics?.claims_independent || ''}
-                            onChange={(e) => setFieldValue('metrics.claims_independent', parseInt(e.target.value) || 0)}
-                            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:text-white"
-                        />
-                    </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                {t('application.metrics.independentClaims', 'Independent Claims')}
+                            </label>
+                            <input
+                                type="number"
+                                min="0"
+                                value={proposedData.metrics?.claims_independent || ''}
+                                onChange={(e) => setFieldValue('metrics.claims_independent', parseInt(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:text-white"
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                            {t('application.metrics.drawings', 'Drawings')}
-                        </label>
-                        <input
-                            type="number"
-                            min="0"
-                            value={proposedData.metrics?.drawings_images || ''}
-                            onChange={(e) => setFieldValue('metrics.drawings_images', parseInt(e.target.value) || 0)}
-                            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:text-white"
-                        />
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                {t('application.metrics.drawings', 'Drawings')}
+                            </label>
+                            <input
+                                type="number"
+                                min="0"
+                                value={proposedData.metrics?.drawings_images || ''}
+                                onChange={(e) => setFieldValue('metrics.drawings_images', parseInt(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:text-white"
+                            />
+                        </div>
                     </div>
-                </div>
+                )}
+
+                {/* Industrial Design Metrics */}
+                {appType === AppType.INDUSTRIAL_DESIGN && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                {t('application.steps.attachments.fields.variants', 'Design Variants')}
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                value={proposedData.metrics?.id_variants || ''}
+                                onChange={(e) => setFieldValue('metrics.id_variants', parseInt(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:text-white"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                {t('application.steps.attachments.fields.imagesPerVariant', 'Images Per Variant')}
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                value={proposedData.metrics?.id_images_per_variant || ''}
+                                onChange={(e) => setFieldValue('metrics.id_images_per_variant', parseInt(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:text-white"
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Change Summary Section */}

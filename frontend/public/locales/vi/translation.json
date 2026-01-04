@@ -361,6 +361,8 @@
                     "missingSpecification": "Thiếu tài liệu bản mô tả",
                     "missingClaims": "Thiếu tài liệu yêu cầu bảo hộ",
                     "missingAbstract": "Thiếu tài liệu bản tóm tắt",
+                    "missingIdDescription": "Thiếu tài liệu mô tả kiểu dáng",
+                    "missingIdPhotos": "Thiếu bộ ảnh kiểu dáng",
                     "missingApplicant": "Chưa có người nộp đơn",
                     "missingPriorityDoc": "Thiếu tài liệu ưu tiên (bắt buộc khi yêu cầu quyền ưu tiên)",
                     "missingPOA": "Thiếu giấy ủy quyền (bắt buộc khi có đại diện)",
@@ -370,7 +372,7 @@
             }
         },
         "appTypes": {
-            "PATENT": "Sáng chế",
+            "PATENT": "Sáng chế / Giải pháp hữu ích",
             "UTILITY": "Giải pháp hữu ích",
             "INDUSTRIAL_DESIGN": "Kiểu dáng công nghiệp"
         },

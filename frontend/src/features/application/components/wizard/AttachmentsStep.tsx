@@ -354,8 +354,9 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({
                     {t('application.steps.attachments.metricsDescription')}
                 </p>
 
-                {/* Helper Note */}
-                {(uploadedTypes.has(AttachmentType.DESCRIPTION) || uploadedTypes.has(AttachmentType.CLAIMS)) && !metricsSaved && (
+                {/* Helper Note - show for both Patent/Utility and Industrial Design documents */}
+                {((uploadedTypes.has(AttachmentType.DESCRIPTION) || uploadedTypes.has(AttachmentType.CLAIMS)) ||
+                  (uploadedTypes.has(AttachmentType.ID_DESCRIPTION) || uploadedTypes.has(AttachmentType.ID_PHOTOS_SET))) && !metricsSaved && (
                     <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                         <div className="flex items-start">
                             <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 mr-2 !text-base">info</span>
