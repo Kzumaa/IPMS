@@ -14,15 +14,29 @@ class Application extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'app_no', 'app_type', 'title', 'filing_date', 'status', 'previous_status', 'applicant_is_inventor',
-        'publication_early_requested', 'pub_delay_months', 'receiving_org_id',
-        'current_assignee_id', 'created_by', 'deadlines', 'file_validation_results',
-        'current_version', 'origin_application_id'
+        'app_no',
+        'app_type',
+        'title',
+        'filing_date',
+        'submitted_at',
+        'status',
+        'previous_status',
+        'applicant_is_inventor',
+        'publication_early_requested',
+        'pub_delay_months',
+        'receiving_org_id',
+        'current_assignee_id',
+        'created_by',
+        'deadlines',
+        'file_validation_results',
+        'current_version',
+        'origin_application_id'
     ];
 
 
     protected $casts = [
         'filing_date' => 'datetime',
+        'submitted_at' => 'datetime',
         'applicant_is_inventor' => 'bool',
         'publication_early_requested' => 'bool',
         'pub_delay_months' => 'integer',

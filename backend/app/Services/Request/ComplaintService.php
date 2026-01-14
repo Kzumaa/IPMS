@@ -206,14 +206,14 @@ class ComplaintService extends BaseRequestService
             ->latest('exam_date')
             ->first();
 
-        // If substantive exam rejected more recently, revert to SUB_EXAM
+        // If substantive exam rejected more recently, revert to PUBLISHED
         if ($latestSubstantiveExam && (!$latestFormalityExam ||
             $latestSubstantiveExam->exam_date > $latestFormalityExam->exam_date)) {
-            return ApplicationStatus::SUB_EXAM;
+            return ApplicationStatus::PUBLISHED;
         }
 
         // Otherwise revert to FORMALITY_EXAM
-        return ApplicationStatus::FORMALITY_EXAM;
+        return ApplicationStatus::FORMALITY_PASSED;
     }
 
     /**

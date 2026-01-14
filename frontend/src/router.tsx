@@ -28,6 +28,7 @@ import {
     CreateComplaintPage,
     CreateRenewalPage,
     CreateTerminationPage,
+    CreateWithdrawalPage,
     RequestDetailPage,
 } from './pages/request';
 import { PaymentSuccessPage, PaymentCancelPage } from './pages/payment';
@@ -155,6 +156,10 @@ const router = createBrowserRouter([
                     {
                         path: 'applications/:id/requests/terminations/new',
                         element: <CreateTerminationPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/withdrawals/new',
+                        element: <CreateWithdrawalPage />,
                     },
                     {
                         path: 'applications/:id/requests/:type/:requestId',

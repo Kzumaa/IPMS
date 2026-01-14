@@ -5,3 +5,4 @@ export { default as AppealForm } from './AppealForm';
 export { default as ComplaintForm } from './ComplaintForm';
 export { default as RenewalForm } from './RenewalForm';
 export { default as TerminationForm } from './TerminationForm';
+export { default as WithdrawalForm } from './WithdrawalForm';

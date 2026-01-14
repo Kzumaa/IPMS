@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import staffService, { type DashboardStats, type StaffRequest, type AppealResolutionRequest } from '../services/staffService';
+import staffService, { type DashboardStats, type StaffRequest, type AppealResolutionRequest, type ComplaintResolutionRequest } from '../services/staffService';
 import type { Application, PaginatedResponse } from '@/features/application/types/applicationTypes';
 
 interface StaffState {
@@ -217,6 +217,30 @@ export const resolveAppeal = createAsyncThunk(
     }
 );
 
+export const resolveComplaint = createAsyncThunk(
+    'staff/resolveComplaint',
+    async ({ requestId, data }: { requestId: number; data: ComplaintResolutionRequest }, { rejectWithValue }) => {
+        try {
+            const response = await staffService.resolveComplaint(requestId, data);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to resolve complaint');
+        }
+    }
+);
+
+export const publishApplication = createAsyncThunk(
+    'staff/publishApplication',
+    async (applicationId: number, { rejectWithValue }) => {
+        try {
+            const response = await staffService.publishApplication(applicationId);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to publish application');
+        }
+    }
+);
+
 // Slice
 const staffSlice = createSlice({
     name: 'staff',
@@ -415,6 +439,35 @@ const staffSlice = createSlice({
                 state.currentRequest = action.payload;
             })
             .addCase(resolveAppeal.rejected, (state, action) => {
+                state.examinationLoading = false;
+                state.examinationError = action.payload as string;
+            });
+
+        // Resolve Complaint
+        builder
+            .addCase(resolveComplaint.pending, (state) => {
+                state.examinationLoading = true;
+                state.examinationError = null;
+            })
+            .addCase(resolveComplaint.fulfilled, (state, action: PayloadAction<StaffRequest>) => {
+                state.examinationLoading = false;
+                state.currentRequest = action.payload;
+            })
+            .addCase(resolveComplaint.rejected, (state, action) => {
+                state.examinationLoading = false;
+                state.examinationError = action.payload as string;
+            });
+
+        // Publish Application
+        builder
+            .addCase(publishApplication.pending, (state) => {
+                state.examinationLoading = true;
+                state.examinationError = null;
+            })
+            .addCase(publishApplication.fulfilled, (state) => {
+                state.examinationLoading = false;
+            })
+            .addCase(publishApplication.rejected, (state, action) => {
                 state.examinationLoading = false;
                 state.examinationError = action.payload as string;
             });

@@ -8,6 +8,7 @@ export const RequestType = {
   COMPLAINT: 'COMPLAINT',
   RENEWAL: 'RENEWAL',
   TERMINATION: 'TERMINATION',
+  WITHDRAWAL: 'WITHDRAWAL',
 } as const;
 
 export type RequestType = (typeof RequestType)[keyof typeof RequestType];
@@ -23,6 +24,7 @@ export const RequestTypeLabels: Record<RequestType, string> = {
   COMPLAINT: 'Khiếu nại',
   RENEWAL: 'Gia hạn',
   TERMINATION: 'Chấm dứt',
+  WITHDRAWAL: 'Rút đơn',
 };
 
 // Request Status Enum
@@ -101,7 +103,6 @@ export const TransferTypeLabels: Record<TransferType, string> = {
 export const LicenseType = {
   EXCLUSIVE: 'EXCLUSIVE',
   NON_EXCLUSIVE: 'NON_EXCLUSIVE',
-  COMPULSORY: 'COMPULSORY',
 } as const;
 
 export type LicenseType = (typeof LicenseType)[keyof typeof LicenseType];
@@ -111,7 +112,6 @@ export const LicenseTypeValues = Object.values(LicenseType);
 export const LicenseTypeLabels: Record<LicenseType, string> = {
   EXCLUSIVE: 'Li-xăng độc quyền',
   NON_EXCLUSIVE: 'Li-xăng không độc quyền',
-  COMPULSORY: 'Li-xăng bắt buộc',
 };
 
 // Complaint Resolution Enum

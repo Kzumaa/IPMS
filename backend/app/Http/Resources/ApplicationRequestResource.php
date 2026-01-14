@@ -105,6 +105,16 @@ class ApplicationRequestResource extends JsonResource
                 'resolution_label' => $this->appeal->resolution?->label(),
             ]),
 
+            'complaint' => $this->whenLoaded('complaint', fn() => [
+                'grounds' => $this->complaint->grounds,
+                'deadline' => $this->complaint->deadline?->format('Y-m-d'),
+                'complaint_number' => $this->complaint->complaint_number,
+                'is_resolved' => $this->complaint->isResolved(),
+                'is_deadline_passed' => $this->complaint->isDeadlinePassed(),
+                'resolved_at' => $this->complaint->resolved_at?->format('Y-m-d'),
+                'resolution' => $this->complaint->resolution?->value,
+            ]),
+
             // Fee quote
             'fee_quote' => $this->whenLoaded('feeQuote', fn() => [
                 'id' => $this->feeQuote->id,

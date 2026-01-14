@@ -85,6 +85,11 @@ class ApplicationRequest extends Model
         return $this->hasOne(RequestTermination::class, 'request_id');
     }
 
+    public function withdrawal(): HasOne
+    {
+        return $this->hasOne(RequestWithdrawal::class, 'request_id');
+    }
+
     // Attachments linked to this request
 
     public function attachments(): HasMany
@@ -141,6 +146,7 @@ class ApplicationRequest extends Model
             RequestType::COMPLAINT => $this->complaint,
             RequestType::RENEWAL => $this->renewal,
             RequestType::TERMINATION => $this->termination,
+            RequestType::WITHDRAWAL => $this->withdrawal,
             default => null,
         };
     }

@@ -143,6 +143,7 @@ class ApplicationService
             $this->applicationRepository->update($application, [
                 'status' => ApplicationStatus::SUBMITTED,
                 'filing_date' => now(), // Set filing date on submission
+                'submitted_at' => now(), // Set exact submission timestamp for timeline ordering
                 'deadlines' => $deadlines,
                 'file_validation_results' => null, // Clear errors on success
                 'current_version' => 1,

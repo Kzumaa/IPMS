@@ -6,7 +6,7 @@ import { fetchRequests } from '@/features/staff/store/staffSlice';
 import { RequestStatusBadge, RequestTypeBadge } from '@/features/request/components';
 import type { RequestType, RequestStatus } from '@/features/request/types/enums';
 
-const RequestTypeOptions = ['AMENDMENT', 'ASSIGNMENT', 'LICENSE', 'SPLIT', 'APPEAL'];
+const RequestTypeOptions = ['AMENDMENT', 'ASSIGNMENT', 'LICENSE', 'SPLIT', 'COMPLAINT', 'RENEWAL', 'TERMINATION', 'WITHDRAWAL'];
 const RequestStatusOptions = ['SUBMITTED', 'EXAMINING', 'APPROVED', 'REFUSED', 'RECORDED'];
 
 export default function StaffRequestsPage() {

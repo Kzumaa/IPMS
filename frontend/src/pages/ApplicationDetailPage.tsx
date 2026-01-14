@@ -15,6 +15,7 @@ import {
 } from "../features/application/components";
 import { PaymentButton } from "../features/payment/components";
 import { ApplicationStatus } from "../features/application/types/enums";
+import { RequestsSection } from "../features/request/components";
 
 const formatDate = (dateString: string | null): string => {
   if (!dateString) return "-";
@@ -278,6 +279,12 @@ const ApplicationDetailPage: React.FC = () => {
 
             {/* Version History */}
             <VersionHistory applicationId={currentApplication.id!} />
+
+            {/* Related Requests (Amendments, Complaints, etc.) */}
+            <RequestsSection
+              applicationId={currentApplication.id!}
+              applicationStatus={currentApplication.status}
+            />
           </div>
 
           {/* Sidebar */}

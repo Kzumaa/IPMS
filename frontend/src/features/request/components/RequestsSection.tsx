@@ -9,11 +9,15 @@ import {
   deleteLicense,
   deleteSplit,
   deleteAppeal,
+  deleteWithdrawal,
+  deleteComplaint,
   submitAmendment,
   submitAssignment,
   submitLicense,
   submitSplit,
   submitAppeal,
+  submitWithdrawal,
+  submitComplaint,
 } from '../store/requestSlice';
 import RequestList from './RequestList';
 import type { ApplicationRequest } from '../types/requestTypes';
@@ -26,6 +30,8 @@ interface RequestsSectionProps {
 
 // Maximum appeals allowed per decision
 const MAX_APPEALS = 3;
+// Maximum complaints allowed per application
+const MAX_COMPLAINTS = 3;
 
 const RequestsSection: React.FC<RequestsSectionProps> = ({ applicationId, applicationStatus }) => {
   const { t } = useTranslation();
@@ -46,6 +52,8 @@ const RequestsSection: React.FC<RequestsSectionProps> = ({ applicationId, applic
       LICENSE: deleteLicense,
       SPLIT: deleteSplit,
       APPEAL: deleteAppeal,
+      WITHDRAWAL: deleteWithdrawal,
+      COMPLAINT: deleteComplaint,
     };
 
     const action = deleteActions[request.type as keyof typeof deleteActions];
@@ -63,6 +71,8 @@ const RequestsSection: React.FC<RequestsSectionProps> = ({ applicationId, applic
       LICENSE: submitLicense,
       SPLIT: submitSplit,
       APPEAL: submitAppeal,
+      WITHDRAWAL: submitWithdrawal,
+      COMPLAINT: submitComplaint,
     };
 
     const action = submitActions[request.type as keyof typeof submitActions];
@@ -88,8 +98,33 @@ const RequestsSection: React.FC<RequestsSectionProps> = ({ applicationId, applic
   ];
   const canAppeal = remainingAppeals > 0 && appealableStatuses.includes(applicationStatus);
 
+  // Calculate complaint count for validation
+  const complaintCount = useMemo(() => {
+    return requests.filter((r) => r.type === 'COMPLAINT').length;
+  }, [requests]);
+
+  const remainingComplaints = MAX_COMPLAINTS - complaintCount;
+
+  // Complaint available when application is DECLINED (different from REFUSED which is for appeals)
+  const complainableStatuses: string[] = [
+    ApplicationStatus.DECLINED,
+    ApplicationStatus.COMPLAINING,
+    ApplicationStatus.CHECKING_COMPLAINT,
+  ];
+  const canComplain = remainingComplaints > 0 && complainableStatuses.includes(applicationStatus);
+
   // License only available for GRANTED applications
   const canLicense = applicationStatus === ApplicationStatus.GRANTED;
+
+  // Pre-grant statuses that allow withdrawal
+  const preGrantStatuses: string[] = [
+    ApplicationStatus.SUBMITTED,
+    ApplicationStatus.FORMALITY_CHECKING,
+    ApplicationStatus.FORMALITY_PASSED,
+    ApplicationStatus.PUBLISHED,
+    ApplicationStatus.SUBSTANTIVE_CHECKING,
+  ];
+  const canWithdraw = preGrantStatuses.includes(applicationStatus);
 
   // Terminal/non-modifiable statuses
   const terminalStatuses: string[] = [
@@ -134,9 +169,23 @@ const RequestsSection: React.FC<RequestsSectionProps> = ({ applicationId, applic
         icon: 'gavel',
       });
     }
+    if (canWithdraw) {
+      types.push({
+        type: 'withdrawals',
+        label: t('request.types.WITHDRAWAL'),
+        icon: 'undo',
+      });
+    }
+    if (canComplain) {
+      types.push({
+        type: 'complaints',
+        label: `${t('request.types.COMPLAINT')} (${remainingComplaints}/${MAX_COMPLAINTS})`,
+        icon: 'report',
+      });
+    }
 
     return types;
-  }, [canAmend, canAssign, canLicense, canSplit, canAppeal, remainingAppeals, t]);
+  }, [canAmend, canAssign, canLicense, canSplit, canAppeal, canWithdraw, canComplain, remainingAppeals, remainingComplaints, t]);
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">

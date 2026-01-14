@@ -12,6 +12,7 @@ import type {
   CreateComplaintDTO,
   CreateRenewalDTO,
   CreateTerminationDTO,
+  CreateWithdrawalDTO,
 } from '../types/requestTypes';
 import type { RequestType } from '../types/enums';
 
@@ -589,6 +590,72 @@ export const submitTermination = createAsyncThunk(
   }
 );
 
+// ==================== WITHDRAWAL THUNKS ====================
+export const fetchWithdrawals = createAsyncThunk(
+  'request/fetchWithdrawals',
+  async (applicationId: number, { rejectWithValue }) => {
+    try {
+      const response = await requestService.getWithdrawals(applicationId);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể tải danh sách rút đơn');
+    }
+  }
+);
+
+export const fetchWithdrawal = createAsyncThunk(
+  'request/fetchWithdrawal',
+  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
+    try {
+      const response = await requestService.getWithdrawal(applicationId, requestId);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể tải thông tin rút đơn');
+    }
+  }
+);
+
+export const createWithdrawal = createAsyncThunk(
+  'request/createWithdrawal',
+  async ({ applicationId, data }: { applicationId: number; data: CreateWithdrawalDTO }, { rejectWithValue }) => {
+    try {
+      const response = await requestService.createWithdrawal(applicationId, data);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể tạo yêu cầu rút đơn');
+    }
+  }
+);
+
+export const deleteWithdrawal = createAsyncThunk(
+  'request/deleteWithdrawal',
+  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
+    try {
+      await requestService.deleteWithdrawal(applicationId, requestId);
+      return requestId;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể xóa yêu cầu rút đơn');
+    }
+  }
+);
+
+export const submitWithdrawal = createAsyncThunk(
+  'request/submitWithdrawal',
+  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
+    try {
+      const response = await requestService.submitWithdrawal(applicationId, requestId);
+      return response.data;
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      return rejectWithValue(err.response?.data?.message || 'Không thể nộp yêu cầu rút đơn');
+    }
+  }
+);
+
 // ==================== GENERIC REQUEST THUNK ====================
 export const fetchRequest = createAsyncThunk(
   'request/fetchRequest',
@@ -622,6 +689,9 @@ export const fetchRequest = createAsyncThunk(
           break;
         case 'TERMINATION':
           response = await requestService.getTermination(applicationId, requestId);
+          break;
+        case 'WITHDRAWAL':
+          response = await requestService.getWithdrawal(applicationId, requestId);
           break;
         default:
           throw new Error('Loại yêu cầu không hợp lệ');
@@ -1100,6 +1170,54 @@ export const requestSlice = createSlice({
         state.currentRequest = action.payload;
       })
       .addCase(submitTermination.rejected, (state, action) => {
+        state.submitting = false;
+        state.error = action.payload as string;
+      })
+      // ==================== WITHDRAWAL ====================
+      .addCase(fetchWithdrawals.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requests = [
+          ...state.requests.filter((r) => r.type !== 'WITHDRAWAL'),
+          ...action.payload,
+        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      })
+      .addCase(fetchWithdrawal.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentRequest = action.payload;
+      })
+      .addCase(createWithdrawal.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createWithdrawal.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requests.unshift(action.payload);
+        state.currentRequest = action.payload;
+      })
+      .addCase(createWithdrawal.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteWithdrawal.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requests = state.requests.filter((r) => r.id !== action.payload);
+        if (state.currentRequest?.id === action.payload) {
+          state.currentRequest = null;
+        }
+      })
+      .addCase(submitWithdrawal.pending, (state) => {
+        state.submitting = true;
+        state.error = null;
+      })
+      .addCase(submitWithdrawal.fulfilled, (state, action) => {
+        state.submitting = false;
+        const index = state.requests.findIndex((r) => r.id === action.payload.id);
+        if (index !== -1) {
+          state.requests[index] = action.payload;
+        }
+        state.currentRequest = action.payload;
+      })
+      .addCase(submitWithdrawal.rejected, (state, action) => {
         state.submitting = false;
         state.error = action.payload as string;
       });

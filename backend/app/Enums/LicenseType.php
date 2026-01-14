@@ -8,7 +8,6 @@ enum LicenseType: string
 {
     case EXCLUSIVE = 'EXCLUSIVE';
     case NON_EXCLUSIVE = 'NON_EXCLUSIVE';
-    case COMPULSORY = 'COMPULSORY';
 
     /**
      * Get a human-readable label for the license type.
@@ -18,7 +17,6 @@ enum LicenseType: string
         return match ($this) {
             self::EXCLUSIVE => 'Độc quyền',
             self::NON_EXCLUSIVE => 'Không độc quyền',
-            self::COMPULSORY => 'Bắt buộc',
         };
     }
 }

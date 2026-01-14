@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { createComplaint, fetchAllRequests } from '../../features/request/store/requestSlice';
+import { createComplaint, submitComplaint, fetchAllRequests } from '../../features/request/store/requestSlice';
 import { fetchApplication } from '../../features/application/store/applicationSlice';
 import { ComplaintForm } from '../../features/request/components/forms';
 import type { ComplaintFormData } from '../../features/request/schemas/requestSchemas';
@@ -43,9 +43,15 @@ const CreateComplaintPage: React.FC = () => {
   const canComplain = remainingComplaints > 0 && currentApplication && complaintableStatuses.includes(currentApplication.status);
 
   const handleSubmit = async (data: ComplaintFormData) => {
-    const result = await dispatch(createComplaint({ applicationId, data }));
-    if (createComplaint.fulfilled.match(result)) {
-      navigate(`/app/applications/${applicationId}`);
+    // Create the complaint
+    const createResult = await dispatch(createComplaint({ applicationId, data }));
+    if (createComplaint.fulfilled.match(createResult)) {
+      // Immediately submit it
+      const requestId = createResult.payload.id;
+      const submitResult = await dispatch(submitComplaint({ applicationId, requestId }));
+      if (submitComplaint.fulfilled.match(submitResult)) {
+        navigate(`/app/applications/${applicationId}`);
+      }
     }
   };
 

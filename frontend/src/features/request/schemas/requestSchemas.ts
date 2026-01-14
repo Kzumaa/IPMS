@@ -148,3 +148,11 @@ export const terminationSchema = z.object({
 });
 
 export type TerminationFormData = z.infer<typeof terminationSchema>;
+
+// Withdrawal Schema (for pre-grant applications)
+export const withdrawalSchema = z.object({
+  reason: z.string().max(2000, 'Lý do rút đơn không được quá 2000 ký tự').optional(),
+  effective_date: z.string().optional(),
+});
+
+export type WithdrawalFormData = z.infer<typeof withdrawalSchema>;

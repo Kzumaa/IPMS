@@ -67,7 +67,7 @@ class ComplaintController extends Controller
     /**
      * Get a specific complaint request.
      */
-    public function show(int $requestId): JsonResponse
+    public function show(int $applicationId, int $requestId): JsonResponse
     {
         $request = ApplicationRequest::with(['application', 'complaint', 'feeQuote', 'feeQuote.lines', 'attachments'])
             ->where('type', RequestType::COMPLAINT)
@@ -112,7 +112,7 @@ class ComplaintController extends Controller
     /**
      * Delete a draft complaint request.
      */
-    public function destroy(int $requestId): JsonResponse
+    public function destroy(int $applicationId, int $requestId): JsonResponse
     {
         $request = ApplicationRequest::with('application')
             ->where('type', RequestType::COMPLAINT)
@@ -130,7 +130,7 @@ class ComplaintController extends Controller
     /**
      * Submit a complaint request.
      */
-    public function submit(int $requestId): JsonResponse
+    public function submit(int $applicationId, int $requestId): JsonResponse
     {
         $request = ApplicationRequest::with(['application', 'complaint'])
             ->where('type', RequestType::COMPLAINT)

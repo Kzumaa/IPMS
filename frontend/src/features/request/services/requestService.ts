@@ -11,6 +11,7 @@ import type {
   CreateComplaintDTO,
   CreateRenewalDTO,
   CreateTerminationDTO,
+  CreateWithdrawalDTO,
 } from '../types/requestTypes';
 
 const BASE_URL = '/applications';
@@ -221,9 +222,44 @@ export const requestService = {
     return response.data;
   },
 
+  // ==================== WITHDRAWAL ====================
+  async getWithdrawals(applicationId: number): Promise<ApiResponse<ApplicationRequest[]>> {
+    const response = await axiosClient.get(`${BASE_URL}/${applicationId}/requests/withdrawals`);
+    return response.data;
+  },
+
+  async getWithdrawal(applicationId: number, requestId: number): Promise<ApiResponse<ApplicationRequest>> {
+    const response = await axiosClient.get(`${BASE_URL}/${applicationId}/requests/withdrawals/${requestId}`);
+    return response.data;
+  },
+
+  async createWithdrawal(applicationId: number, data: CreateWithdrawalDTO): Promise<ApiResponse<ApplicationRequest>> {
+    const response = await axiosClient.post(`${BASE_URL}/${applicationId}/requests/withdrawals`, data);
+    return response.data;
+  },
+
+  async updateWithdrawal(applicationId: number, requestId: number, data: CreateWithdrawalDTO): Promise<ApiResponse<ApplicationRequest>> {
+    const response = await axiosClient.put(`${BASE_URL}/${applicationId}/requests/withdrawals/${requestId}`, data);
+    return response.data;
+  },
+
+  async deleteWithdrawal(applicationId: number, requestId: number): Promise<void> {
+    await axiosClient.delete(`${BASE_URL}/${applicationId}/requests/withdrawals/${requestId}`);
+  },
+
+  async submitWithdrawal(applicationId: number, requestId: number): Promise<ApiResponse<ApplicationRequest>> {
+    const response = await axiosClient.post(`${BASE_URL}/${applicationId}/requests/withdrawals/${requestId}/submit`);
+    return response.data;
+  },
+
+  async canWithdraw(applicationId: number): Promise<{ can_withdraw: boolean }> {
+    const response = await axiosClient.get(`${BASE_URL}/${applicationId}/can-withdraw`);
+    return response.data;
+  },
+
   // ==================== GENERIC HELPERS ====================
   async getAllRequests(applicationId: number): Promise<ApplicationRequest[]> {
-    const [amendments, assignments, licenses, splits, complaints, renewals, terminations] = await Promise.all([
+    const [amendments, assignments, licenses, splits, complaints, renewals, terminations, withdrawals] = await Promise.all([
       this.getAmendments(applicationId).catch(() => ({ data: [] })),
       this.getAssignments(applicationId).catch(() => ({ data: [] })),
       this.getLicenses(applicationId).catch(() => ({ data: [] })),
@@ -231,6 +267,7 @@ export const requestService = {
       this.getComplaints(applicationId).catch(() => ({ data: [] })),
       this.getRenewals(applicationId).catch(() => ({ data: [] })),
       this.getTerminations(applicationId).catch(() => ({ data: [] })),
+      this.getWithdrawals(applicationId).catch(() => ({ data: [] })),
     ]);
 
     return [
@@ -241,6 +278,7 @@ export const requestService = {
       ...complaints.data,
       ...renewals.data,
       ...terminations.data,
+      ...withdrawals.data,
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
 };

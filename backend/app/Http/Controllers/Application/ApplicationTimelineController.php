@@ -72,8 +72,9 @@ class ApplicationTimelineController extends Controller
             'color' => 'blue',
         ]);
 
-        // Application submitted event (if filing_date exists)
-        if ($application->filing_date) {
+        // Application submitted event (if submitted_at or filing_date exists)
+        $submittedAt = $application->submitted_at ?? $application->filing_date;
+        if ($submittedAt) {
             $description = $application->app_no
                 ? "Application accepted with number: {$application->app_no}"
                 : "Application submitted for examination";
@@ -84,7 +85,7 @@ class ApplicationTimelineController extends Controller
                 'category' => 'system',
                 'title' => 'Application Submitted',
                 'description' => $description,
-                'date' => $application->filing_date->toIso8601String(),
+                'date' => $submittedAt->toIso8601String(),
                 'actor' => $application->creator ? [
                     'id' => $application->creator->id,
                     'name' => $application->creator->full_name,
@@ -222,7 +223,7 @@ class ApplicationTimelineController extends Controller
                 'category' => 'request',
                 'title' => $typeInfo['title'],
                 'description' => $this->formatRequestDescription($request),
-                'date' => $request->request_date?->toIso8601String() ?? $request->created_at->toIso8601String(),
+                'date' => $request->created_at->toIso8601String(),
                 'actor' => $request->creator ? [
                     'id' => $request->creator->id,
                     'name' => $request->creator->full_name,
@@ -292,7 +293,10 @@ class ApplicationTimelineController extends Controller
 
         $detail = '';
         if ($request->relationLoaded('amendment') && $request->amendment) {
-            $detail = " - {$request->amendment->section->label()}";
+            $sections = $request->amendment->section;
+            if (is_array($sections) && count($sections) > 0) {
+                $detail = ' - ' . implode(', ', $sections);
+            }
         } elseif ($request->relationLoaded('assignment') && $request->assignment) {
             $detail = " - {$request->assignment->transfer_type->label()}";
         } elseif ($request->relationLoaded('license') && $request->license) {

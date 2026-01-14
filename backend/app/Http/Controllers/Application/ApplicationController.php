@@ -13,6 +13,8 @@ use App\Services\File\FileMetricService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\ApplicationStatus;
+use App\Enums\RequestStatus;
+use App\Enums\RequestType;
 
 class ApplicationController extends Controller
 {
@@ -76,6 +78,53 @@ class ApplicationController extends Controller
                 'per_page' => $applications->perPage(),
                 'total' => $applications->total(),
             ],
+        ]);
+    }
+
+    /**
+     * Get GRANTED applications owned by the current user (My Titles).
+     */
+    public function grantedTitles()
+    {
+        $applications = Application::with(['metrics', 'parties', 'protectionTitle'])
+            ->where('created_by', Auth::id())
+            ->where('status', ApplicationStatus::GRANTED)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'data' => ApplicationResource::collection($applications),
+        ]);
+    }
+
+    /**
+     * Get applications where the current user is a licensee (Licensed to Me).
+     */
+    public function licensedToMe()
+    {
+        $userId = Auth::id();
+
+        $applications = Application::with(['metrics', 'parties', 'protectionTitle'])
+            ->whereHas('requests', function ($query) use ($userId) {
+                $query->where('type', RequestType::LICENSE)
+                    ->where('status', RequestStatus::APPROVED)
+                    ->whereHas('license', function ($licenseQuery) use ($userId) {
+                        $licenseQuery->where('licensee_user_id', $userId);
+                    });
+            })
+            ->with(['requests' => function ($query) use ($userId) {
+                $query->where('type', RequestType::LICENSE)
+                    ->where('status', RequestStatus::APPROVED)
+                    ->whereHas('license', function ($licenseQuery) use ($userId) {
+                        $licenseQuery->where('licensee_user_id', $userId);
+                    })
+                    ->with(['license.licensor']);
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'data' => ApplicationResource::collection($applications),
         ]);
     }
 

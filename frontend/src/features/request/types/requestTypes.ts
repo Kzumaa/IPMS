@@ -122,6 +122,12 @@ export interface TerminationDetail {
   effective_date: string;
 }
 
+// Withdrawal Detail
+export interface WithdrawalDetail {
+  reason?: string;
+  effective_date: string;
+}
+
 // Main Application Request interface
 export interface ApplicationRequest {
   id: number;
@@ -146,6 +152,7 @@ export interface ApplicationRequest {
   complaint?: ComplaintDetail;
   renewal?: RenewalDetail;
   termination?: TerminationDetail;
+  withdrawal?: WithdrawalDetail;
 
   // Fee quote
   fee_quote?: RequestFeeQuote;
@@ -210,6 +217,11 @@ export interface CreateRenewalDTO {
 }
 
 export interface CreateTerminationDTO {
+  reason?: string;
+  effective_date?: string;
+}
+
+export interface CreateWithdrawalDTO {
   reason?: string;
   effective_date?: string;
 }

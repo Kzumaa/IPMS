@@ -24,11 +24,43 @@ export interface Application {
   parties?: ApplicationParty[];
   attachments?: ApplicationAttachment[];
   protection_titles?: ProtectionTitle[];
+  protection_title?: GrantedProtectionTitle | null;
   fee_quotes?: FeeQuote[];
   metrics?: ApplicationMetric;
   applicant?: User;
   priority_claims?: PriorityClaim[];
   sntc_info?: SntcInfo | null;
+  requests?: ApplicationRequestSummary[];
+}
+
+// Protection title for GRANTED applications
+export interface GrantedProtectionTitle {
+  id: number;
+  registration_number: string;
+  issue_date: string | null;
+  expiry_date: string | null;
+  status: 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
+}
+
+// Summary of license request for licensed titles
+export interface LicenseSummary {
+  license_type: string;
+  valid_from: string;
+  valid_to: string;
+  scope_territory: string;
+  licensor: {
+    id: number;
+    name: string;
+    email: string;
+  } | null;
+}
+
+// Summary of application request
+export interface ApplicationRequestSummary {
+  id: number;
+  type: string;
+  status: string;
+  license?: LicenseSummary | null;
 }
 
 export interface ApplicationParty {

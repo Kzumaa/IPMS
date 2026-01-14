@@ -384,9 +384,10 @@
             "SUBSTANTIVE_EXAMINATION": "Thẩm định nội dung",
             "PUBLISHED": "Đã công bố",
             "GRANTED": "Đã cấp bằng",
-            "REJECTED": "Từ chối",
+            "DECLINED": "Từ chối",
             "WITHDRAWN": "Đã rút",
-            "ABANDONED": "Bỏ đơn"
+            "ABANDONED": "Bỏ đơn",
+            "FORMALITY_PASSED": "Đã qua thẩm định hình thức"
         },
         "partyTypes": {
             "APPLICANT": "Người nộp đơn",
@@ -539,7 +540,10 @@
             "approve": "Chấp nhận",
             "refuse": "Từ chối",
             "resolveAppeal": "Giải quyết khiếu nại",
+            "resolveComplaint": "Giải quyết khiếu nại (SL)",
             "resolve": "Giải quyết",
+            "complaintAcceptedInfo": "Chấp nhận khiếu nại sẽ đưa đơn quay lại giai đoạn thẩm định trước đó để thẩm định lại.",
+            "complaintRejectedInfo": "Từ chối khiếu nại sẽ hoàn tất quyết định từ chối đơn. Hành động này không thể hoàn tác.",
             "viewApplication": "Xem đơn đăng ký",
             "confirmApprove": "Xác nhận chấp nhận yêu cầu",
             "confirmRefuse": "Xác nhận từ chối yêu cầu",
@@ -675,7 +679,11 @@
             "LICENSE": "Li-xăng",
             "SPLIT": "Tách đơn",
             "CONVERSION": "Chuyển đổi",
-            "APPEAL": "Khiếu nại"
+            "APPEAL": "Khiếu nại",
+            "COMPLAINT": "Khiếu nại (SL)",
+            "RENEWAL": "Gia hạn",
+            "TERMINATION": "Chấm dứt",
+            "WITHDRAWAL": "Rút đơn"
         },
         "statuses": {
             "DRAFT": "Bản nháp",
@@ -779,6 +787,27 @@
             "resolvedAt": "Ngày giải quyết",
             "deadlineWarning": "Thời hạn khiếu nại",
             "deadlineWarningDesc": "Khiếu nại phải được nộp trong vòng 90 ngày kể từ ngày nhận thông báo/quyết định."
+        },
+        "complaint": {
+            "details": "Chi tiết khiếu nại",
+            "number": "Số lần khiếu nại",
+            "grounds": "Lý do khiếu nại",
+            "groundsPlaceholder": "Mô tả chi tiết lý do khiếu nại, bao gồm các sự kiện liên quan và cơ sở pháp lý...",
+            "deadline": "Thời hạn nộp",
+            "deadlineInfo": "Thời hạn nộp",
+            "resolution": "Kết quả giải quyết",
+            "resolutions": {
+                "ACCEPTED": "Chấp nhận khiếu nại (Quay lại thẩm định)",
+                "REJECTED": "Từ chối khiếu nại (Quyết định cuối cùng)"
+            },
+            "resolvedAt": "Ngày giải quyết",
+            "resolutionDetails": "Chi tiết kết quả",
+            "deadlineWarning": "Thời hạn nộp khiếu nại",
+            "deadlineWarningDesc": "Khiếu nại phải được nộp trong vòng 90 ngày kể từ ngày có quyết định từ chối. Tối đa 3 lần khiếu nại cho mỗi đơn.",
+            "attemptNumber": "Lần {{number}} / {{max}}",
+            "attemptNo": "Lần thứ",
+            "remaining": "Còn lại",
+            "characters": "Ký tự"
         }
     },
     "timeline": {
@@ -832,7 +861,8 @@
             "CANCELLED": "Đã hủy",
             "REFUNDED": "Đã hoàn tiền",
             "PARTIALLY_REFUNDED": "Hoàn tiền một phần",
-            "EXPIRED": "Hết hạn"
+            "EXPIRED": "Hết hạn",
+            "PAID": "Đã thanh toán"
         }
     }
 }

@@ -54,7 +54,29 @@ class ApplicationResource extends JsonResource
                 'priority_count' => $this->metrics->priority_count,
                 'is_user_classified' => $this->metrics->is_user_classified,
             ] : null),
-            'protection_titles' => [], // TODO: Implement when ready
+            'protection_title' => $this->whenLoaded('protectionTitle', fn() => $this->protectionTitle ? [
+                'id' => $this->protectionTitle->id,
+                'registration_number' => $this->protectionTitle->registration_number,
+                'issue_date' => $this->protectionTitle->issue_date?->toDateString(),
+                'expiry_date' => $this->protectionTitle->expiry_date?->toDateString(),
+                'status' => $this->protectionTitle->status,
+            ] : null),
+            'requests' => $this->whenLoaded('requests', fn() => $this->requests->map(fn($req) => [
+                'id' => $req->id,
+                'type' => $req->type,
+                'status' => $req->status,
+                'license' => $req->license ? [
+                    'license_type' => $req->license->license_type,
+                    'valid_from' => $req->license->valid_from?->toDateString(),
+                    'valid_to' => $req->license->valid_to?->toDateString(),
+                    'scope_territory' => $req->license->scope_territory,
+                    'licensor' => $req->license->licensor ? [
+                        'id' => $req->license->licensor->id,
+                        'name' => $req->license->licensor->full_name,
+                        'email' => $req->license->licensor->email,
+                    ] : null,
+                ] : null,
+            ])),
             'fee_quotes' => $this->whenLoaded('feeQuotes', fn() => $this->feeQuotes->map(fn($quote) => [
                 'id' => $quote->id,
                 'version' => $quote->version,

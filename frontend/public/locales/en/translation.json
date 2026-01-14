@@ -385,9 +385,10 @@
             "SUB_EXAM_REQ": "Substantive Exam Requested",
             "SUB_EXAM": "Substantive Examination",
             "GRANTED": "Granted",
-            "REFUSED": "Refused",
+            "DECLINED": "Declined",
             "WITHDRAWN": "Withdrawn",
-            "WAITING_RESPONSE": "Waiting for Applicant Response"
+            "WAITING_RESPONSE": "Waiting for Applicant Response",
+            "FORMALITY_PASSED": "Formality Exam Passed"
         },
         "partyTypes": {
             "APPLICANT": "Applicant",
@@ -540,7 +541,10 @@
             "approve": "Approve",
             "refuse": "Refuse",
             "resolveAppeal": "Resolve Appeal",
+            "resolveComplaint": "Resolve Complaint",
             "resolve": "Resolve",
+            "complaintAcceptedInfo": "Accepting the complaint will revert the application to the previous examination stage for re-examination.",
+            "complaintRejectedInfo": "Rejecting the complaint will finalize the decline decision. This cannot be undone.",
             "viewApplication": "View Application",
             "confirmApprove": "Confirm Request Approval",
             "confirmRefuse": "Confirm Request Refusal",
@@ -710,7 +714,11 @@
             "LICENSE": "License",
             "SPLIT": "Split",
             "CONVERSION": "Conversion",
-            "APPEAL": "Appeal"
+            "APPEAL": "Appeal",
+            "COMPLAINT": "Complaint",
+            "RENEWAL": "Renewal",
+            "TERMINATION": "Termination",
+            "WITHDRAWAL": "Withdrawal"
         },
         "statuses": {
             "DRAFT": "Draft",
@@ -814,6 +822,27 @@
             "resolvedAt": "Resolved Date",
             "deadlineWarning": "Appeal Deadline",
             "deadlineWarningDesc": "Appeals must be filed within 90 days from the date of receiving the notice/decision."
+        },
+        "complaint": {
+            "details": "Complaint Details",
+            "number": "Complaint Number",
+            "grounds": "Grounds for Complaint",
+            "groundsPlaceholder": "Describe in detail the grounds for your complaint, including relevant facts and legal basis...",
+            "deadline": "Filing Deadline",
+            "deadlineInfo": "Filing Deadline",
+            "resolution": "Resolution",
+            "resolutions": {
+                "ACCEPTED": "Complaint Accepted (Reverting to examination)",
+                "REJECTED": "Complaint Rejected (Final decline)"
+            },
+            "resolvedAt": "Resolved Date",
+            "resolutionDetails": "Resolution Details",
+            "deadlineWarning": "Filing Deadline",
+            "deadlineWarningDesc": "Complaints must be filed within 90 days from the date of the decline decision. Maximum 3 complaints allowed per application.",
+            "attemptNumber": "Attempt {{number}} of {{max}}",
+            "attemptNo": "Attempt #",
+            "remaining": "Remaining",
+            "characters": "Characters"
         }
     },
     "timeline": {
@@ -867,7 +896,8 @@
             "CANCELLED": "Cancelled",
             "REFUNDED": "Refunded",
             "PARTIALLY_REFUNDED": "Partially Refunded",
-            "EXPIRED": "Expired"
+            "EXPIRED": "Expired",
+            "PAID": "Paid"
         }
     }
 }

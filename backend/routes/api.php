@@ -20,6 +20,7 @@ use App\Http\Controllers\Request\LicenseController;
 use App\Http\Controllers\Request\RenewalController;
 use App\Http\Controllers\Request\SplitController;
 use App\Http\Controllers\Request\TerminationController;
+use App\Http\Controllers\Request\WithdrawalController;
 use App\Http\Controllers\Staff\RequestExaminationController;
 use App\Http\Controllers\Staff\StaffClassificationController;
 use App\Http\Controllers\Staff\StaffController;
@@ -40,6 +41,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // Application CRUD
         Route::get('/', [ApplicationController::class, 'index']);
         Route::post('/', [ApplicationController::class, 'store']);
+
+        // Title endpoints (must be before /{id} to avoid route conflicts)
+        Route::get('/granted', [ApplicationController::class, 'grantedTitles']);
+        Route::get('/licensed', [ApplicationController::class, 'licensedToMe']);
+
         Route::get('/{id}', [ApplicationController::class, 'show']);
         Route::put('/{id}', [ApplicationController::class, 'update']);
         Route::delete('/{id}', [ApplicationController::class, 'destroy']);
@@ -168,6 +174,17 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/{requestId}', [TerminationController::class, 'destroy']);
             Route::post('/{requestId}/submit', [TerminationController::class, 'submit']);
         });
+
+        // Withdrawal Requests (for pre-grant applications)
+        Route::prefix('/{id}/requests/withdrawals')->group(function () {
+            Route::get('/', [WithdrawalController::class, 'index']);
+            Route::post('/', [WithdrawalController::class, 'store']);
+            Route::get('/{requestId}', [WithdrawalController::class, 'show']);
+            Route::put('/{requestId}', [WithdrawalController::class, 'update']);
+            Route::delete('/{requestId}', [WithdrawalController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [WithdrawalController::class, 'submit']);
+        });
+        Route::get('/{id}/can-withdraw', [WithdrawalController::class, 'canWithdraw']);
     });
 
     Route::get('/protection-titles/{id}/schedule', [ProtectionTitleController::class, 'getSchedule']);

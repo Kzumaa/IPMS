@@ -29,6 +29,8 @@ const getRequestTypeSlug = (type: string): string => {
     LICENSE: 'licenses',
     SPLIT: 'splits',
     APPEAL: 'appeals',
+    WITHDRAWAL: 'withdrawals',
+    COMPLAINT: 'complaints',
   };
   return slugs[type] || 'amendments';
 };

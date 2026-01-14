@@ -80,6 +80,15 @@ export interface StaffRequest {
         resolution?: string;
         resolved_at?: string;
     };
+    complaint?: {
+        grounds: string;
+        deadline: string;
+        complaint_number: number;
+        is_resolved: boolean;
+        is_deadline_passed: boolean;
+        resolution?: string;
+        resolved_at?: string;
+    };
     fee_quote?: {
         id: number;
         total_amount: number;
@@ -89,6 +98,11 @@ export interface StaffRequest {
 
 export interface AppealResolutionRequest {
     resolution: 'UPHELD' | 'OVERTURNED' | 'PARTIAL' | 'WITHDRAWN';
+    notes?: string;
+}
+
+export interface ComplaintResolutionRequest {
+    resolution: 'ACCEPTED' | 'REJECTED';
     notes?: string;
 }
 
@@ -219,6 +233,11 @@ const staffService = {
         return response.data;
     },
 
+    async resolveComplaint(requestId: number, data: ComplaintResolutionRequest): Promise<ApiResponse<StaffRequest>> {
+        const response = await axiosClient.post(`${BASE_URL}/requests/${requestId}/resolve-complaint`, data);
+        return response.data;
+    },
+
     // Classification Assignment
     async getClassificationSummary(applicationId: number): Promise<ApiResponse<ClassificationSummary>> {
         const response = await axiosClient.get(`${BASE_URL}/applications/${applicationId}/classification`);
@@ -227,6 +246,12 @@ const staffService = {
 
     async assignClassification(applicationId: number, data: ClassificationAssignRequest): Promise<ApiResponse<any>> {
         const response = await axiosClient.post(`${BASE_URL}/applications/${applicationId}/assign-classification`, data);
+        return response.data;
+    },
+
+    // Publication
+    async publishApplication(applicationId: number): Promise<ApiResponse<Application>> {
+        const response = await axiosClient.post(`/applications/${applicationId}/publish`);
         return response.data;
     },
 };

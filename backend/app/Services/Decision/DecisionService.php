@@ -58,12 +58,24 @@ class DecisionService
                      $this->applicationRepository->update($application, ['status' => ApplicationStatus::GRANTED]);
                 }
 
+                // Calculate expiry date based on app type (Vietnam IP Law)
+                // Patent: 20 years from filing date
+                // Utility: 10 years from filing date
+                // Industrial Design: 5 years from filing date (renewable 2x for max 15 years)
+                $filingDate = $application->filing_date ?? now();
+                $expiryDate = match ($application->app_type) {
+                    \App\Enums\AppType::PATENT => $filingDate->copy()->addYears(20),
+                    \App\Enums\AppType::UTILITY => $filingDate->copy()->addYears(10),
+                    \App\Enums\AppType::INDUSTRIAL_DESIGN => $filingDate->copy()->addYears(5),
+                    default => $filingDate->copy()->addYears(20),
+                };
+
                 // Generate Protection Title
                 $title = $this->protectionTitleRepository->create([
                     'application_id' => $application->id,
-                    'registration_number' => 'VN-' . strtoupper(Str::random(8)), // Simplified generation
+                    'registration_number' => $this->generateRegistrationNumber($application),
                     'issue_date' => now(),
-                    'expiry_date' => now()->addYears(20), // Simplified: 20 years for all
+                    'expiry_date' => $expiryDate,
                     'status' => 'ACTIVE',
                 ]);
 
@@ -78,5 +90,24 @@ class DecisionService
 
             return $record;
         });
+    }
+
+    /**
+     * Generate a registration number based on app type.
+     * Format: {PREFIX}-VN-{YEAR}-{SEQUENCE}
+     */
+    protected function generateRegistrationNumber(Application $application): string
+    {
+        $prefix = match ($application->app_type) {
+            \App\Enums\AppType::PATENT => 'PAT',
+            \App\Enums\AppType::UTILITY => 'UTL',
+            \App\Enums\AppType::INDUSTRIAL_DESIGN => 'ID',
+            default => 'IP',
+        };
+
+        $year = now()->format('Y');
+        $sequence = strtoupper(Str::random(6));
+
+        return "{$prefix}-VN-{$year}-{$sequence}";
     }
 }
