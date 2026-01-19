@@ -80,8 +80,8 @@
         "startProtectingDesc": "Tham gia cùng hàng ngàn nhà sáng tạo và doanh nghiệp tin tưởng chúng tôi bảo vệ sở hữu trí tuệ của họ trên toàn thế giới."
     },
     "dashboard": {
-        "title": "IPMS Pro",
-        "subtitle": "Enterprise",
+        "title": "IPMS",
+        "subtitle": "",
         "nav": {
             "dashboard": "Tổng Quan",
             "myApplications": "Đơn Của Tôi",
@@ -387,7 +387,8 @@
             "DECLINED": "Từ chối",
             "WITHDRAWN": "Đã rút",
             "ABANDONED": "Bỏ đơn",
-            "FORMALITY_PASSED": "Đã qua thẩm định hình thức"
+            "FORMALITY_PASSED": "Đã qua thẩm định hình thức",
+            "COMPLAINING": "Đang khiếu nại"
         },
         "partyTypes": {
             "APPLICANT": "Người nộp đơn",

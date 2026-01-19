@@ -4,22 +4,20 @@ import { applicationService } from '@/features/application/services/applicationS
 import type { UserSearchResult } from '@/features/application/types/applicationTypes';
 
 interface LicenseeSearchProps {
-  value?: UserSearchResult | null;
-  onChange: (user: UserSearchResult | null) => void;
+  onAdd: (user: UserSearchResult) => void;
   disabled?: boolean;
   error?: string;
-  excludeUserId?: number;
+  excludedUserIds?: number[];
   label?: string;
   required?: boolean;
   placeholder?: string;
 }
 
 const LicenseeSearch: React.FC<LicenseeSearchProps> = ({
-  value,
-  onChange,
+  onAdd,
   disabled = false,
   error,
-  excludeUserId,
+  excludedUserIds = [],
   label,
   required = false,
   placeholder,
@@ -64,9 +62,11 @@ const LicenseeSearch: React.FC<LicenseeSearchProps> = ({
         const response = await applicationService.searchUserByEmail(searchTerm);
         let filteredResults = response.data;
 
-        // Exclude the specified user (e.g., licensor)
-        if (excludeUserId) {
-          filteredResults = filteredResults.filter((user) => user.id !== excludeUserId);
+        // Exclude the specified users (e.g., licensor and already selected licensees)
+        if (excludedUserIds.length > 0) {
+          filteredResults = filteredResults.filter(
+            (user) => !excludedUserIds.includes(user.id)
+          );
         }
 
         setResults(filteredResults);
@@ -85,18 +85,13 @@ const LicenseeSearch: React.FC<LicenseeSearchProps> = ({
         clearTimeout(debounceRef.current);
       }
     };
-  }, [searchTerm, excludeUserId, t]);
+  }, [searchTerm, excludedUserIds, t]);
 
   const handleSelect = (user: UserSearchResult) => {
-    onChange(user);
+    onAdd(user);
     setSearchTerm('');
     setShowDropdown(false);
     setResults([]);
-  };
-
-  const handleClear = () => {
-    onChange(null);
-    setSearchTerm('');
   };
 
   return (
@@ -107,57 +102,32 @@ const LicenseeSearch: React.FC<LicenseeSearchProps> = ({
         </label>
       )}
 
-      {/* Selected user display */}
-      {value ? (
-        <div className="flex items-center justify-between p-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-800 rounded-full flex items-center justify-center">
-              <span className="material-symbols-outlined text-indigo-600 dark:text-indigo-400 !text-xl">
-                person
-              </span>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white">
-                {value.full_name}
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{value.email}</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleClear}
-            disabled={disabled}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-50"
-          >
-            <span className="material-symbols-outlined !text-lg">close</span>
-          </button>
-        </div>
-      ) : (
-        // Search input
-        <div className="relative">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onFocus={() => results.length > 0 && setShowDropdown(true)}
-            disabled={disabled}
-            placeholder={placeholder || t('request.license.searchPlaceholder', 'Search by email...')}
-            className={`w-full px-3 py-2 pl-10 border rounded-lg
-              bg-white dark:bg-slate-700 text-slate-900 dark:text-white
-              focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-              disabled:opacity-50 disabled:cursor-not-allowed
-              ${error || searchError ? 'border-red-300 dark:border-red-600' : 'border-slate-300 dark:border-slate-600'}`}
-          />
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 !text-lg">
-            search
+      {/* Search input */}
+      <div className="relative">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onFocus={() => results.length > 0 && setShowDropdown(true)}
+          disabled={disabled}
+          placeholder={
+            placeholder || t('request.license.searchPlaceholder', 'Search by email...')
+          }
+          className={`w-full px-3 py-2 pl-10 border rounded-lg
+            bg-white dark:bg-slate-700 text-slate-900 dark:text-white
+            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+            disabled:opacity-50 disabled:cursor-not-allowed
+            ${error || searchError ? 'border-red-300 dark:border-red-600' : 'border-slate-300 dark:border-slate-600'}`}
+        />
+        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 !text-lg">
+          search
+        </span>
+        {loading && (
+          <span className="material-symbols-outlined animate-spin absolute right-3 top-1/2 -translate-y-1/2 text-indigo-600 !text-lg">
+            refresh
           </span>
-          {loading && (
-            <span className="material-symbols-outlined animate-spin absolute right-3 top-1/2 -translate-y-1/2 text-indigo-600 !text-lg">
-              refresh
-            </span>
-          )}
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Error message */}
       {(error || searchError) && (
@@ -165,7 +135,7 @@ const LicenseeSearch: React.FC<LicenseeSearchProps> = ({
       )}
 
       {/* Search hint */}
-      {!value && searchTerm.length > 0 && searchTerm.length < 3 && (
+      {searchTerm.length > 0 && searchTerm.length < 3 && (
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           {t('request.license.searchHint', 'Enter at least 3 characters to search')}
         </p>
@@ -194,6 +164,9 @@ const LicenseeSearch: React.FC<LicenseeSearchProps> = ({
                   {user.email}
                 </p>
               </div>
+              <span className="material-symbols-outlined text-indigo-500 !text-lg">
+                add_circle
+              </span>
             </button>
           ))}
         </div>

@@ -287,9 +287,15 @@ export default function StaffRequestDetailPage() {
                                     </dd>
                                 </div>
                                 <div>
-                                    <dt className="text-sm font-medium text-gray-500">{t('request.license.duration')}</dt>
+                                    <dt className="text-sm font-medium text-gray-500">{t('request.license.validFrom', 'Valid From')}</dt>
                                     <dd className="mt-1 text-sm text-gray-900">
-                                        {formatDate(currentRequest.license.valid_from)} - {formatDate(currentRequest.license.valid_to)}
+                                        {formatDate(currentRequest.license.valid_from)}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt className="text-sm font-medium text-gray-500">{t('request.license.validTo', 'Valid To')}</dt>
+                                    <dd className="mt-1 text-sm text-gray-900">
+                                        {formatDate(currentRequest.license.valid_to)}
                                     </dd>
                                 </div>
                                 <div>
@@ -298,12 +304,31 @@ export default function StaffRequestDetailPage() {
                                         {currentRequest.license.licensor?.name || '-'}
                                     </dd>
                                 </div>
-                                <div>
-                                    <dt className="text-sm font-medium text-gray-500">{t('request.license.licensee')}</dt>
-                                    <dd className="mt-1 text-sm text-gray-900">
-                                        {currentRequest.license.licensee?.name || '-'}
-                                    </dd>
-                                </div>
+                                {currentRequest.license.licensees && currentRequest.license.licensees.length > 0 && (
+                                    <div className="md:col-span-2">
+                                        <dt className="text-sm font-medium text-gray-500 mb-2">
+                                            {t('request.license.licensees', 'Licensees')} ({currentRequest.license.licensees.length})
+                                        </dt>
+                                        <dd className="mt-1 space-y-2">
+                                            {currentRequest.license.licensees.map((licensee, idx) => (
+                                                <div
+                                                    key={`${licensee.id}-${idx}`}
+                                                    className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg"
+                                                >
+                                                    <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                                        <span className="material-symbols-outlined text-indigo-600 !text-base">
+                                                            person
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-900">{licensee.name}</p>
+                                                        <p className="text-xs text-gray-500">{licensee.email}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </dd>
+                                    </div>
+                                )}
                                 {currentRequest.license.scope_territory && (
                                     <div>
                                         <dt className="text-sm font-medium text-gray-500">{t('request.license.scopeTerritory')}</dt>

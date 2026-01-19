@@ -33,7 +33,11 @@ const ApplicationDetailPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { currentApplication, parties, attachments, loading, error } =
     useAppSelector((state) => state.application);
+  const { user } = useAppSelector((state) => state.auth);
   const [showSplitModal, setShowSplitModal] = useState(false);
+
+  // Check if current user is the creator (owner) of the application
+  const isCreator = user && currentApplication?.created_by === user.id;
 
   // Check if application can be split (not in terminal states)
   const terminalStates: ApplicationStatus[] = [
@@ -157,54 +161,56 @@ const ApplicationDetailPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center space-x-3">
-            {canAmend && (
-              <Link
-                to={`/app/applications/${currentApplication.id}/amend`}
-                className="flex items-center px-4 py-2 text-sm font-medium text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-600 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-              >
-                <span className="material-symbols-outlined mr-2 !text-lg">
-                  edit_note
-                </span>
-                {t("application.detail.amend", "Amend")}
-              </Link>
-            )}
-            {canSplit && (
-              <button
-                type="button"
-                onClick={() => setShowSplitModal(true)}
-                className="flex items-center px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-              >
-                <span className="material-symbols-outlined mr-2 !text-lg">
-                  call_split
-                </span>
-                {t("application.detail.split", "Split Application")}
-              </button>
-            )}
-            {currentApplication.status === "DRAFT" && (
-              <>
+          {isCreator && (
+            <div className="flex items-center space-x-3">
+              {canAmend && (
                 <Link
-                  to={`/app/applications/${currentApplication.id}/edit`}
-                  className="flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                  to={`/app/applications/${currentApplication.id}/amend`}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-600 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
                 >
                   <span className="material-symbols-outlined mr-2 !text-lg">
-                    edit
+                    edit_note
                   </span>
-                  {t("application.detail.edit")}
+                  {t("application.detail.amend", "Amend")}
                 </Link>
+              )}
+              {canSplit && (
                 <button
                   type="button"
-                  onClick={handleDelete}
-                  className="flex items-center px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  onClick={() => setShowSplitModal(true)}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   <span className="material-symbols-outlined mr-2 !text-lg">
-                    delete
+                    call_split
                   </span>
-                  {t("application.detail.delete")}
+                  {t("application.detail.split", "Split Application")}
                 </button>
-              </>
-            )}
-          </div>
+              )}
+              {currentApplication.status === "DRAFT" && (
+                <>
+                  <Link
+                    to={`/app/applications/${currentApplication.id}/edit`}
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    <span className="material-symbols-outlined mr-2 !text-lg">
+                      edit
+                    </span>
+                    {t("application.detail.edit")}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    className="flex items-center px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    <span className="material-symbols-outlined mr-2 !text-lg">
+                      delete
+                    </span>
+                    {t("application.detail.delete")}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -284,6 +290,7 @@ const ApplicationDetailPage: React.FC = () => {
             <RequestsSection
               applicationId={currentApplication.id!}
               applicationStatus={currentApplication.status}
+              canAddRequest={!!isCreator}
             />
           </div>
 
@@ -367,8 +374,9 @@ const ApplicationDetailPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Fee Payment */}
-            {currentApplication.fee_quotes &&
+            {/* Fee Payment - Only show to creator */}
+            {isCreator &&
+              currentApplication.fee_quotes &&
               currentApplication.fee_quotes.length > 0 && (
                 <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center justify-between mb-4">

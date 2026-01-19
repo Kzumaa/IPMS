@@ -2,6 +2,7 @@ import { AppType, ApplicationStatus, PartyType, AttachmentType } from "./enums";
 
 export interface Application {
   id: number;
+  created_by: number;
   filing_number: string | null;
   app_type: AppType;
   title: string;

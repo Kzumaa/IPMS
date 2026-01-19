@@ -215,38 +215,4 @@ class ComplaintService extends BaseRequestService
         // Otherwise revert to FORMALITY_EXAM
         return ApplicationStatus::FORMALITY_PASSED;
     }
-
-    /**
-     * Apply changes when complaint is accepted (reverts to previous stage).
-     */
-    protected function applyApprovalChanges(ApplicationRequest $request): void
-    {
-        // Status is already updated in resolveComplaint
-        // Additional business logic can be added here if needed
-    }
-
-    /**
-     * Delete a draft complaint request.
-     */
-    public function deleteComplaint(ApplicationRequest $request): bool
-    {
-        if (!$request->canEdit()) {
-            throw ValidationException::withMessages([
-                'request' => 'Only draft complaint requests can be deleted.',
-            ]);
-        }
-
-        return DB::transaction(function () use ($request) {
-            $request->attachments()->delete();
-
-            if ($request->feeQuote) {
-                $request->feeQuote->lines()->delete();
-                $request->feeQuote->delete();
-            }
-
-            $request->complaint()->delete();
-
-            return $request->delete();
-        });
-    }
 }

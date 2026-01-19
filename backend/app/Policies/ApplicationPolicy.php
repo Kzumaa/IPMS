@@ -16,9 +16,21 @@ class ApplicationPolicy
         if ($user instanceof AuthorityStaff) {
             // Staff can view if they are the current assignee or if they have a role that allows viewing all (e.g. ADMIN)
             // For now, let's allow if they are the current assignee OR if they are active staff (simplification for "get info" request)
-            return $user->is_active; 
+            return $user->is_active;
         }
-        return $user->id === $application->created_by;
+
+        // Check if creator
+        if ($user->id === $application->created_by) {
+            return true;
+        }
+
+
+
+        // Check if active party (LICENSEE, APPLICANT, INVENTOR, REPRESENTATIVE)
+        return $application->parties()
+            ->where('user_id', $user->id)
+            // ->whereNull('valid_to')
+            ->exists();
     }
 
     /**

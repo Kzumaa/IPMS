@@ -70,8 +70,8 @@ export interface StaffRequest {
         scope_territory?: string;
         scope_products?: string;
         contract_number?: string;
-        licensor?: { id: number; name: string };
-        licensee?: { id: number; name: string };
+        licensor?: { id: number; name: string; email: string };
+        licensees?: Array<{ id: number; name: string; email: string }>;
     };
     appeal?: {
         notice_date?: string;

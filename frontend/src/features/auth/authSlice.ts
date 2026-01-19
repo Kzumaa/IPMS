@@ -76,6 +76,20 @@ export const logout = createAsyncThunk('auth/logout', async (_, thunkAPI) => {
     }
 });
 
+export const fetchMe = createAsyncThunk('auth/fetchMe', async (_, thunkAPI) => {
+    try {
+        return await authService.getMe();
+    } catch (error: any) {
+        // If fetching user fails, clear the token
+        localStorage.removeItem('token');
+        const message =
+            (error.response && error.response.data && error.response.data.message) ||
+            error.message ||
+            error.toString();
+        return thunkAPI.rejectWithValue(message);
+    }
+});
+
 export const authSlice = createSlice({
     name: 'auth',
     initialState,
@@ -141,6 +155,21 @@ export const authSlice = createSlice({
                 state.token = null;
                 state.isAuthenticated = false;
                 localStorage.removeItem('token');
+            })
+            // Fetch Me (restore user on page refresh)
+            .addCase(fetchMe.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(fetchMe.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.user = action.payload;
+                state.isAuthenticated = true;
+            })
+            .addCase(fetchMe.rejected, (state) => {
+                state.isLoading = false;
+                state.user = null;
+                state.token = null;
+                state.isAuthenticated = false;
             });
     },
 });

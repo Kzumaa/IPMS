@@ -31,7 +31,7 @@ class LicenseController extends Controller
 
         $requests = $this->licenseService->getByApplication($application)
             ->filter(fn($r) => $r->type->value === 'LICENSE')
-            ->load(['license', 'license.licensor', 'license.licensee', 'feeQuote', 'creator']);
+            ->load(['license', 'license.licensor', 'license.licensees.licensee', 'feeQuote', 'creator']);
 
         return response()->json([
             'data' => ApplicationRequestResource::collection($requests),
@@ -45,7 +45,8 @@ class LicenseController extends Controller
 
         $validated = $request->validate([
             'licensor_user_id' => 'required|integer|exists:users,id',
-            'licensee_user_id' => 'required|integer|exists:users,id',
+            'licensee_user_ids' => 'required|array|min:1|max:10',
+            'licensee_user_ids.*' => 'integer|exists:users,id',
             'license_type' => 'required|string|in:' . implode(',', array_column(LicenseType::cases(), 'value')),
             'valid_from' => 'required|date',
             'valid_to' => 'required|date|after:valid_from',
@@ -58,7 +59,7 @@ class LicenseController extends Controller
             $application,
             Auth::id(),
             $validated['licensor_user_id'],
-            $validated['licensee_user_id'],
+            $validated['licensee_user_ids'],
             LicenseType::from($validated['license_type']),
             Carbon::parse($validated['valid_from']),
             Carbon::parse($validated['valid_to']),
@@ -116,7 +117,7 @@ class LicenseController extends Controller
         $submittedRequest = $this->licenseService->submitRequest($licenseRequest);
 
         return response()->json([
-            'data' => new ApplicationRequestResource($submittedRequest->load(['license', 'license.licensor', 'license.licensee', 'feeQuote', 'feeQuote.lines'])),
+            'data' => new ApplicationRequestResource($submittedRequest->load(['license', 'license.licensor', 'license.licensees.licensee', 'feeQuote', 'feeQuote.lines'])),
         ]);
     }
 }

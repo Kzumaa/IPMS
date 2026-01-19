@@ -86,7 +86,7 @@ class ApplicationController extends Controller
      */
     public function grantedTitles()
     {
-        $applications = Application::with(['metrics', 'parties', 'protectionTitle'])
+        $applications = Application::with(['metrics', 'parties'])
             ->where('created_by', Auth::id())
             ->where('status', ApplicationStatus::GRANTED)
             ->orderBy('created_at', 'desc')
@@ -104,21 +104,21 @@ class ApplicationController extends Controller
     {
         $userId = Auth::id();
 
-        $applications = Application::with(['metrics', 'parties', 'protectionTitle'])
+        $applications = Application::with(['metrics', 'parties'])
             ->whereHas('requests', function ($query) use ($userId) {
                 $query->where('type', RequestType::LICENSE)
                     ->where('status', RequestStatus::APPROVED)
-                    ->whereHas('license', function ($licenseQuery) use ($userId) {
-                        $licenseQuery->where('licensee_user_id', $userId);
+                    ->whereHas('license.licensees', function ($licenseeQuery) use ($userId) {
+                        $licenseeQuery->where('licensee_user_id', $userId);
                     });
             })
             ->with(['requests' => function ($query) use ($userId) {
                 $query->where('type', RequestType::LICENSE)
                     ->where('status', RequestStatus::APPROVED)
-                    ->whereHas('license', function ($licenseQuery) use ($userId) {
-                        $licenseQuery->where('licensee_user_id', $userId);
+                    ->whereHas('license.licensees', function ($licenseeQuery) use ($userId) {
+                        $licenseeQuery->where('licensee_user_id', $userId);
                     })
-                    ->with(['license.licensor']);
+                    ->with(['license.licensor', 'license.licensees.licensee']);
             }])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -386,8 +386,8 @@ class ApplicationController extends Controller
             ->whereHas('lines', function ($query) {
                 $query->where(function ($q) {
                     $q->where('fee_code', 'LIKE', '%PUB%')
-                      ->orWhere('label', 'LIKE', '%Publication%')
-                      ->orWhere('label', 'LIKE', '%Công bố%');
+                        ->orWhere('label', 'LIKE', '%Publication%')
+                        ->orWhere('label', 'LIKE', '%Công bố%');
                 });
             })
             ->exists();

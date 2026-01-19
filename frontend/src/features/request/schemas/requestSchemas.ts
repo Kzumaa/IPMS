@@ -55,9 +55,12 @@ const licenseBaseSchema = z.object({
   licensor_user_id: z.number({
     message: 'Vui lòng chọn bên cấp phép',
   }),
-  licensee_user_id: z.number({
-    message: 'Vui lòng chọn bên được cấp phép',
-  }),
+  licensee_user_ids: z
+    .array(z.number(), {
+      message: 'Vui lòng chọn bên được cấp phép',
+    })
+    .min(1, 'Phải chọn ít nhất một bên được cấp phép')
+    .max(10, 'Tối đa 10 bên được cấp phép'),
   license_type: z.enum(LicenseTypeValues as [LicenseType, ...LicenseType[]], {
     message: 'Vui lòng chọn loại li-xăng',
   }),
@@ -70,10 +73,20 @@ const licenseBaseSchema = z.object({
 
 // License Schema with refinements
 export const licenseSchema = licenseBaseSchema
-  .refine((data) => data.licensor_user_id !== data.licensee_user_id, {
-    message: 'Bên cấp phép và bên được cấp phép không được trùng nhau',
-    path: ['licensee_user_id'],
-  })
+  .refine(
+    (data) => !data.licensee_user_ids.includes(data.licensor_user_id),
+    {
+      message: 'Bên cấp phép không được nằm trong danh sách bên được cấp phép',
+      path: ['licensee_user_ids'],
+    }
+  )
+  .refine(
+    (data) => new Set(data.licensee_user_ids).size === data.licensee_user_ids.length,
+    {
+      message: 'Không được có bên được cấp phép trùng lặp',
+      path: ['licensee_user_ids'],
+    }
+  )
   .refine(
     (data) => {
       if (data.valid_from && data.valid_to) {

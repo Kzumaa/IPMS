@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\LicenseType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RequestLicense extends Model
 {
@@ -17,7 +18,6 @@ class RequestLicense extends Model
     protected $fillable = [
         'request_id',
         'licensor_user_id',
-        'licensee_user_id',
         'license_type',
         'scope_territory',
         'scope_products',
@@ -42,8 +42,8 @@ class RequestLicense extends Model
         return $this->belongsTo(User::class, 'licensor_user_id');
     }
 
-    public function licensee(): BelongsTo
+    public function licensees(): HasMany
     {
-        return $this->belongsTo(User::class, 'licensee_user_id');
+        return $this->hasMany(RequestLicenseLicensee::class, 'request_id', 'request_id');
     }
 }

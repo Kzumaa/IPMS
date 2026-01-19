@@ -82,16 +82,20 @@ class ApplicationRequestResource extends JsonResource
                 'valid_from' => $this->license->valid_from?->format('Y-m-d'),
                 'valid_to' => $this->license->valid_to?->format('Y-m-d'),
                 'contract_number' => $this->license->contract_number,
-                'licensor' => $this->whenLoaded('license.licensor', fn() => [
-                    'id' => $this->license->licensor->id,
-                    'name' => $this->license->licensor->name,
-                    'email' => $this->license->licensor->email,
-                ]),
-                'licensee' => $this->whenLoaded('license.licensee', fn() => [
-                    'id' => $this->license->licensee->id,
-                    'name' => $this->license->licensee->name,
-                    'email' => $this->license->licensee->email,
-                ]),
+                'licensor' => $this->license->relationLoaded('licensor') && $this->license->licensor
+                    ? [
+                        'id' => $this->license->licensor->id,
+                        'name' => $this->license->licensor->name,
+                        'email' => $this->license->licensor->email,
+                    ]
+                    : null,
+                'licensees' => $this->license->relationLoaded('licensees')
+                    ? $this->license->licensees->map(fn($licenseeRecord) => [
+                        'id' => $licenseeRecord->licensee->id,
+                        'name' => $licenseeRecord->licensee->name,
+                        'email' => $licenseeRecord->licensee->email,
+                    ])
+                    : null,
             ]),
 
             'appeal' => $this->whenLoaded('appeal', fn() => [

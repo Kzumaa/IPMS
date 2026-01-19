@@ -19,6 +19,7 @@ class ApplicationResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'created_by' => $this->created_by,
             'filing_number' => $this->app_no, // Map 'app_no' to 'filing_number'
             'app_type' => $this->app_type,
             'title' => $this->title,

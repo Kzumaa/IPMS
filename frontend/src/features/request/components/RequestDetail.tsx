@@ -575,10 +575,18 @@ const RequestDetail: React.FC<RequestDetailProps> = ({
           </div>
           <div>
             <dt className="text-sm text-slate-500 dark:text-slate-400">
-              {t("request.license.duration")}
+              {t("request.license.validFrom", "Valid From")}
             </dt>
             <dd className="text-sm text-slate-900 dark:text-white">
-              {formatDate(license.valid_from)} - {formatDate(license.valid_to)}
+              {formatDate(license.valid_from)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-sm text-slate-500 dark:text-slate-400">
+              {t("request.license.validTo", "Valid To")}
+            </dt>
+            <dd className="text-sm text-slate-900 dark:text-white">
+              {formatDate(license.valid_to)}
             </dd>
           </div>
           {license.scope_territory && (
@@ -612,34 +620,51 @@ const RequestDetail: React.FC<RequestDetailProps> = ({
             </dd>
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {license.licensor && (
-            <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg">
-              <dt className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-                {t("request.license.licensor")}
-              </dt>
-              <dd className="text-sm text-slate-900 dark:text-white">
-                <p className="font-medium">{license.licensor.name}</p>
-                <p className="text-slate-500 dark:text-slate-400">
-                  {license.licensor.email}
-                </p>
-              </dd>
-            </div>
-          )}
-          {license.licensee && (
-            <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg">
-              <dt className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-                {t("request.license.licensee")}
-              </dt>
-              <dd className="text-sm text-slate-900 dark:text-white">
-                <p className="font-medium">{license.licensee.name}</p>
-                <p className="text-slate-500 dark:text-slate-400">
-                  {license.licensee.email}
-                </p>
-              </dd>
-            </div>
-          )}
-        </div>
+        {/* Licensor */}
+        {license.licensor && (
+          <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg">
+            <dt className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+              {t("request.license.licensor")}
+            </dt>
+            <dd className="text-sm text-slate-900 dark:text-white">
+              <p className="font-medium">{license.licensor.name}</p>
+              <p className="text-slate-500 dark:text-slate-400">
+                {license.licensor.email}
+              </p>
+            </dd>
+          </div>
+        )}
+
+        {/* Licensees */}
+        {license.licensees && license.licensees.length > 0 && (
+          <div>
+            <dt className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+              {t("request.license.licensees", "Licensees")} ({license.licensees.length})
+            </dt>
+            <dd className="space-y-2">
+              {license.licensees.map((licensee, idx) => (
+                <div
+                  key={`${licensee.id}-${idx}`}
+                  className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg flex items-center gap-3"
+                >
+                  <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-800 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="material-symbols-outlined text-indigo-600 dark:text-indigo-400 !text-base">
+                      person
+                    </span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      {licensee.name}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {licensee.email}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </dd>
+          </div>
+        )}
       </div>
     );
   };

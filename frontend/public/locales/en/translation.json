@@ -80,8 +80,8 @@
         "startProtectingDesc": "Join thousands of innovators and businesses who trust us to secure their intellectual property worldwide."
     },
     "dashboard": {
-        "title": "IPMS Pro",
-        "subtitle": "Enterprise",
+        "title": "IPMS",
+        "subtitle": "",
         "nav": {
             "dashboard": "Dashboard",
             "myApplications": "My Applications",
@@ -388,7 +388,8 @@
             "DECLINED": "Declined",
             "WITHDRAWN": "Withdrawn",
             "WAITING_RESPONSE": "Waiting for Applicant Response",
-            "FORMALITY_PASSED": "Formality Exam Passed"
+            "FORMALITY_PASSED": "Formality Exam Passed",
+            "COMPLAINING": "Under Complaint"
         },
         "partyTypes": {
             "APPLICANT": "Applicant",

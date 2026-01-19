@@ -208,7 +208,6 @@ class ApplicationTimelineController extends Controller
             'requests.creator',
             'requests.processor',
             'requests.amendment',
-            'requests.assignment',
             'requests.license',
             'requests.appeal',
         ]);

@@ -81,7 +81,7 @@ export interface LicenseDetail {
   valid_to: string;
   contract_number?: string;
   licensor?: UserRef;
-  licensee?: UserRef;
+  licensees?: UserRef[];
 }
 
 // Appeal Detail (deprecated - use ComplaintDetail)
@@ -188,7 +188,7 @@ export interface CreateAssignmentDTO {
 
 export interface CreateLicenseDTO {
   licensor_user_id: number;
-  licensee_user_id: number;
+  licensee_user_ids: number[];
   license_type: LicenseType;
   valid_from: string;
   valid_to: string;

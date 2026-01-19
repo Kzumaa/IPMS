@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { createLicense } from '../../features/request/store/requestSlice';
+import { createLicense, submitLicense } from '../../features/request/store/requestSlice';
 import { fetchApplication } from '../../features/application/store/applicationSlice';
 import { LicenseForm } from '../../features/request/components/forms';
 import type { LicenseFormData } from '../../features/request/schemas/requestSchemas';
@@ -15,10 +15,8 @@ const CreateLicensePage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.request);
-  const { currentApplication } = useAppSelector((state) => state.application);
-  const { user } = useAppSelector((state) => state.auth);
+  const { currentApplication, loading: applicationLoading } = useAppSelector((state) => state.application);
   const applicationId = parseInt(id || '0', 10);
-  const currentUserId = user?.id;
 
   useEffect(() => {
     if (applicationId) {
@@ -32,6 +30,9 @@ const CreateLicensePage: React.FC = () => {
   const handleSubmit = async (data: LicenseFormData) => {
     const result = await dispatch(createLicense({ applicationId, data: data as CreateLicenseDTO }));
     if (createLicense.fulfilled.match(result)) {
+      // Auto-submit after creation so status goes from DRAFT to SUBMITTED
+      const requestId = result.payload.id;
+      await dispatch(submitLicense({ applicationId, requestId }));
       navigate(`/app/applications/${applicationId}`);
     }
   };
@@ -62,7 +63,16 @@ const CreateLicensePage: React.FC = () => {
           </div>
         )}
 
-        {!canCreateLicense && currentApplication && (
+        {/* Loading state */}
+        {applicationLoading && (
+          <div className="flex items-center justify-center py-12">
+            <span className="material-symbols-outlined animate-spin text-indigo-600 !text-3xl">
+              refresh
+            </span>
+          </div>
+        )}
+
+        {!applicationLoading && !canCreateLicense && currentApplication && (
           <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
             <div className="flex items-start gap-3">
               <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 !text-xl">
@@ -89,13 +99,12 @@ const CreateLicensePage: React.FC = () => {
           </div>
         )}
 
-        {canCreateLicense && (
+        {!applicationLoading && canCreateLicense && (
           <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700 max-w-2xl">
             <LicenseForm
               onSubmit={handleSubmit}
               onCancel={handleCancel}
               loading={loading}
-              currentUserId={currentUserId}
             />
           </div>
         )}

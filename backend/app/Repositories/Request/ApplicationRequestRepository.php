@@ -37,7 +37,7 @@ class ApplicationRequestRepository implements ApplicationRequestRepositoryInterf
             'assignment.assignee',
             'license',
             'license.licensor',
-            'license.licensee',
+            'license.licensees.licensee',
             'appeal',
             'appeal.targetDecision',
             'attachments',

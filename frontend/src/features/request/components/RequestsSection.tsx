@@ -26,6 +26,7 @@ import { ApplicationStatus } from '../../application/types/enums';
 interface RequestsSectionProps {
   applicationId: number;
   applicationStatus: string;
+  canAddRequest?: boolean;
 }
 
 // Maximum appeals allowed per decision
@@ -33,7 +34,7 @@ const MAX_APPEALS = 3;
 // Maximum complaints allowed per application
 const MAX_COMPLAINTS = 3;
 
-const RequestsSection: React.FC<RequestsSectionProps> = ({ applicationId, applicationStatus }) => {
+const RequestsSection: React.FC<RequestsSectionProps> = ({ applicationId, applicationStatus, canAddRequest = true }) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { requests, loading, submitting } = useAppSelector((state) => state.request);
@@ -81,7 +82,7 @@ const RequestsSection: React.FC<RequestsSectionProps> = ({ applicationId, applic
     }
   };
 
-  const canCreateRequests = applicationStatus !== 'DRAFT';
+  const canCreateRequests = applicationStatus !== 'DRAFT' && canAddRequest;
 
   // Calculate appeal count for validation
   const appealCount = useMemo(() => {

@@ -18,12 +18,17 @@ const authService = {
     },
 
     logout: async (): Promise<void> => {
-        await axiosClient.post('/applications/auth/logout');
+        await axiosClient.post('/auth/logout');
     },
 
     getMe: async (): Promise<User> => {
-        const response = await axiosClient.get('/applications/auth/me');
-        return response.data;
+        const response = await axiosClient.get('/auth/me');
+        // Backend returns { type: 'STAFF' | 'APPLICANT', data: user }
+        const { type, data } = response.data;
+        return {
+            ...data,
+            role: type === 'STAFF' ? 'staff' : 'applicant',
+        };
     },
 };
 

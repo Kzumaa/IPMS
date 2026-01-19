@@ -12,6 +12,7 @@ use App\Models\ApplicationParty;
 use App\Models\ApplicationRequest;
 use App\Models\FeeQuote;
 use App\Models\RequestLicense;
+use App\Models\RequestLicenseLicensee;
 use App\Models\User;
 use App\Repositories\Request\ApplicationRequestRepositoryInterface;
 use Carbon\Carbon;
@@ -124,13 +125,13 @@ class LicenseService extends BaseRequestService
     }
 
     /**
-     * Create a new license request.
+     * Create a new license request with multiple licensees.
      */
     public function createLicense(
         Application $application,
         int $userId,
         int $licensorUserId,
-        int $licenseeUserId,
+        array $licenseeUserIds,
         LicenseType $licenseType,
         Carbon $validFrom,
         Carbon $validTo,
@@ -150,11 +151,32 @@ class LicenseService extends BaseRequestService
             ]);
         }
 
-        // Validate licensee exists
-        $licensee = User::find($licenseeUserId);
-        if (!$licensee) {
+        // // Validate at least one licensee
+        // if (empty($licenseeUserIds)) {
+        //     throw ValidationException::withMessages([
+        //         'licensee_user_ids' => 'At least one licensee is required.',
+        //     ]);
+        // }
+
+        // Validate no duplicate licensees
+        if (count($licenseeUserIds) !== count(array_unique($licenseeUserIds))) {
             throw ValidationException::withMessages([
-                'licensee' => 'Licensee user not found.',
+                'licensee_user_ids' => 'Duplicate licensees not allowed.',
+            ]);
+        }
+
+        // Validate all licensees exist
+        $licensees = User::whereIn('id', $licenseeUserIds)->get();
+        if ($licensees->count() !== count($licenseeUserIds)) {
+            throw ValidationException::withMessages([
+                'licensee_user_ids' => 'Some licensee users not found.',
+            ]);
+        }
+
+        // Validate licensor is not in licensees
+        if (in_array($licensorUserId, $licenseeUserIds)) {
+            throw ValidationException::withMessages([
+                'licensee_user_ids' => 'Licensor cannot be a licensee.',
             ]);
         }
 
@@ -165,21 +187,12 @@ class LicenseService extends BaseRequestService
             ]);
         }
 
-        // TODO: Validate license duration doesn't exceed protection title expiry
-        // $protectionTitle = $application->protectionTitle;
-        // if ($protectionTitle && $validTo->gt($protectionTitle->expiry_date)) {
-        //     throw ValidationException::withMessages([
-        //         'valid_to' => 'License cannot extend beyond protection title expiry date.',
-        //     ]);
-        // }
-
-        return DB::transaction(function () use ($application, $userId, $licensorUserId, $licenseeUserId, $licenseType, $validFrom, $validTo, $scopeTerritory, $scopeProducts, $contractNumber) {
+        return DB::transaction(function () use ($application, $userId, $licensorUserId, $licenseeUserIds, $licenseType, $validFrom, $validTo, $scopeTerritory, $scopeProducts, $contractNumber) {
             $request = $this->createRequest($application, $userId);
 
             RequestLicense::create([
                 'request_id' => $request->id,
                 'licensor_user_id' => $licensorUserId,
-                'licensee_user_id' => $licenseeUserId,
                 'license_type' => $licenseType,
                 'scope_territory' => $scopeTerritory,
                 'scope_products' => $scopeProducts,
@@ -188,15 +201,23 @@ class LicenseService extends BaseRequestService
                 'contract_number' => $contractNumber,
             ]);
 
+            // Create licensee records
+            foreach ($licenseeUserIds as $licenseeUserId) {
+                RequestLicenseLicensee::create([
+                    'request_id' => $request->id,
+                    'licensee_user_id' => $licenseeUserId,
+                ]);
+            }
+
             $this->generateFeeQuote($request);
 
-            return $request->load(['license', 'license.licensor', 'license.licensee', 'feeQuote', 'feeQuote.lines']);
+            return $request->load(['license', 'license.licensor', 'license.licensees.licensee', 'feeQuote', 'feeQuote.lines']);
         });
     }
 
     /**
      * Apply changes when license is approved.
-     * Adds licensee as a party to the application.
+     * Adds all licensees as parties to the application.
      */
     protected function applyApprovalChanges(ApplicationRequest $request): void
     {
@@ -207,20 +228,24 @@ class LicenseService extends BaseRequestService
         }
 
         $application = $request->application;
-        $licensee = User::find($license->licensee_user_id);
+        $license->load('licensees.licensee');
 
-        // Add licensee as a party
-        ApplicationParty::create([
-            'application_id' => $application->id,
-            'role' => 'LICENSEE',
-            'user_id' => $license->licensee_user_id,
-            'is_primary' => false,
-            'snapshot_name' => $licensee->name,
-            'snapshot_email' => $licensee->email,
-            'valid_from' => $license->valid_from,
-            'valid_to' => $license->valid_to,
-            'source_request_id' => $request->id,
-        ]);
+        // Add each licensee as a party
+        foreach ($license->licensees as $licenseeRecord) {
+            $licensee = $licenseeRecord->licensee;
+
+            ApplicationParty::create([
+                'application_id' => $application->id,
+                'role' => 'LICENSEE',
+                'user_id' => $licenseeRecord->licensee_user_id,
+                'is_primary' => false,
+                'snapshot_name' => $licensee->name,
+                'snapshot_email' => $licensee->email,
+                'valid_from' => $license->valid_from,
+                'valid_to' => $license->valid_to,
+                'source_request_id' => $request->id,
+            ]);
+        }
     }
 
     /**
