@@ -16,24 +16,27 @@ use Illuminate\Support\Facades\Auth;
 
 class ApplicationService
 {
-    protected $assignmentService;
-    protected $quoteGenerator;
-    protected $applicationRepository;
-    protected $applicationMetricRepository;
-    protected $applicationPartyRepository;
+    protected AssignmentService $assignmentService;
+    protected QuoteGenerator $quoteGenerator;
+    protected ApplicationRepositoryInterface $applicationRepository;
+    protected ApplicationMetricRepositoryInterface $applicationMetricRepository;
+    protected ApplicationPartyRepositoryInterface $applicationPartyRepository;
+    protected VersioningService $versioningService;
 
     public function __construct(
         AssignmentService $assignmentService,
         QuoteGenerator $quoteGenerator,
         ApplicationRepositoryInterface $applicationRepository,
         ApplicationMetricRepositoryInterface $applicationMetricRepository,
-        ApplicationPartyRepositoryInterface $applicationPartyRepository
+        ApplicationPartyRepositoryInterface $applicationPartyRepository,
+        VersioningService $versioningService
     ) {
         $this->assignmentService = $assignmentService;
         $this->quoteGenerator = $quoteGenerator;
         $this->applicationRepository = $applicationRepository;
         $this->applicationMetricRepository = $applicationMetricRepository;
         $this->applicationPartyRepository = $applicationPartyRepository;
+        $this->versioningService = $versioningService;
     }
     public function createApplication(array $data): Application
     {
@@ -55,27 +58,8 @@ class ApplicationService
                 'application_id' => $application->id,
             ]);
 
-            // Add applicant party
-            $this->applicationPartyRepository->create([
-                'application_id' => $application->id,
-                'role' => 'APPLICANT',
-                'user_id' => $user->id,
-                'is_primary' => true,
-                'snapshot_name' => $user->name,
-                'snapshot_email' => $user->email,
-            ]);
-
-            // If applicant is inventor, add inventor party
-            if ($application->applicant_is_inventor) {
-                $this->applicationPartyRepository->create([
-                    'application_id' => $application->id,
-                    'role' => 'INVENTOR',
-                    'user_id' => $user->id,
-                    'is_primary' => true,
-                    'snapshot_name' => $user->name,
-                    'snapshot_email' => $user->email,
-                ]);
-            }
+            // Note: Parties are created by the frontend in step 2 of the wizard
+            // The frontend pre-populates the form with the logged-in user's data
 
             return $application;
         });
@@ -89,7 +73,7 @@ class ApplicationService
             // Handle Priority Claims
             if (isset($data['priority_claims'])) {
                 $this->applicationRepository->syncPriorityClaims($application, $data['priority_claims']);
-                
+
                 // Update metric: priority_count
                 $this->updateMetrics($application, ['priority_count' => count($data['priority_claims'])]);
             }
@@ -97,7 +81,7 @@ class ApplicationService
             // Handle IPC Classes (Patent/Utility)
             if (isset($data['ipc_classes'])) {
                 $this->applicationRepository->syncIpcClasses($application, $data['ipc_classes']);
-                
+
                 // Update metrics: ipc_groups, is_user_classified
                 $count = count($data['ipc_classes']);
                 $this->updateMetrics($application, [
@@ -109,7 +93,7 @@ class ApplicationService
             // Handle Locarno Classes (Industrial Design)
             if (isset($data['locarno_classes'])) {
                 $this->applicationRepository->syncLocarnoClasses($application, $data['locarno_classes']);
-                
+
                 // Update metrics: ipc_groups (used for Locarno count too), is_user_classified
                 $count = count($data['locarno_classes']);
                 $this->updateMetrics($application, [
@@ -141,10 +125,16 @@ class ApplicationService
             ]);
         }
 
-        // 2. Refresh Fees
-        // In a real scenario, we might want to force a recalculation here.
-        // For now, we assume the user has already triggered fee calculation or we do it here.
-        $this->quoteGenerator->generate($application, 'TT263-2016');
+        // 2. Generate Fee Quote only if no unpaid quote exists
+        // Check if there's already an unpaid fee quote (DRAFT or FINAL status)
+        $existingUnpaidQuote = $application->feeQuotes()
+            ->whereIn('status', ['DRAFT', 'FINAL'])
+            ->first();
+
+        if (!$existingUnpaidQuote) {
+            // Only generate if no unpaid quote exists
+            $this->quoteGenerator->generate($application, 'TT263-2016');
+        }
 
         return DB::transaction(function () use ($application) {
             // 3. Calculate Deadlines
@@ -153,9 +143,15 @@ class ApplicationService
             $this->applicationRepository->update($application, [
                 'status' => ApplicationStatus::SUBMITTED,
                 'filing_date' => now(), // Set filing date on submission
+                'submitted_at' => now(), // Set exact submission timestamp for timeline ordering
                 'deadlines' => $deadlines,
-                'file_validation_results' => null // Clear errors on success
+                'file_validation_results' => null, // Clear errors on success
+                'current_version' => 1,
             ]);
+
+            // 4. Create initial version snapshot
+            $this->versioningService->createInitialVersion($application, Auth::id());
+
             $this->assignmentService->assignToFormalityExaminer($application);
             return $application;
         });
@@ -167,10 +163,17 @@ class ApplicationService
         $attachments = $application->attachments()->pluck('doc_type')->toArray();
         \Illuminate\Support\Facades\Log::info('Validating files for app ' . $application->id, ['type' => $application->app_type, 'attachments' => $attachments]);
 
-        // Map requirements based on AppType
+        // Map requirements based on AppType using DocType enum
         $required = match ($application->app_type) {
-            \App\Enums\AppType::PATENT, \App\Enums\AppType::UTILITY => ['DESCRIPTION', 'CLAIMS', 'ABSTRACT'],
-            \App\Enums\AppType::INDUSTRIAL_DESIGN => ['ID_DESCRIPTION', 'ID_PHOTOS_SET'],
+            \App\Enums\AppType::PATENT, \App\Enums\AppType::UTILITY => [
+                \App\Enums\DocType::DESCRIPTION->value,
+                \App\Enums\DocType::CLAIMS->value,
+                \App\Enums\DocType::ABSTRACT->value,
+            ],
+            \App\Enums\AppType::INDUSTRIAL_DESIGN => [
+                \App\Enums\DocType::ID_DESCRIPTION->value,
+                \App\Enums\DocType::ID_PHOTOS_SET->value,
+            ],
             default => []
         };
 
@@ -182,18 +185,9 @@ class ApplicationService
 
         // Conditional Check: Priority Claims
         if (($application->metrics->priority_count ?? 0) > 0) {
-            if (!in_array('PRIORITY_DOC', $attachments)) {
-                $missing[] = 'PRIORITY_DOC';
+            if (!in_array(\App\Enums\DocType::PRIORITY_DOC->value, $attachments)) {
+                $missing[] = \App\Enums\DocType::PRIORITY_DOC->value;
             }
-        }
-
-        // Special check for Design Drawings quantity (min 4)
-        if ($application->app_type === \App\Enums\AppType::INDUSTRIAL_DESIGN) {
-             $drawingCount = $application->attachments()->where('doc_type', 'ID_PHOTOS_SET')->count();
-             // Note: In a real app, we might check page count or file content.
-             // Here we assume 1 attachment record = 1 set of drawings or check metadata.
-             // For simplicity, let's just ensure at least one DRAWINGS file exists (already checked above).
-             // If we want to enforce "4 views", we'd need more detailed metadata in Attachment.
         }
 
         return $missing;
@@ -204,29 +198,125 @@ class ApplicationService
         $filingDate = now();
         $deadlines = [];
 
-        // Formality Exam: 1 month from filing
+        // Formality Exam: 1 month from filing (all types)
         $deadlines['formality_exam'] = $filingDate->copy()->addMonth()->toIso8601String();
 
         if ($application->app_type === \App\Enums\AppType::INDUSTRIAL_DESIGN) {
-            // Publication: 2 months from accepted (approx 3 months from filing if smooth)
-            // We can't set exact publication date yet as it depends on acceptance.
-            // But we can set a target. Let's set it relative to filing for now or leave null.
-            // Docs say: "Within 2 months from the date the application is accepted".
-
-            // Substantive Exam: 7 months from publication.
-            // Again, dependent on future events.
+            // Industrial Design: Deadlines depend on acceptance date
+            // Publication: 2 months from acceptance (set on formality exam pass)
+            // Substantive Exam: 7 months from publication
+            // These will be set by recalculateDeadlinesOnAcceptance() when formality exam passes
+            $deadlines['publication'] = null;
+            $deadlines['substantive_exam'] = null;
         } else {
             // Patent/Utility
-            // Publication: 19th month from priority/filing
-            $baseDate = $application->metrics->priority_date ?? $filingDate; // Assuming priority_date exists in metrics or we use filing
-            // Note: priority_date is not yet in metrics, using filing date for now.
-            $deadlines['publication'] = $filingDate->copy()->addMonths(19)->toIso8601String();
+            // Get earliest priority date from priorityClaims relationship
+            $priorityDate = $application->priorityClaims()
+                ->orderBy('filing_date', 'asc')
+                ->first()?->filing_date;
 
-            // Substantive Exam Request Deadline
+            // Publication: 19th month from priority date or filing date
+            $baseDate = $priorityDate ?? $filingDate;
+            $deadlines['publication'] = $baseDate->copy()->addMonths(19)->toIso8601String();
+
+            // Substantive Exam Request Deadline (from filing date)
             $months = $application->app_type === \App\Enums\AppType::PATENT ? 42 : 36;
             $deadlines['substantive_exam_request'] = $filingDate->copy()->addMonths($months)->toIso8601String();
         }
 
         return $deadlines;
+    }
+
+    /**
+     * Recalculate deadlines for Industrial Design applications when formality exam passes.
+     * This sets the publication and substantive exam deadlines based on actual acceptance date.
+     */
+    public function recalculateDeadlinesOnAcceptance(Application $application): void
+    {
+        if ($application->app_type !== \App\Enums\AppType::INDUSTRIAL_DESIGN) {
+            return;
+        }
+
+        $acceptanceDate = now();
+        $deadlines = $application->deadlines ?? [];
+
+        // Publication: 2 months from acceptance
+        $deadlines['publication'] = $acceptanceDate->copy()->addMonths(2)->toIso8601String();
+
+        // Substantive Exam: 7 months from publication (= 9 months from acceptance)
+        $deadlines['substantive_exam'] = $acceptanceDate->copy()->addMonths(9)->toIso8601String();
+
+        $this->applicationRepository->update($application, ['deadlines' => $deadlines]);
+    }
+
+    /**
+     * Split an application into a new draft application.
+     * The new application references the original via origin_application_id.
+     *
+     * @param Application $original The original application to split from
+     * @param int $userId The user creating the split
+     * @param array $modifications Optional modifications for the new application (e.g., title)
+     * @return Application The newly created draft application
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function splitApplication(Application $original, int $userId, array $modifications = []): Application
+    {
+        // Validate: Cannot split GRANTED or DECLINED applications
+        if (in_array($original->status, [ApplicationStatus::GRANTED, ApplicationStatus::DECLINED])) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'application' => 'Cannot split an application that has been granted or declined.',
+            ]);
+        }
+
+        return DB::transaction(function () use ($original, $userId, $modifications) {
+            // Create new application in DRAFT status
+            $newApplication = $this->applicationRepository->create([
+                'app_type' => $original->app_type,
+                'title' => $modifications['title'] ?? $original->title . ' (Split)',
+                'status' => ApplicationStatus::DRAFT,
+                'created_by' => $userId,
+                'applicant_is_inventor' => $original->applicant_is_inventor,
+                'publication_early_requested' => $original->publication_early_requested,
+                'pub_delay_months' => $original->pub_delay_months,
+                'origin_application_id' => $original->id,
+            ]);
+
+            // Create default metrics
+            $this->applicationMetricRepository->create([
+                'application_id' => $newApplication->id,
+            ]);
+
+            // Copy active parties from original
+            $original->load('activeParties');
+            foreach ($original->activeParties as $party) {
+                $this->applicationPartyRepository->create([
+                    'application_id' => $newApplication->id,
+                    'role' => $party->role,
+                    'user_id' => $party->user_id,
+                    'snapshot_name' => $party->snapshot_name,
+                    'snapshot_email' => $party->snapshot_email,
+                    'snapshot_address' => $party->snapshot_address,
+                    'phone' => $party->phone,
+                    'id_number' => $party->id_number,
+                    'id_type' => $party->id_type,
+                    'nationality' => $party->nationality,
+                    'nationality_text' => $party->nationality_text,
+                    'is_primary' => $party->is_primary,
+                    'valid_from' => now()->toDateString(),
+                ]);
+            }
+
+            // Copy priority claims from original
+            foreach ($original->priorityClaims as $claim) {
+                $newApplication->priorityClaims()->create([
+                    'country_code' => $claim->country_code,
+                    'app_no' => $claim->app_no,
+                    'filing_date' => $claim->filing_date,
+                    'kind' => $claim->kind,
+                ]);
+            }
+
+            return $newApplication->refresh();
+        });
     }
 }

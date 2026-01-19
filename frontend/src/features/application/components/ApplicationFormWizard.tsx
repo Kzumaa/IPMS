@@ -18,8 +18,9 @@ import {
     uploadAttachment,
     deleteAttachment,
     addParty,
+    updateParty,
+    deleteParty,
     setFormStep,
-    clearCurrentApplication,
 } from '../store/applicationSlice';
 import { basicInfoSchema, partiesSchema } from '../schemas/applicationSchemas';
 import type { BasicInfoFormData, PartiesFormData } from '../schemas/applicationSchemas';
@@ -88,21 +89,26 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
         resolver: zodResolver(partiesSchema),
         defaultValues: {
             applicants: parties.filter(p => p.party_type === 'APPLICANT').length > 0
-                ? parties.filter(p => p.party_type === 'APPLICANT').map(p => ({
-                    party_type: PartyType.APPLICANT,
-                    name: p.name,
-                    address: p.address,
-                    nationality: p.nationality || 'Việt Nam',
-                    country_code: p.country_code || 'VN',
-                    email: p.email || '',
-                    phone: p.phone || '',
-                    id_number: p.id_number || null,
-                    id_type: p.id_type || null,
-                    is_primary: p.is_primary ?? false,
-                    share_percentage: p.share_percentage || null,
-                }))
+                ? parties
+                    .filter(p => p.party_type === 'APPLICANT')
+                    .sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0)) // Primary first
+                    .map(p => ({
+                        id: p.id, // Include ID for update/delete operations
+                        party_type: PartyType.APPLICANT,
+                        name: p.name,
+                        address: p.address,
+                        nationality: p.nationality || 'Việt Nam',
+                        country_code: p.country_code || 'VN',
+                        email: p.email || '',
+                        phone: p.phone || '',
+                        id_number: p.id_number || null,
+                        id_type: p.id_type || null,
+                        is_primary: p.is_primary ?? false,
+                        share_percentage: p.share_percentage || null,
+                    }))
                 : [defaultApplicantFromUser],
             inventors: parties.filter(p => p.party_type === 'INVENTOR').map(p => ({
+                id: p.id, // Include ID for update/delete operations
                 party_type: PartyType.INVENTOR,
                 name: p.name,
                 address: p.address,
@@ -118,16 +124,12 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
         },
     });
 
+
     useEffect(() => {
         dispatch(setFormStep(currentStep));
     }, [currentStep, dispatch]);
 
-    useEffect(() => {
-        return () => {
-            // Cleanup on unmount
-            dispatch(clearCurrentApplication());
-        };
-    }, [dispatch]);
+    // Note: cleanup is handled by NewApplicationPage on unmount
 
     const handleNext = async () => {
         let isValid = false;
@@ -160,23 +162,64 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
             case 2:
                 isValid = await partiesMethods.trigger();
                 if (isValid && currentApplication?.id) {
-                    // Save parties
+                    // Save parties - sync with backend (create, update, delete)
                     const formData = partiesMethods.getValues();
-                    const allParties = [
-                        ...formData.applicants.map(p => ({ ...p, party_type: PartyType.APPLICANT })),
-                        ...(formData.inventors || []).map(p => ({ ...p, party_type: PartyType.INVENTOR })),
+
+                    // Ensure first applicant has is_primary: true, others have false
+                    const applicantsWithPrimary = formData.applicants.map((p, index) => ({
+                        ...p,
+                        party_type: PartyType.APPLICANT,
+                        is_primary: index === 0, // First applicant is always primary
+                    }));
+
+                    const allFormParties = [
+                        ...applicantsWithPrimary,
+                        ...(formData.inventors || []).map(p => ({ ...p, party_type: PartyType.INVENTOR, is_primary: false })),
                     ];
 
-                    for (const party of allParties) {
+                    // Get IDs of parties currently in the form
+                    const formPartyIds = allFormParties
+                        .map(p => (p as { id?: number }).id)
+                        .filter((id): id is number => id !== undefined);
+
+                    // Delete parties that exist in Redux but not in form (user removed them)
+                    const partiesToDelete = parties.filter(p => p.id && !formPartyIds.includes(p.id));
+                    for (const party of partiesToDelete) {
+                        const result = await dispatch(deleteParty({
+                            applicationId: currentApplication.id,
+                            partyId: party.id,
+                        }));
+                        if (deleteParty.rejected.match(result)) {
+                            hasApiError = true;
+                            break;
+                        }
+                    }
+
+                    if (hasApiError) break;
+
+                    // Create or update parties
+                    for (const party of allFormParties) {
                         const partyWithId = party as { id?: number } & typeof party;
-                        if (!partyWithId.id) {
+                        if (partyWithId.id) {
+                            // Update existing party
+                            const result = await dispatch(updateParty({
+                                applicationId: currentApplication.id,
+                                partyId: partyWithId.id,
+                                data: party as CreatePartyDTO,
+                            }));
+                            if (updateParty.rejected.match(result)) {
+                                hasApiError = true;
+                                break;
+                            }
+                        } else {
+                            // Create new party
                             const result = await dispatch(addParty({
                                 applicationId: currentApplication.id,
                                 data: party as CreatePartyDTO,
                             }));
                             if (addParty.rejected.match(result)) {
                                 hasApiError = true;
-                                break; // Stop on first error
+                                break;
                             }
                         }
                     }
@@ -296,7 +339,6 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                         isLoading={loading}
                         isPct={basicInfo.is_pct}
                         hasPriorityClaim={hasPriorityClaim}
-                        hasRepresentative={false}
                         appType={basicInfo.app_type}
                         applicationId={currentApplication?.id}
                         existingMetrics={currentApplication?.metrics}

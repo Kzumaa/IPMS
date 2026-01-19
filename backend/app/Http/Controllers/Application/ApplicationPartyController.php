@@ -31,7 +31,11 @@ class ApplicationPartyController extends Controller
             'snapshot_name' => 'nullable|string|max:500',
             'snapshot_address' => 'nullable|string',
             'snapshot_email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'id_number' => 'nullable|string|max:50',
+            'id_type' => 'nullable|string|max:20',
             'nationality' => 'nullable|string|max:2',
+            'nationality_text' => 'nullable|string|max:100',
             'is_primary' => 'nullable|boolean',
         ]);
 
@@ -42,7 +46,11 @@ class ApplicationPartyController extends Controller
             'snapshot_name' => $validated['snapshot_name'] ?? null,
             'snapshot_address' => $validated['snapshot_address'] ?? null,
             'snapshot_email' => $validated['snapshot_email'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'id_number' => $validated['id_number'] ?? null,
+            'id_type' => $validated['id_type'] ?? null,
             'nationality' => $validated['nationality'] ?? null,
+            'nationality_text' => $validated['nationality_text'] ?? null,
             'is_primary' => $validated['is_primary'] ?? false,
         ]);
 
@@ -63,7 +71,11 @@ class ApplicationPartyController extends Controller
             'snapshot_name' => 'nullable|string|max:500',
             'snapshot_address' => 'nullable|string',
             'snapshot_email' => 'nullable|email|max:255',
-            'nationality' => 'nullable|string|size:2',
+            'phone' => 'nullable|string|max:20',
+            'id_number' => 'nullable|string|max:50',
+            'id_type' => 'nullable|string|max:20',
+            'nationality' => 'nullable|string|max:2',
+            'nationality_text' => 'nullable|string|max:100',
             'is_primary' => 'nullable|boolean',
         ]);
 

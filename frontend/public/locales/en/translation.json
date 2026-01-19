@@ -80,8 +80,8 @@
         "startProtectingDesc": "Join thousands of innovators and businesses who trust us to secure their intellectual property worldwide."
     },
     "dashboard": {
-        "title": "IPMS Pro",
-        "subtitle": "Enterprise",
+        "title": "IPMS",
+        "subtitle": "",
         "nav": {
             "dashboard": "Dashboard",
             "myApplications": "My Applications",
@@ -307,7 +307,8 @@
                     "claims": "Claims (required)",
                     "abstract": "Abstract (required)",
                     "drawings": "Drawings (optional)",
-                    "poa": "Power of Attorney",
+                    "idDescription": "Design Description (required)",
+                    "idPhotos": "Design Photos Set (required)",
                     "priority": "Priority document"
                 },
                 "metricsTitle": "Application Metrics",
@@ -361,6 +362,8 @@
                     "missingSpecification": "Missing specification document",
                     "missingClaims": "Missing claims document",
                     "missingAbstract": "Missing abstract document",
+                    "missingIdDescription": "Missing design description document",
+                    "missingIdPhotos": "Missing design photos set",
                     "missingApplicant": "No applicant added",
                     "missingPriorityDoc": "Missing priority document (required for priority claim)",
                     "missingPOA": "Missing power of attorney (required when using representative)",
@@ -370,7 +373,7 @@
             }
         },
         "appTypes": {
-            "PATENT": "Patent",
+            "PATENT": "Patent / Utility Solution",
             "UTILITY": "Utility Solution",
             "INDUSTRIAL_DESIGN": "Industrial Design"
         },
@@ -382,9 +385,11 @@
             "SUB_EXAM_REQ": "Substantive Exam Requested",
             "SUB_EXAM": "Substantive Examination",
             "GRANTED": "Granted",
-            "REFUSED": "Refused",
+            "DECLINED": "Declined",
             "WITHDRAWN": "Withdrawn",
-            "WAITING_RESPONSE": "Waiting for Applicant Response"
+            "WAITING_RESPONSE": "Waiting for Applicant Response",
+            "FORMALITY_PASSED": "Formality Exam Passed",
+            "COMPLAINING": "Under Complaint"
         },
         "partyTypes": {
             "APPLICANT": "Applicant",
@@ -393,7 +398,6 @@
             "ASSIGNEE": "Assignee"
         },
         "attachmentTypes": {
-            "FORM": "Application Form",
             "DESCRIPTION": "Specification",
             "CLAIMS": "Claims",
             "ABSTRACT": "Abstract",
@@ -401,8 +405,6 @@
             "ID_DESCRIPTION": "Design Description",
             "ID_PHOTOS_SET": "Design Photos Set",
             "PRIORITY_DOC": "Priority Document",
-            "POA": "Power of Attorney",
-            "PAYMENT_RECEIPT": "Payment Receipt",
             "TRANSLATION": "Translation",
             "OTHER": "Other",
             "OFFICIAL_NOTICE": "Official Notice",
@@ -446,7 +448,8 @@
         "success": "Success",
         "loading": "Loading...",
         "noData": "No data",
-        "actions": "Actions"
+        "actions": "Actions",
+        "backToDashboard": "Back to Dashboard"
     },
     "pdfViewer": {
         "loadError": "Failed to Load PDF",
@@ -462,6 +465,7 @@
             "allApplications": "All Applications",
             "myApplications": "My Applications",
             "dashboard": "Dashboard",
+            "requests": "Requests",
             "reports": "Reports"
         },
         "common": {
@@ -512,6 +516,41 @@
             "next": "Next",
             "page": "Page {{current}} of {{total}}",
             "assigned": "Assigned"
+        },
+        "requests": {
+            "title": "Related Requests",
+            "subtitle": "List of requests pending examination",
+            "loading": "Loading requests...",
+            "noRequests": "No requests",
+            "noRequestsDesc": "There are currently no requests pending examination.",
+            "allTypes": "All Types",
+            "allStatuses": "All Statuses",
+            "clearFilters": "Clear Filters",
+            "requestId": "Request ID",
+            "application": "Application",
+            "type": "Type",
+            "status": "Status",
+            "requestDate": "Request Date",
+            "actions": "Actions",
+            "viewDetails": "View Details",
+            "showing": "Showing {{count}} of {{total}} requests",
+            "details": "Request Details",
+            "creator": "Creator",
+            "processedDate": "Processed Date",
+            "notFound": "Request not found",
+            "startExamination": "Start Examination",
+            "approve": "Approve",
+            "refuse": "Refuse",
+            "resolveAppeal": "Resolve Appeal",
+            "resolveComplaint": "Resolve Complaint",
+            "resolve": "Resolve",
+            "complaintAcceptedInfo": "Accepting the complaint will revert the application to the previous examination stage for re-examination.",
+            "complaintRejectedInfo": "Rejecting the complaint will finalize the decline decision. This cannot be undone.",
+            "viewApplication": "View Application",
+            "confirmApprove": "Confirm Request Approval",
+            "confirmRefuse": "Confirm Request Refusal",
+            "notes": "Notes",
+            "refuseReason": "Reason for Refusal"
         },
         "examination": {
             "title": "Examination Panel",
@@ -617,11 +656,8 @@
                 "ABSTRACT": "Abstract",
                 "DRAWINGS": "Drawings",
                 "PRIORITY_DOC": "Priority Document",
-                "POA": "Power of Attorney",
-                "FORM": "Application Form",
                 "ID_DESCRIPTION": "Design Description",
                 "ID_PHOTOS_SET": "Design Photos Set",
-                "PAYMENT_RECEIPT": "Payment Receipt",
                 "TRANSLATION": "Translation",
                 "OFFICIAL_NOTICE": "Official Notice",
                 "GAZETTE": "Gazette",
@@ -643,5 +679,226 @@
         "maxLength": "Maximum {{max}} characters",
         "minLength": "Minimum {{min}} characters",
         "fileSize": "File size must not exceed {{max}}"
+    },
+    "request": {
+        "title": "Related Requests",
+        "noRequests": "No requests yet",
+        "noRequestsDesc": "You haven't created any requests for this application",
+        "create": "Create Request",
+        "createAmendment": "Create Amendment Request",
+        "createAssignment": "Create Assignment Request",
+        "createLicense": "Create License Request",
+        "createSplit": "Create Split Request",
+        "createAppeal": "Create Appeal",
+        "submit": "Submit Request",
+        "detail": "Request Detail",
+        "loadError": "Unable to load request information",
+        "notFound": "Request not found",
+        "backToApplication": "Back to Application",
+        "draftNotice": "This application is in draft status. You need to submit the application before creating related requests.",
+        "processedDate": "Processed Date",
+        "creator": "Created By",
+        "feeQuote": "Fee Information",
+        "totalFee": "Total Fee",
+        "feeStatus": "Status",
+        "processingNotes": "Processing Notes",
+        "table": {
+            "id": "ID",
+            "type": "Type",
+            "date": "Date",
+            "status": "Status",
+            "actions": "Actions"
+        },
+        "types": {
+            "AMENDMENT": "Amendment",
+            "ASSIGNMENT": "Assignment",
+            "LICENSE": "License",
+            "SPLIT": "Split",
+            "CONVERSION": "Conversion",
+            "APPEAL": "Appeal",
+            "COMPLAINT": "Complaint",
+            "RENEWAL": "Renewal",
+            "TERMINATION": "Termination",
+            "WITHDRAWAL": "Withdrawal"
+        },
+        "statuses": {
+            "DRAFT": "Draft",
+            "SUBMITTED": "Submitted",
+            "EXAMINING": "Examining",
+            "APPROVED": "Approved",
+            "REFUSED": "Refused",
+            "RECORDED": "Recorded"
+        },
+        "confirm": {
+            "delete": "Are you sure you want to delete this request?",
+            "submit": "Are you sure you want to submit this request? You cannot edit after submission."
+        },
+        "amendment": {
+            "details": "Amendment Details",
+            "section": "Section",
+            "sections": {
+                "BIBLIOGRAPHY": "Bibliography",
+                "SPECIFICATION": "Specification",
+                "CLAIMS": "Claims",
+                "DRAWINGS": "Drawings/Images",
+                "REPRESENTATIVE": "Representative"
+            },
+            "changeSummary": "Change Summary",
+            "changeSummaryPlaceholder": "Describe in detail the changes you want to make...",
+            "fieldName": "Field Name",
+            "fieldNamePlaceholder": "Name of the field to modify",
+            "oldValue": "Old Value",
+            "oldValuePlaceholder": "Current value to change",
+            "newValue": "New Value",
+            "newValuePlaceholder": "New value to update"
+        },
+        "assignment": {
+            "details": "Assignment Details",
+            "transferType": "Transfer Type",
+            "transferTypes": {
+                "CONTRACT": "Assignment Contract",
+                "INHERITANCE": "Inheritance",
+                "MERGER": "Corporate Merger",
+                "COURT_DECISION": "Court Decision"
+            },
+            "assignor": "Assignor",
+            "assignorPlaceholder": "Assignor user ID",
+            "assignee": "Assignee",
+            "assigneePlaceholder": "Assignee user ID",
+            "contractNumber": "Contract Number",
+            "contractNumberPlaceholder": "Enter contract number",
+            "contractDate": "Contract Date"
+        },
+        "license": {
+            "details": "License Details",
+            "licenseType": "License Type",
+            "licenseTypes": {
+                "EXCLUSIVE": "Exclusive License",
+                "NON_EXCLUSIVE": "Non-Exclusive License",
+                "COMPULSORY": "Compulsory License"
+            },
+            "duration": "Duration",
+            "licensor": "Licensor",
+            "licensorPlaceholder": "Licensor user ID",
+            "licensee": "Licensee",
+            "licenseePlaceholder": "Licensee user ID",
+            "validFrom": "Valid From",
+            "validTo": "Valid To",
+            "scopeTerritory": "Territory Scope",
+            "scopeTerritoryPlaceholder": "E.g., Vietnam, Southeast Asia...",
+            "scopeProducts": "Product Scope",
+            "scopeProductsPlaceholder": "Describe the products covered by the license...",
+            "contractNumber": "Contract Number",
+            "contractNumberPlaceholder": "Enter license contract number"
+        },
+        "split": {
+            "description": "Split Description",
+            "descriptionPlaceholder": "Describe in detail the portion of the invention to be separated into a new application...",
+            "infoTitle": "Split Application Note",
+            "infoDescription": "Split requests are used when the original application contains multiple independent inventions/designs and needs to be separated into distinct applications."
+        },
+        "appeal": {
+            "details": "Appeal Details",
+            "type": "Appeal Type",
+            "types": {
+                "DECISION_APPEAL": "Decision Appeal",
+                "NOTICE_OBJECTION": "Notice Objection"
+            },
+            "targetDecision": "Target Decision",
+            "targetDecisionPlaceholder": "Decision ID",
+            "targetEvent": "Target Event",
+            "targetEventPlaceholder": "Event ID",
+            "noticeDate": "Notice Date",
+            "noticeDateHelp": "The date you received the notice/decision to appeal",
+            "grounds": "Appeal Grounds",
+            "groundsPlaceholder": "Present detailed grounds for appeal, including legal basis and evidence...",
+            "deadline": "Appeal Deadline",
+            "resolution": "Resolution",
+            "resolutions": {
+                "UPHELD": "Decision Upheld",
+                "OVERTURNED": "Decision Overturned",
+                "PARTIAL": "Partially Modified",
+                "WITHDRAWN": "Appeal Withdrawn"
+            },
+            "resolvedAt": "Resolved Date",
+            "deadlineWarning": "Appeal Deadline",
+            "deadlineWarningDesc": "Appeals must be filed within 90 days from the date of receiving the notice/decision."
+        },
+        "complaint": {
+            "details": "Complaint Details",
+            "number": "Complaint Number",
+            "grounds": "Grounds for Complaint",
+            "groundsPlaceholder": "Describe in detail the grounds for your complaint, including relevant facts and legal basis...",
+            "deadline": "Filing Deadline",
+            "deadlineInfo": "Filing Deadline",
+            "resolution": "Resolution",
+            "resolutions": {
+                "ACCEPTED": "Complaint Accepted (Reverting to examination)",
+                "REJECTED": "Complaint Rejected (Final decline)"
+            },
+            "resolvedAt": "Resolved Date",
+            "resolutionDetails": "Resolution Details",
+            "deadlineWarning": "Filing Deadline",
+            "deadlineWarningDesc": "Complaints must be filed within 90 days from the date of the decline decision. Maximum 3 complaints allowed per application.",
+            "attemptNumber": "Attempt {{number}} of {{max}}",
+            "attemptNo": "Attempt #",
+            "remaining": "Remaining",
+            "characters": "Characters"
+        }
+    },
+    "timeline": {
+        "title": "Application History",
+        "events": "events",
+        "empty": "No events recorded yet",
+        "loadError": "Failed to load timeline",
+        "by": "By:",
+        "showMore": "Show {{count}} more events",
+        "showLess": "Show less"
+    },
+    "payment": {
+        "payNow": "Pay Now ({{amount}} {{currency}})",
+        "processing": "Processing...",
+        "redirecting": "Redirecting to payment...",
+        "verifying": "Verifying payment...",
+        "invalidSession": "Invalid payment session",
+        "amount": "Amount",
+        "status": "Status",
+        "paidAt": "Paid At",
+        "receiptNo": "Receipt No",
+        "viewApplication": "View Application",
+        "tryAgain": "Try Again",
+        "payFees": "Pay Fees",
+        "unpaidFees": "Unpaid Fees",
+        "paidFees": "Paid Fees",
+        "noUnpaidFees": "All fees have been paid",
+        "paymentHistory": "Payment History",
+        "noPayments": "No payment records",
+        "feePayment": "Fee Payment",
+        "viewAll": "View All",
+        "applicationFee": "Application Fee",
+        "success": {
+            "title": "Payment Successful",
+            "message": "Your payment has been processed successfully. Thank you for your payment."
+        },
+        "cancel": {
+            "title": "Payment Cancelled",
+            "message": "Your payment was cancelled.",
+            "noCharge": "No charges were made to your account."
+        },
+        "error": {
+            "title": "Payment Error",
+            "message": "There was an error processing your payment."
+        },
+        "statuses": {
+            "PENDING": "Pending",
+            "PROCESSING": "Processing",
+            "COMPLETED": "Completed",
+            "FAILED": "Failed",
+            "CANCELLED": "Cancelled",
+            "REFUNDED": "Refunded",
+            "PARTIALLY_REFUNDED": "Partially Refunded",
+            "EXPIRED": "Expired",
+            "PAID": "Paid"
+        }
     }
 }

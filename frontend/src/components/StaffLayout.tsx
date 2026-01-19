@@ -40,6 +40,14 @@ const StaffLayout: React.FC = () => {
             } else {
                 breadcrumbs.push({ label: t('staff.applications.title'), active: true });
             }
+        } else if (path.includes('requests')) {
+            if (path.length > 2) {
+                // Specific request detail
+                breadcrumbs.push({ label: t('staff.nav.requests'), href: '/staff/requests' });
+                breadcrumbs.push({ label: `#${path[2]}`, active: true });
+            } else {
+                breadcrumbs.push({ label: t('staff.nav.requests'), active: true });
+            }
         } else if (path.includes('reports')) {
             breadcrumbs.push({ label: t('staff.nav.reports'), active: true });
         }
@@ -74,6 +82,11 @@ const StaffLayout: React.FC = () => {
                         <NavLink to="/staff/applications/assigned" className={({ isActive }) => getNavLinkClass(isActive)}>
                             <span className="material-symbols-outlined">assignment_ind</span>
                             <p className="text-sm font-medium leading-normal">{t('staff.nav.myApplications')}</p>
+                        </NavLink>
+
+                        <NavLink to="/staff/requests" className={({ isActive }) => getNavLinkClass(isActive)}>
+                            <span className="material-symbols-outlined">pending_actions</span>
+                            <p className="text-sm font-medium leading-normal">{t('staff.nav.requests')}</p>
                         </NavLink>
 
                         <NavLink to="/staff/reports" className={({ isActive }) => getNavLinkClass(isActive)}>

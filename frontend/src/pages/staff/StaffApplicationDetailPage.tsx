@@ -1,11 +1,13 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchApplication } from "@/features/application/store/applicationSlice";
-import { ApplicationStatusBadge } from "@/features/application/components";
+import { ApplicationStatusBadge, ApplicationTimeline } from "@/features/application/components";
 import ExaminationPanel from "@/features/staff/components/ExaminationPanel";
 import ApplicationDocumentViewer from "@/features/staff/components/ApplicationDocumentViewer";
+import ClassificationAssignmentModal from "@/features/staff/components/ClassificationAssignmentModal";
+import { ApplicationStatus } from "@/features/application/types/enums";
 
 const formatDate = (dateString: string | null, language: string): string => {
   if (!dateString) return "-";
@@ -22,7 +24,11 @@ const StaffApplicationDetailPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { currentApplication, parties, attachments, loading, error } =
     useAppSelector((state) => state.application);
+  const [showClassificationModal, setShowClassificationModal] = useState(false);
   console.log("Current Application:", currentApplication);
+
+  // Check if classification can be assigned (only during formality exam)
+  const canAssignClassification = currentApplication?.status === ApplicationStatus.FORMALITY_EXAM;
 
   useEffect(() => {
     if (id) {
@@ -118,6 +124,22 @@ const StaffApplicationDetailPage: React.FC = () => {
               {t("application.detail.filingDate")}:{" "}
               {formatDate(currentApplication.filing_date, i18n.language)}
             </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            {canAssignClassification && (
+              <button
+                type="button"
+                onClick={() => setShowClassificationModal(true)}
+                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                <span className="material-symbols-outlined mr-2 !text-lg">
+                  category
+                </span>
+                {t("staff.classification.assignButton", "Assign Classification")}
+              </button>
+            )}
           </div>
         </div>
 
@@ -255,8 +277,24 @@ const StaffApplicationDetailPage: React.FC = () => {
               onSuccess={handleExaminationSuccess}
             />
           )}
+
+          {/* Application Timeline */}
+          {currentApplication.id && (
+            <ApplicationTimeline applicationId={currentApplication.id} />
+          )}
         </div>
       </main>
+
+      {/* Classification Assignment Modal */}
+      {currentApplication && (
+        <ClassificationAssignmentModal
+          applicationId={currentApplication.id!}
+          appType={currentApplication.app_type as 'PATENT' | 'UTILITY' | 'INDUSTRIAL_DESIGN'}
+          isOpen={showClassificationModal}
+          onClose={() => setShowClassificationModal(false)}
+          onSuccess={handleExaminationSuccess}
+        />
+      )}
     </div>
   );
 };

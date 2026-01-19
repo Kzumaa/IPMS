@@ -11,13 +11,18 @@ export const ApplicationStatus = {
     DRAFT: 'DRAFT',
     SUBMITTED: 'SUBMITTED',
     FORMALITY_EXAM: 'FORMALITY_EXAM',
+    FORMALITY_PASSED: 'FORMALITY_PASSED',
     PUBLISHED: 'PUBLISHED',
     SUB_EXAM_REQ: 'SUB_EXAM_REQ',
     SUB_EXAM: 'SUB_EXAM',
     GRANTED: 'GRANTED',
-    REFUSED: 'REFUSED',
+    DECLINED: 'DECLINED',
     WITHDRAWN: 'WITHDRAWN',
+    UNDER_AMENDMENT: 'UNDER_AMENDMENT',
     WAITING_RESPONSE: 'WAITING_RESPONSE',
+    TERMINATED: 'TERMINATED',
+    COMPLAINING: 'COMPLAINING',
+    CHECKING_COMPLAINT: 'CHECKING_COMPLAINT',
 } as const;
 
 export type ApplicationStatus = typeof ApplicationStatus[keyof typeof ApplicationStatus];
@@ -32,20 +37,26 @@ export const PartyType = {
 
 export type PartyType = typeof PartyType[keyof typeof PartyType];
 
-// Attachment Types (aligned with backend enum)
+// Attachment Types (aligned with backend DocType enum)
 export const AttachmentType = {
-    FORM: 'FORM',
-    DESCRIPTION: 'DESCRIPTION',           // Patent specification/description
+    // Core application documents (Patent/Utility)
+    DESCRIPTION: 'DESCRIPTION',
     CLAIMS: 'CLAIMS',
     ABSTRACT: 'ABSTRACT',
     DRAWINGS: 'DRAWINGS',
-    ID_DESCRIPTION: 'ID_DESCRIPTION',      // Industrial design description
-    ID_PHOTOS_SET: 'ID_PHOTOS_SET',        // Industrial design photos
-    PRIORITY_DOC: 'PRIORITY_DOC',          // Priority document
-    POA: 'POA',                            // Power of Attorney
-    PAYMENT_RECEIPT: 'PAYMENT_RECEIPT',
+
+    // Industrial Design specific
+    ID_DESCRIPTION: 'ID_DESCRIPTION',
+    ID_PHOTOS_SET: 'ID_PHOTOS_SET',
+
+    // Priority claim support
+    PRIORITY_DOC: 'PRIORITY_DOC',
+
+    // Support documents
     TRANSLATION: 'TRANSLATION',
     OTHER: 'OTHER',
+
+    // Official/Admin documents (staff only)
     OFFICIAL_NOTICE: 'OFFICIAL_NOTICE',
     GAZETTE: 'GAZETTE',
     DECISION: 'DECISION',
@@ -53,6 +64,32 @@ export const AttachmentType = {
 } as const;
 
 export type AttachmentType = typeof AttachmentType[keyof typeof AttachmentType];
+
+// Helper function to get appropriate doc types for an application type
+export function getDocTypesForAppType(appType: AppType): AttachmentType[] {
+    const common: AttachmentType[] = [
+        AttachmentType.PRIORITY_DOC,
+        AttachmentType.TRANSLATION,
+        AttachmentType.OTHER,
+    ];
+
+    if (appType === AppType.INDUSTRIAL_DESIGN) {
+        return [
+            AttachmentType.ID_DESCRIPTION,
+            AttachmentType.ID_PHOTOS_SET,
+            ...common,
+        ];
+    }
+
+    // Patent/Utility
+    return [
+        AttachmentType.DESCRIPTION,
+        AttachmentType.CLAIMS,
+        AttachmentType.ABSTRACT,
+        AttachmentType.DRAWINGS,
+        ...common,
+    ];
+}
 
 // Display mappings
 export const AppTypeLabels: Record<AppType, string> = {
@@ -65,13 +102,18 @@ export const ApplicationStatusLabels: Record<ApplicationStatus, string> = {
     [ApplicationStatus.DRAFT]: 'Bản nháp',
     [ApplicationStatus.SUBMITTED]: 'Đã nộp',
     [ApplicationStatus.FORMALITY_EXAM]: 'Thẩm định hình thức',
+    [ApplicationStatus.FORMALITY_PASSED]: 'Đạt hình thức',
     [ApplicationStatus.PUBLISHED]: 'Đã công bố',
     [ApplicationStatus.SUB_EXAM_REQ]: 'Yêu cầu thẩm định nội dung',
     [ApplicationStatus.SUB_EXAM]: 'Thẩm định nội dung',
     [ApplicationStatus.GRANTED]: 'Đã cấp bằng',
-    [ApplicationStatus.REFUSED]: 'Từ chối',
+    [ApplicationStatus.DECLINED]: 'Từ chối',
     [ApplicationStatus.WITHDRAWN]: 'Đã rút',
+    [ApplicationStatus.UNDER_AMENDMENT]: 'Đang sửa đổi',
     [ApplicationStatus.WAITING_RESPONSE]: 'Chờ phản hồi',
+    [ApplicationStatus.TERMINATED]: 'Đã chấm dứt',
+    [ApplicationStatus.COMPLAINING]: 'Đang khiếu nại',
+    [ApplicationStatus.CHECKING_COMPLAINT]: 'Đang xử lý khiếu nại',
 };
 
 export const PartyTypeLabels: Record<PartyType, string> = {
@@ -82,7 +124,6 @@ export const PartyTypeLabels: Record<PartyType, string> = {
 };
 
 export const AttachmentTypeLabels: Record<AttachmentType, string> = {
-    [AttachmentType.FORM]: 'Tờ khai',
     [AttachmentType.DESCRIPTION]: 'Bản mô tả',
     [AttachmentType.CLAIMS]: 'Yêu cầu bảo hộ',
     [AttachmentType.ABSTRACT]: 'Tóm tắt',
@@ -90,8 +131,6 @@ export const AttachmentTypeLabels: Record<AttachmentType, string> = {
     [AttachmentType.ID_DESCRIPTION]: 'Mô tả kiểu dáng',
     [AttachmentType.ID_PHOTOS_SET]: 'Bộ ảnh kiểu dáng',
     [AttachmentType.PRIORITY_DOC]: 'Tài liệu ưu tiên',
-    [AttachmentType.POA]: 'Giấy ủy quyền',
-    [AttachmentType.PAYMENT_RECEIPT]: 'Biên lai thanh toán',
     [AttachmentType.TRANSLATION]: 'Bản dịch',
     [AttachmentType.OTHER]: 'Tài liệu khác',
     [AttachmentType.OFFICIAL_NOTICE]: 'Thông báo chính thức',
@@ -105,13 +144,18 @@ export const ApplicationStatusColors: Record<ApplicationStatus, { bg: string; te
     [ApplicationStatus.DRAFT]: { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-300' },
     [ApplicationStatus.SUBMITTED]: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-300' },
     [ApplicationStatus.FORMALITY_EXAM]: { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-300' },
+    [ApplicationStatus.FORMALITY_PASSED]: { bg: 'bg-teal-100', text: 'text-teal-700', border: 'border-teal-300' },
     [ApplicationStatus.PUBLISHED]: { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-300' },
     [ApplicationStatus.SUB_EXAM_REQ]: { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-300' },
     [ApplicationStatus.SUB_EXAM]: { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-300' },
     [ApplicationStatus.GRANTED]: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300' },
-    [ApplicationStatus.REFUSED]: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300' },
+    [ApplicationStatus.DECLINED]: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300' },
     [ApplicationStatus.WITHDRAWN]: { bg: 'bg-gray-100', text: 'text-gray-500', border: 'border-gray-300' },
+    [ApplicationStatus.UNDER_AMENDMENT]: { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300' },
     [ApplicationStatus.WAITING_RESPONSE]: { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300' },
+    [ApplicationStatus.TERMINATED]: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300' },
+    [ApplicationStatus.COMPLAINING]: { bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-300' },
+    [ApplicationStatus.CHECKING_COMPLAINT]: { bg: 'bg-fuchsia-100', text: 'text-fuchsia-700', border: 'border-fuchsia-300' },
 };
 
 // Helper to get all values for validation

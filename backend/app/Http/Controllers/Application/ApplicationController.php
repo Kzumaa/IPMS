@@ -13,6 +13,8 @@ use App\Services\File\FileMetricService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\ApplicationStatus;
+use App\Enums\RequestStatus;
+use App\Enums\RequestType;
 
 class ApplicationController extends Controller
 {
@@ -61,7 +63,7 @@ class ApplicationController extends Controller
             $search = $validated['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'ILIKE', "%{$search}%")
-                  ->orWhere('app_no', 'ILIKE', "%{$search}%");
+                    ->orWhere('app_no', 'ILIKE', "%{$search}%");
             });
         }
 
@@ -76,6 +78,53 @@ class ApplicationController extends Controller
                 'per_page' => $applications->perPage(),
                 'total' => $applications->total(),
             ],
+        ]);
+    }
+
+    /**
+     * Get GRANTED applications owned by the current user (My Titles).
+     */
+    public function grantedTitles()
+    {
+        $applications = Application::with(['metrics', 'parties'])
+            ->where('created_by', Auth::id())
+            ->where('status', ApplicationStatus::GRANTED)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'data' => ApplicationResource::collection($applications),
+        ]);
+    }
+
+    /**
+     * Get applications where the current user is a licensee (Licensed to Me).
+     */
+    public function licensedToMe()
+    {
+        $userId = Auth::id();
+
+        $applications = Application::with(['metrics', 'parties'])
+            ->whereHas('requests', function ($query) use ($userId) {
+                $query->where('type', RequestType::LICENSE)
+                    ->where('status', RequestStatus::APPROVED)
+                    ->whereHas('license.licensees', function ($licenseeQuery) use ($userId) {
+                        $licenseeQuery->where('licensee_user_id', $userId);
+                    });
+            })
+            ->with(['requests' => function ($query) use ($userId) {
+                $query->where('type', RequestType::LICENSE)
+                    ->where('status', RequestStatus::APPROVED)
+                    ->whereHas('license.licensees', function ($licenseeQuery) use ($userId) {
+                        $licenseeQuery->where('licensee_user_id', $userId);
+                    })
+                    ->with(['license.licensor', 'license.licensees.licensee']);
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'data' => ApplicationResource::collection($applications),
         ]);
     }
 
@@ -96,7 +145,16 @@ class ApplicationController extends Controller
 
     public function show($id)
     {
-        $application = Application::with(['metrics', 'parties', 'payments.receiptFile', 'attachments.file'])->findOrFail($id);
+        $application = Application::with([
+            'metrics',
+            'parties',
+            'payments.receiptFile',
+            'attachments' => function ($query) {
+                $query->where('is_current', true)->with('file');
+            },
+            'feeQuotes',
+            'priorityClaims',
+        ])->findOrFail($id);
         $this->authorize('view', $application);
         return response()->json(['data' => new ApplicationResource($application)]);
     }
@@ -107,6 +165,7 @@ class ApplicationController extends Controller
         $this->authorize('update', $application);
 
         $validated = $request->validate([
+            'app_type' => 'string|in:PATENT,UTILITY,INDUSTRIAL_DESIGN',
             'title' => 'string|max:1000',
             'applicant_is_inventor' => 'boolean',
             'publication_early_requested' => 'boolean',
@@ -127,7 +186,10 @@ class ApplicationController extends Controller
 
         $application = $this->applicationService->updateApplication($application, $validated);
 
-        return response()->json($application);
+        // Reload with all relations for complete response
+        $application->load(['metrics', 'parties', 'attachments.file', 'feeQuotes', 'priorityClaims']);
+
+        return response()->json(['data' => new ApplicationResource($application)]);
     }
 
     public function destroy($id)
@@ -180,6 +242,40 @@ class ApplicationController extends Controller
         return response()->json($application);
     }
 
+    /**
+     * Split an application into a new draft application.
+     */
+    public function split(Request $request, $id)
+    {
+        $application = Application::with(['activeParties', 'priorityClaims'])->findOrFail($id);
+        $this->authorize('update', $application);
+
+        // Cannot split GRANTED or DECLINED applications
+        if (in_array($application->status, [ApplicationStatus::GRANTED, ApplicationStatus::DECLINED])) {
+            return response()->json([
+                'message' => 'Cannot split an application that has been granted or declined.',
+            ], 400);
+        }
+
+        $validated = $request->validate([
+            'title' => 'nullable|string|max:1000',
+        ]);
+
+        $newApplication = $this->applicationService->splitApplication(
+            $application,
+            Auth::id(),
+            $validated
+        );
+
+        // Load relationships for response
+        $newApplication->load(['metrics', 'parties', 'priorityClaims']);
+
+        return response()->json([
+            'data' => new ApplicationResource($newApplication),
+            'message' => 'Application split successfully.',
+        ], 201);
+    }
+
     public function completeExamination(Request $request, $id)
     {
         $application = Application::findOrFail($id);
@@ -216,7 +312,7 @@ class ApplicationController extends Controller
         // Authorization: In real app, check if user has DECISION_MAKER role.
         // For now, reuse 'examine' or allow if user is staff.
         // Let's assume any staff can trigger this for now for simplicity, or reuse 'examine' policy.
-        $this->authorize('examine', $application); 
+        $this->authorize('examine', $application);
 
         $validated = $request->validate([
             'type' => 'required|in:GRANT,REFUSE',
@@ -243,7 +339,7 @@ class ApplicationController extends Controller
             if (!$attachment->is_current) continue;
 
             $result = $this->fileMetricService->analyze($attachment->file, $application, $attachment->doc_type);
-            
+
             $results[] = [
                 'file_id' => $attachment->file_id,
                 'filename' => $attachment->file->filename,
@@ -265,6 +361,49 @@ class ApplicationController extends Controller
             'application_metrics' => $application->metrics,
             'file_results' => $results,
             'warning' => $hasWarnings ? 'Some files require manual verification.' : null
+        ]);
+    }
+
+    /**
+     * Publish application (FORMALITY_PASSED → PUBLISHED).
+     * Requires publication fee to be paid.
+     */
+    public function publish(Request $request, $id)
+    {
+        $application = Application::with(['feeQuotes.lines'])->findOrFail($id);
+        $this->authorize('examine', $application);
+
+        // Validate status
+        if ($application->status !== ApplicationStatus::FORMALITY_PASSED) {
+            return response()->json([
+                'message' => 'Application must be in FORMALITY_PASSED status.',
+            ], 400);
+        }
+
+        // Check publication fee is paid
+        $publicationFeePaid = $application->feeQuotes()
+            ->where('status', 'PAID')
+            ->whereHas('lines', function ($query) {
+                $query->where(function ($q) {
+                    $q->where('fee_code', 'LIKE', '%PUB%')
+                        ->orWhere('label', 'LIKE', '%Publication%')
+                        ->orWhere('label', 'LIKE', '%Công bố%');
+                });
+            })
+            ->exists();
+
+        if (!$publicationFeePaid) {
+            return response()->json([
+                'message' => 'Publication fee must be paid.',
+            ], 400);
+        }
+
+        // Update status
+        $application->update(['status' => ApplicationStatus::PUBLISHED]);
+
+        return response()->json([
+            'data' => new ApplicationResource($application),
+            'message' => 'Application published successfully.',
         ]);
     }
 }

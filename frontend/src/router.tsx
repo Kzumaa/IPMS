@@ -9,6 +9,7 @@ import DashboardPage from './pages/DashboardPage';
 import ApplicationsPage from './pages/ApplicationsPage';
 import NewApplicationPage from './pages/NewApplicationPage';
 import ApplicationDetailPage from './pages/ApplicationDetailPage';
+import AmendApplicationPage from './pages/AmendApplicationPage';
 import AssetsPage from './pages/AssetsPage';
 import FeesPage from './pages/FeesPage';
 import MessagesPage from './pages/MessagesPage';
@@ -16,7 +17,21 @@ import StaffDashboardPage from './pages/staff/StaffDashboardPage';
 import StaffApplicationsPage from './pages/staff/StaffApplicationsPage';
 import StaffApplicationDetailPage from './pages/staff/StaffApplicationDetailPage';
 import StaffReportsPage from './pages/staff/StaffReportsPage';
+import StaffRequestsPage from './pages/staff/StaffRequestsPage';
+import StaffRequestDetailPage from './pages/staff/StaffRequestDetailPage';
 import { ProtectedRoute, PublicRoute } from './components/AuthRoutes';
+import {
+    CreateAssignmentPage,
+    CreateLicensePage,
+    CreateSplitPage,
+    CreateAppealPage,
+    CreateComplaintPage,
+    CreateRenewalPage,
+    CreateTerminationPage,
+    CreateWithdrawalPage,
+    RequestDetailPage,
+} from './pages/request';
+import { PaymentSuccessPage, PaymentCancelPage } from './pages/payment';
 
 const router = createBrowserRouter([
     {
@@ -68,6 +83,14 @@ const router = createBrowserRouter([
                         element: <StaffApplicationDetailPage />,
                     },
                     {
+                        path: 'requests',
+                        element: <StaffRequestsPage />,
+                    },
+                    {
+                        path: 'requests/:requestId',
+                        element: <StaffRequestDetailPage />,
+                    },
+                    {
                         path: 'reports',
                         element: <StaffReportsPage />,
                     },
@@ -102,6 +125,47 @@ const router = createBrowserRouter([
                         element: <NewApplicationPage />,
                     },
                     {
+                        path: 'applications/:id/amend',
+                        element: <AmendApplicationPage />,
+                    },
+                    // Request routes
+                    {
+                        path: 'applications/:id/requests/assignments/new',
+                        element: <CreateAssignmentPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/licenses/new',
+                        element: <CreateLicensePage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/splits/new',
+                        element: <CreateSplitPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/appeals/new',
+                        element: <CreateAppealPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/complaints/new',
+                        element: <CreateComplaintPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/renewals/new',
+                        element: <CreateRenewalPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/terminations/new',
+                        element: <CreateTerminationPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/withdrawals/new',
+                        element: <CreateWithdrawalPage />,
+                    },
+                    {
+                        path: 'applications/:id/requests/:type/:requestId',
+                        element: <RequestDetailPage />,
+                    },
+                    {
                         path: 'assets',
                         element: <AssetsPage />,
                     },
@@ -112,6 +176,15 @@ const router = createBrowserRouter([
                     {
                         path: 'messages',
                         element: <MessagesPage />,
+                    },
+                    // Payment routes
+                    {
+                        path: 'payments/success',
+                        element: <PaymentSuccessPage />,
+                    },
+                    {
+                        path: 'payments/cancel',
+                        element: <PaymentCancelPage />,
                     },
                 ],
             },

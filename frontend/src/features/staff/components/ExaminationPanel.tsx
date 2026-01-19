@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { issueDecision } from '../store/staffSlice';
+import { issueDecision, publishApplication } from '../store/staffSlice';
 import FormCheckPanel from './FormCheckPanel';
 import ContentCheckPanel from './ContentCheckPanel';
 import type { Application, ApplicationParty, ApplicationAttachment } from '@/features/application/types/applicationTypes';
@@ -35,15 +35,24 @@ export default function ExaminationPanel({ application, parties, attachments, on
         }
     };
 
+    const handlePublish = async () => {
+        const result = await dispatch(publishApplication(application.id!));
+        if (publishApplication.fulfilled.match(result)) {
+            onSuccess?.();
+        }
+    };
+
     // Determine which examination panel to show based on status
     // Formality examination happens when application is SUBMITTED
     const showFormalityExam = application.status === 'SUBMITTED';
+    // Publication can happen when application is FORMALITY_PASSED
+    const showPublication = application.status === 'FORMALITY_PASSED';
     // Substantive examination happens after application is PUBLISHED
     const showSubstantiveExam = application.status === 'PUBLISHED';
     // Decision can be issued when in SUB_EXAM_REQ or WAITING_RESPONSE
     const showDecision = application.status === 'SUB_EXAM_REQ' || application.status === 'WAITING_RESPONSE';
 
-    if (!showFormalityExam && !showSubstantiveExam && !showDecision) {
+    if (!showFormalityExam && !showPublication && !showSubstantiveExam && !showDecision) {
         return (
             <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
                 <p className="text-slate-600 dark:text-slate-400">{t('staff.examination.noActions')}</p>
@@ -61,6 +70,65 @@ export default function ExaminationPanel({ application, parties, attachments, on
                     attachments={attachments}
                     onSuccess={onSuccess}
                 />
+            )}
+
+            {/* Publication */}
+            {showPublication && (
+                <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
+                    <div className="flex items-center gap-3 mb-6">
+                        <span className="material-symbols-outlined text-2xl text-blue-600">publish</span>
+                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                            {t('staff.examination.publishApplication', 'Publish Application')}
+                        </h2>
+                    </div>
+
+                    {examinationError && (
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+                            <p className="text-red-800 dark:text-red-200">{examinationError}</p>
+                        </div>
+                    )}
+
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                        <div className="flex items-start gap-3">
+                            <span className="material-symbols-outlined text-blue-600 mt-0.5">info</span>
+                            <div>
+                                <p className="text-blue-800 dark:text-blue-200 font-medium mb-1">
+                                    {t('staff.examination.publishInfo', 'Ready for Publication')}
+                                </p>
+                                <p className="text-blue-700 dark:text-blue-300 text-sm">
+                                    {t('staff.examination.publishDescription', 'This application has passed formality examination. Publishing will make it publicly visible for third-party search and opposition.')}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6">
+                        <div className="flex items-start gap-3">
+                            <span className="material-symbols-outlined text-amber-600 mt-0.5">warning</span>
+                            <p className="text-amber-800 dark:text-amber-200 text-sm">
+                                {t('staff.examination.publishFeeWarning', 'Publication fee must be paid before publishing. The system will verify payment status.')}
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={handlePublish}
+                        disabled={examinationLoading}
+                        className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-colors flex items-center justify-center gap-2"
+                    >
+                        {examinationLoading ? (
+                            <>
+                                <span className="material-symbols-outlined animate-spin">refresh</span>
+                                {t('staff.examination.publishing', 'Publishing...')}
+                            </>
+                        ) : (
+                            <>
+                                <span className="material-symbols-outlined">publish</span>
+                                {t('staff.examination.publishButton', 'Publish Application')}
+                            </>
+                        )}
+                    </button>
+                </div>
             )}
 
             {/* Substantive Examination */}

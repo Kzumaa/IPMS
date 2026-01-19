@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -9,7 +9,13 @@ import {
 import {
   ApplicationStatusBadge,
   ApplicantDocumentViewer,
+  ApplicationTimeline,
+  VersionHistory,
+  SplitApplicationModal,
 } from "../features/application/components";
+import { PaymentButton } from "../features/payment/components";
+import { ApplicationStatus } from "../features/application/types/enums";
+import { RequestsSection } from "../features/request/components";
 
 const formatDate = (dateString: string | null): string => {
   if (!dateString) return "-";
@@ -27,6 +33,27 @@ const ApplicationDetailPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { currentApplication, parties, attachments, loading, error } =
     useAppSelector((state) => state.application);
+  const { user } = useAppSelector((state) => state.auth);
+  const [showSplitModal, setShowSplitModal] = useState(false);
+
+  // Check if current user is the creator (owner) of the application
+  const isCreator = user && currentApplication?.created_by === user.id;
+
+  // Check if application can be split (not in terminal states)
+  const terminalStates: ApplicationStatus[] = [
+    ApplicationStatus.GRANTED,
+    ApplicationStatus.DECLINED,
+    ApplicationStatus.WITHDRAWN,
+    ApplicationStatus.DRAFT,
+  ];
+  const canSplit =
+    currentApplication &&
+    !terminalStates.includes(currentApplication.status as ApplicationStatus);
+
+  // Check if application can be amended (submitted but not in terminal states)
+  const canAmend =
+    currentApplication &&
+    !terminalStates.includes(currentApplication.status as ApplicationStatus);
 
   console.log(currentApplication);
 
@@ -134,31 +161,56 @@ const ApplicationDetailPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center space-x-3">
-            {currentApplication.status === "DRAFT" && (
-              <>
+          {isCreator && (
+            <div className="flex items-center space-x-3">
+              {canAmend && (
                 <Link
-                  to={`/app/applications/${currentApplication.id}/edit`}
-                  className="flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                  to={`/app/applications/${currentApplication.id}/amend`}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-600 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
                 >
                   <span className="material-symbols-outlined mr-2 !text-lg">
-                    edit
+                    edit_note
                   </span>
-                  {t("application.detail.edit")}
+                  {t("application.detail.amend", "Amend")}
                 </Link>
+              )}
+              {canSplit && (
                 <button
                   type="button"
-                  onClick={handleDelete}
-                  className="flex items-center px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  onClick={() => setShowSplitModal(true)}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   <span className="material-symbols-outlined mr-2 !text-lg">
-                    delete
+                    call_split
                   </span>
-                  {t("application.detail.delete")}
+                  {t("application.detail.split", "Split Application")}
                 </button>
-              </>
-            )}
-          </div>
+              )}
+              {currentApplication.status === "DRAFT" && (
+                <>
+                  <Link
+                    to={`/app/applications/${currentApplication.id}/edit`}
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    <span className="material-symbols-outlined mr-2 !text-lg">
+                      edit
+                    </span>
+                    {t("application.detail.edit")}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    className="flex items-center px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    <span className="material-symbols-outlined mr-2 !text-lg">
+                      delete
+                    </span>
+                    {t("application.detail.delete")}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -227,6 +279,19 @@ const ApplicationDetailPage: React.FC = () => {
             </div>
 
             {/* Note: Abstract, description, and claims are uploaded as attachments */}
+
+            {/* Application Timeline */}
+            <ApplicationTimeline applicationId={currentApplication.id!} />
+
+            {/* Version History */}
+            <VersionHistory applicationId={currentApplication.id!} />
+
+            {/* Related Requests (Amendments, Complaints, etc.) */}
+            <RequestsSection
+              applicationId={currentApplication.id!}
+              applicationStatus={currentApplication.status}
+              canAddRequest={!!isCreator}
+            />
           </div>
 
           {/* Sidebar */}
@@ -309,6 +374,73 @@ const ApplicationDetailPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Fee Payment - Only show to creator */}
+            {isCreator &&
+              currentApplication.fee_quotes &&
+              currentApplication.fee_quotes.length > 0 && (
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                      {t("payment.feePayment")}
+                    </h3>
+                    <Link
+                      to="/app/fees"
+                      className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    >
+                      {t("payment.viewAll")}
+                    </Link>
+                  </div>
+                  <div className="space-y-3">
+                    {currentApplication.fee_quotes.map((quote) => {
+                      const isPaid = quote.status === "PAID";
+                      const isPayable =
+                        quote.status === "FINAL" ||
+                        quote.status === "DRAFT" ||
+                        quote.status === "PENDING";
+                      return (
+                        <div
+                          key={quote.id}
+                          className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">
+                              {t("payment.applicationFee")} v{quote.version}
+                            </p>
+                            <p className="text-lg font-semibold text-slate-900 dark:text-white">
+                              {new Intl.NumberFormat("vi-VN").format(
+                                quote.total_amount
+                              )}{" "}
+                              {quote.currency}
+                            </p>
+                          </div>
+                          <div>
+                            {isPaid ? (
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
+                                <span className="material-symbols-outlined mr-1 !text-sm">
+                                  check_circle
+                                </span>
+                                {t("payment.statuses.PAID")}
+                              </span>
+                            ) : isPayable ? (
+                              <PaymentButton
+                                feeQuoteId={quote.id}
+                                amount={quote.total_amount}
+                                currency={quote.currency}
+                                size="sm"
+                              />
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-600 dark:text-slate-300">
+                                {quote.status}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
             {/* Attachments */}
             <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
@@ -323,6 +455,15 @@ const ApplicationDetailPage: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Split Application Modal */}
+      {currentApplication && (
+        <SplitApplicationModal
+          application={currentApplication}
+          isOpen={showSplitModal}
+          onClose={() => setShowSplitModal(false)}
+        />
+      )}
     </div>
   );
 };

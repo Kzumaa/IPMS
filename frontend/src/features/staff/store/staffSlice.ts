@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import staffService, { type DashboardStats } from '../services/staffService';
+import staffService, { type DashboardStats, type StaffRequest, type AppealResolutionRequest, type ComplaintResolutionRequest } from '../services/staffService';
 import type { Application, PaginatedResponse } from '@/features/application/types/applicationTypes';
 
 interface StaffState {
@@ -20,6 +20,15 @@ interface StaffState {
     // Examination
     examinationLoading: boolean;
     examinationError: string | null;
+
+    // Requests
+    requests: StaffRequest[];
+    currentRequest: StaffRequest | null;
+    requestsLoading: boolean;
+    requestsError: string | null;
+    requestsPage: number;
+    requestsTotalPages: number;
+    requestsTotal: number;
 }
 
 const initialState: StaffState = {
@@ -37,6 +46,14 @@ const initialState: StaffState = {
 
     examinationLoading: false,
     examinationError: null,
+
+    requests: [],
+    currentRequest: null,
+    requestsLoading: false,
+    requestsError: null,
+    requestsPage: 1,
+    requestsTotalPages: 1,
+    requestsTotal: 0,
 };
 
 // Async Thunks
@@ -122,6 +139,108 @@ export const issueDecision = createAsyncThunk(
     }
 );
 
+// Request Examination Thunks
+export const fetchRequests = createAsyncThunk(
+    'staff/fetchRequests',
+    async (params: {
+        type?: string;
+        status?: string;
+        page?: number;
+        per_page?: number;
+    } | undefined, { rejectWithValue }) => {
+        try {
+            const response = await staffService.listRequests(params);
+            return response;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to fetch requests');
+        }
+    }
+);
+
+export const fetchRequest = createAsyncThunk(
+    'staff/fetchRequest',
+    async (requestId: number, { rejectWithValue }) => {
+        try {
+            const response = await staffService.getRequest(requestId);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to fetch request');
+        }
+    }
+);
+
+export const startRequestExamination = createAsyncThunk(
+    'staff/startRequestExamination',
+    async (requestId: number, { rejectWithValue }) => {
+        try {
+            const response = await staffService.startRequestExamination(requestId);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to start examination');
+        }
+    }
+);
+
+export const approveRequest = createAsyncThunk(
+    'staff/approveRequest',
+    async ({ requestId, notes }: { requestId: number; notes?: string }, { rejectWithValue }) => {
+        try {
+            const response = await staffService.approveRequest(requestId, notes);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to approve request');
+        }
+    }
+);
+
+export const refuseRequest = createAsyncThunk(
+    'staff/refuseRequest',
+    async ({ requestId, notes }: { requestId: number; notes: string }, { rejectWithValue }) => {
+        try {
+            const response = await staffService.refuseRequest(requestId, notes);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to refuse request');
+        }
+    }
+);
+
+export const resolveAppeal = createAsyncThunk(
+    'staff/resolveAppeal',
+    async ({ requestId, data }: { requestId: number; data: AppealResolutionRequest }, { rejectWithValue }) => {
+        try {
+            const response = await staffService.resolveAppeal(requestId, data);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to resolve appeal');
+        }
+    }
+);
+
+export const resolveComplaint = createAsyncThunk(
+    'staff/resolveComplaint',
+    async ({ requestId, data }: { requestId: number; data: ComplaintResolutionRequest }, { rejectWithValue }) => {
+        try {
+            const response = await staffService.resolveComplaint(requestId, data);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to resolve complaint');
+        }
+    }
+);
+
+export const publishApplication = createAsyncThunk(
+    'staff/publishApplication',
+    async (applicationId: number, { rejectWithValue }) => {
+        try {
+            const response = await staffService.publishApplication(applicationId);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to publish application');
+        }
+    }
+);
+
 // Slice
 const staffSlice = createSlice({
     name: 'staff',
@@ -131,6 +250,10 @@ const staffSlice = createSlice({
             state.statsError = null;
             state.applicationsError = null;
             state.examinationError = null;
+            state.requestsError = null;
+        },
+        clearCurrentRequest: (state) => {
+            state.currentRequest = null;
         },
     },
     extraReducers: (builder) => {
@@ -226,8 +349,130 @@ const staffSlice = createSlice({
                 state.examinationLoading = false;
                 state.examinationError = action.payload as string;
             });
+
+        // Fetch Requests
+        builder
+            .addCase(fetchRequests.pending, (state) => {
+                state.requestsLoading = true;
+                state.requestsError = null;
+            })
+            .addCase(fetchRequests.fulfilled, (state, action: PayloadAction<PaginatedResponse<StaffRequest>>) => {
+                state.requestsLoading = false;
+                state.requests = action.payload.data;
+                state.requestsPage = action.payload.meta?.current_page || 1;
+                state.requestsTotalPages = action.payload.meta?.last_page || 1;
+                state.requestsTotal = action.payload.meta?.total || 0;
+            })
+            .addCase(fetchRequests.rejected, (state, action) => {
+                state.requestsLoading = false;
+                state.requestsError = action.payload as string;
+            });
+
+        // Fetch Single Request
+        builder
+            .addCase(fetchRequest.pending, (state) => {
+                state.requestsLoading = true;
+                state.requestsError = null;
+            })
+            .addCase(fetchRequest.fulfilled, (state, action: PayloadAction<StaffRequest>) => {
+                state.requestsLoading = false;
+                state.currentRequest = action.payload;
+            })
+            .addCase(fetchRequest.rejected, (state, action) => {
+                state.requestsLoading = false;
+                state.requestsError = action.payload as string;
+            });
+
+        // Start Request Examination
+        builder
+            .addCase(startRequestExamination.pending, (state) => {
+                state.examinationLoading = true;
+                state.examinationError = null;
+            })
+            .addCase(startRequestExamination.fulfilled, (state, action: PayloadAction<StaffRequest>) => {
+                state.examinationLoading = false;
+                state.currentRequest = action.payload;
+            })
+            .addCase(startRequestExamination.rejected, (state, action) => {
+                state.examinationLoading = false;
+                state.examinationError = action.payload as string;
+            });
+
+        // Approve Request
+        builder
+            .addCase(approveRequest.pending, (state) => {
+                state.examinationLoading = true;
+                state.examinationError = null;
+            })
+            .addCase(approveRequest.fulfilled, (state, action: PayloadAction<StaffRequest>) => {
+                state.examinationLoading = false;
+                state.currentRequest = action.payload;
+            })
+            .addCase(approveRequest.rejected, (state, action) => {
+                state.examinationLoading = false;
+                state.examinationError = action.payload as string;
+            });
+
+        // Refuse Request
+        builder
+            .addCase(refuseRequest.pending, (state) => {
+                state.examinationLoading = true;
+                state.examinationError = null;
+            })
+            .addCase(refuseRequest.fulfilled, (state, action: PayloadAction<StaffRequest>) => {
+                state.examinationLoading = false;
+                state.currentRequest = action.payload;
+            })
+            .addCase(refuseRequest.rejected, (state, action) => {
+                state.examinationLoading = false;
+                state.examinationError = action.payload as string;
+            });
+
+        // Resolve Appeal
+        builder
+            .addCase(resolveAppeal.pending, (state) => {
+                state.examinationLoading = true;
+                state.examinationError = null;
+            })
+            .addCase(resolveAppeal.fulfilled, (state, action: PayloadAction<StaffRequest>) => {
+                state.examinationLoading = false;
+                state.currentRequest = action.payload;
+            })
+            .addCase(resolveAppeal.rejected, (state, action) => {
+                state.examinationLoading = false;
+                state.examinationError = action.payload as string;
+            });
+
+        // Resolve Complaint
+        builder
+            .addCase(resolveComplaint.pending, (state) => {
+                state.examinationLoading = true;
+                state.examinationError = null;
+            })
+            .addCase(resolveComplaint.fulfilled, (state, action: PayloadAction<StaffRequest>) => {
+                state.examinationLoading = false;
+                state.currentRequest = action.payload;
+            })
+            .addCase(resolveComplaint.rejected, (state, action) => {
+                state.examinationLoading = false;
+                state.examinationError = action.payload as string;
+            });
+
+        // Publish Application
+        builder
+            .addCase(publishApplication.pending, (state) => {
+                state.examinationLoading = true;
+                state.examinationError = null;
+            })
+            .addCase(publishApplication.fulfilled, (state) => {
+                state.examinationLoading = false;
+            })
+            .addCase(publishApplication.rejected, (state, action) => {
+                state.examinationLoading = false;
+                state.examinationError = action.payload as string;
+            });
     },
 });
 
-export const { clearError } = staffSlice.actions;
+export const { clearError, clearCurrentRequest } = staffSlice.actions;
 export default staffSlice.reducer;

@@ -9,6 +9,7 @@ import type {
     PriorityClaim,
     SntcInfo,
     UserSearchResult,
+    TimelineEvent,
     CreateApplicationDTO,
     CreatePartyDTO,
     CreateProtectionTitleDTO,
@@ -16,6 +17,12 @@ import type {
     ApplicationFilters,
     PaginatedResponse,
     ApiResponse,
+    ApplicationVersion,
+    VersionComparison,
+    SplitApplicationDTO,
+    AmendmentData,
+    CreateEditModeAmendmentDTO,
+    PendingVersion,
 } from '../types/applicationTypes';
 
 const BASE_URL = '/applications';
@@ -27,9 +34,15 @@ function transformPartyToBackend(data: CreatePartyDTO) {
         snapshot_name: data.name,
         snapshot_address: data.address,
         snapshot_email: data.email || null,
-        // Backend expects 2-character country code for nationality field
+        phone: data.phone || null,
+        id_number: data.id_number || null,
+        id_type: data.id_type || null,
+        // Backend 'nationality' is 2-char country code
         nationality: data.country_code || null,
+        // Backend 'nationality_text' is full nationality text like "Việt Nam"
+        nationality_text: data.nationality || null,
         is_primary: data.is_primary ?? false,
+        user_id: data.user_id || null,
     };
 }
 
@@ -90,9 +103,15 @@ export const applicationService = {
         if (data.name !== undefined) backendData.snapshot_name = data.name;
         if (data.address !== undefined) backendData.snapshot_address = data.address;
         if (data.email !== undefined) backendData.snapshot_email = data.email;
-        // Backend expects 2-character country code for nationality field
+        if (data.phone !== undefined) backendData.phone = data.phone;
+        if (data.id_number !== undefined) backendData.id_number = data.id_number;
+        if (data.id_type !== undefined) backendData.id_type = data.id_type;
+        // Backend 'nationality' is 2-char country code
         if (data.country_code !== undefined) backendData.nationality = data.country_code;
+        // Backend 'nationality_text' is full nationality text
+        if (data.nationality !== undefined) backendData.nationality_text = data.nationality;
         if (data.is_primary !== undefined) backendData.is_primary = data.is_primary;
+        if (data.user_id !== undefined) backendData.user_id = data.user_id;
 
         const response = await axiosClient.put(`${BASE_URL}/${applicationId}/parties/${partyId}`, backendData);
         return response.data;
@@ -209,6 +228,82 @@ export const applicationService = {
     // User Search (for adding co-applicants)
     async searchUserByEmail(email: string): Promise<ApiResponse<UserSearchResult[]>> {
         const response = await axiosClient.get(`/users/search?email=${encodeURIComponent(email)}`);
+        return response.data;
+    },
+
+    // Timeline (aggregated events history)
+    async getTimeline(applicationId: number): Promise<ApiResponse<TimelineEvent[]>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/timeline`);
+        return response.data;
+    },
+
+    // Version History
+    async getVersionHistory(applicationId: number): Promise<ApiResponse<ApplicationVersion[]>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/versions`);
+        return response.data;
+    },
+
+    async getVersion(applicationId: number, versionNumber: number): Promise<ApiResponse<ApplicationVersion>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/versions/${versionNumber}`);
+        return response.data;
+    },
+
+    async compareVersions(applicationId: number, versionA: number, versionB: number): Promise<ApiResponse<VersionComparison>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/versions/${versionA}/compare/${versionB}`);
+        return response.data;
+    },
+
+    // Split Application
+    async splitApplication(applicationId: number, data?: SplitApplicationDTO): Promise<ApiResponse<Application>> {
+        const response = await axiosClient.post(`${BASE_URL}/${applicationId}/split`, data || {});
+        return response.data;
+    },
+
+    // Edit-mode Amendment (versioning)
+    async getAmendmentData(applicationId: number): Promise<ApiResponse<AmendmentData>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/amendment-data`);
+        return response.data;
+    },
+
+    async createEditModeAmendment(applicationId: number, data: CreateEditModeAmendmentDTO): Promise<ApiResponse<unknown>> {
+        // Check if we have file uploads
+        const hasFiles = data.new_attachments && data.new_attachments.length > 0;
+
+        if (hasFiles) {
+            // Use FormData for file uploads
+            const formData = new FormData();
+            formData.append('proposed_data', JSON.stringify(data.proposed_data));
+            formData.append('change_summary', data.change_summary);
+
+            if (data.removed_attachment_ids && data.removed_attachment_ids.length > 0) {
+                formData.append('removed_attachment_ids', JSON.stringify(data.removed_attachment_ids));
+            }
+
+            // Append each file with its doc_type
+            data.new_attachments!.forEach((attachment, index) => {
+                formData.append(`attachments[${index}][file]`, attachment.file);
+                formData.append(`attachments[${index}][doc_type]`, attachment.doc_type);
+            });
+
+            const response = await axiosClient.post(`${BASE_URL}/${applicationId}/amendments/edit-mode`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data;
+        } else {
+            // No files, send JSON
+            const response = await axiosClient.post(`${BASE_URL}/${applicationId}/amendments/edit-mode`, {
+                proposed_data: data.proposed_data,
+                change_summary: data.change_summary,
+                removed_attachment_ids: data.removed_attachment_ids || [],
+            });
+            return response.data;
+        }
+    },
+
+    async getPendingVersion(applicationId: number): Promise<ApiResponse<PendingVersion | null>> {
+        const response = await axiosClient.get(`${BASE_URL}/${applicationId}/pending-version`);
         return response.data;
     },
 };

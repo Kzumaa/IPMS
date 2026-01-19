@@ -80,8 +80,8 @@
         "startProtectingDesc": "Tham gia cùng hàng ngàn nhà sáng tạo và doanh nghiệp tin tưởng chúng tôi bảo vệ sở hữu trí tuệ của họ trên toàn thế giới."
     },
     "dashboard": {
-        "title": "IPMS Pro",
-        "subtitle": "Enterprise",
+        "title": "IPMS",
+        "subtitle": "",
         "nav": {
             "dashboard": "Tổng Quan",
             "myApplications": "Đơn Của Tôi",
@@ -306,7 +306,8 @@
                     "claims": "Yêu cầu bảo hộ (bắt buộc)",
                     "abstract": "Bản tóm tắt (bắt buộc)",
                     "drawings": "Bản vẽ (không bắt buộc)",
-                    "poa": "Giấy ủy quyền",
+                    "idDescription": "Mô tả kiểu dáng (bắt buộc)",
+                    "idPhotos": "Bộ ảnh kiểu dáng (bắt buộc)",
                     "priority": "Tài liệu ưu tiên"
                 },
                 "metricsTitle": "Chỉ số đơn",
@@ -360,6 +361,8 @@
                     "missingSpecification": "Thiếu tài liệu bản mô tả",
                     "missingClaims": "Thiếu tài liệu yêu cầu bảo hộ",
                     "missingAbstract": "Thiếu tài liệu bản tóm tắt",
+                    "missingIdDescription": "Thiếu tài liệu mô tả kiểu dáng",
+                    "missingIdPhotos": "Thiếu bộ ảnh kiểu dáng",
                     "missingApplicant": "Chưa có người nộp đơn",
                     "missingPriorityDoc": "Thiếu tài liệu ưu tiên (bắt buộc khi yêu cầu quyền ưu tiên)",
                     "missingPOA": "Thiếu giấy ủy quyền (bắt buộc khi có đại diện)",
@@ -369,7 +372,7 @@
             }
         },
         "appTypes": {
-            "PATENT": "Sáng chế",
+            "PATENT": "Sáng chế / Giải pháp hữu ích",
             "UTILITY": "Giải pháp hữu ích",
             "INDUSTRIAL_DESIGN": "Kiểu dáng công nghiệp"
         },
@@ -381,9 +384,11 @@
             "SUBSTANTIVE_EXAMINATION": "Thẩm định nội dung",
             "PUBLISHED": "Đã công bố",
             "GRANTED": "Đã cấp bằng",
-            "REJECTED": "Từ chối",
+            "DECLINED": "Từ chối",
             "WITHDRAWN": "Đã rút",
-            "ABANDONED": "Bỏ đơn"
+            "ABANDONED": "Bỏ đơn",
+            "FORMALITY_PASSED": "Đã qua thẩm định hình thức",
+            "COMPLAINING": "Đang khiếu nại"
         },
         "partyTypes": {
             "APPLICANT": "Người nộp đơn",
@@ -392,7 +397,6 @@
             "ASSIGNEE": "Người được chuyển nhượng"
         },
         "attachmentTypes": {
-            "FORM": "Tờ khai",
             "DESCRIPTION": "Bản mô tả",
             "CLAIMS": "Yêu cầu bảo hộ",
             "ABSTRACT": "Tóm tắt",
@@ -400,8 +404,6 @@
             "ID_DESCRIPTION": "Mô tả kiểu dáng",
             "ID_PHOTOS_SET": "Bộ ảnh kiểu dáng",
             "PRIORITY_DOC": "Tài liệu ưu tiên",
-            "POA": "Giấy ủy quyền",
-            "PAYMENT_RECEIPT": "Biên lai thanh toán",
             "TRANSLATION": "Bản dịch",
             "OTHER": "Tài liệu khác",
             "OFFICIAL_NOTICE": "Thông báo chính thức",
@@ -445,7 +447,8 @@
         "success": "Thành công",
         "loading": "Đang tải...",
         "noData": "Không có dữ liệu",
-        "actions": "Hành động"
+        "actions": "Hành động",
+        "backToDashboard": "Về trang chủ"
     },
     "pdfViewer": {
         "loadError": "Không thể tải PDF",
@@ -461,6 +464,7 @@
             "allApplications": "Tất cả đơn",
             "myApplications": "Đơn của tôi",
             "dashboard": "Bảng điều khiển",
+            "requests": "Yêu cầu",
             "reports": "Báo cáo"
         },
         "common": {
@@ -511,6 +515,41 @@
             "next": "Sau",
             "page": "Trang {{current}} / {{total}}",
             "assigned": "Đã giao"
+        },
+        "requests": {
+            "title": "Yêu cầu liên quan",
+            "subtitle": "Danh sách yêu cầu cần thẩm định",
+            "loading": "Đang tải yêu cầu...",
+            "noRequests": "Không có yêu cầu nào",
+            "noRequestsDesc": "Hiện không có yêu cầu nào cần thẩm định.",
+            "allTypes": "Tất cả loại",
+            "allStatuses": "Tất cả trạng thái",
+            "clearFilters": "Xóa bộ lọc",
+            "requestId": "Mã yêu cầu",
+            "application": "Đơn đăng ký",
+            "type": "Loại",
+            "status": "Trạng thái",
+            "requestDate": "Ngày yêu cầu",
+            "actions": "Hành động",
+            "viewDetails": "Xem chi tiết",
+            "showing": "Hiển thị {{count}} trong {{total}} yêu cầu",
+            "details": "Chi tiết yêu cầu",
+            "creator": "Người tạo",
+            "processedDate": "Ngày xử lý",
+            "notFound": "Không tìm thấy yêu cầu",
+            "startExamination": "Bắt đầu thẩm định",
+            "approve": "Chấp nhận",
+            "refuse": "Từ chối",
+            "resolveAppeal": "Giải quyết khiếu nại",
+            "resolveComplaint": "Giải quyết khiếu nại (SL)",
+            "resolve": "Giải quyết",
+            "complaintAcceptedInfo": "Chấp nhận khiếu nại sẽ đưa đơn quay lại giai đoạn thẩm định trước đó để thẩm định lại.",
+            "complaintRejectedInfo": "Từ chối khiếu nại sẽ hoàn tất quyết định từ chối đơn. Hành động này không thể hoàn tác.",
+            "viewApplication": "Xem đơn đăng ký",
+            "confirmApprove": "Xác nhận chấp nhận yêu cầu",
+            "confirmRefuse": "Xác nhận từ chối yêu cầu",
+            "notes": "Ghi chú",
+            "refuseReason": "Lý do từ chối"
         },
         "examination": {
             "title": "Bảng thẩm định",
@@ -605,5 +644,226 @@
         "maxLength": "Tối đa {{max}} ký tự",
         "minLength": "Tối thiểu {{min}} ký tự",
         "fileSize": "File không được quá {{max}}"
+    },
+    "request": {
+        "title": "Yêu cầu liên quan",
+        "noRequests": "Chưa có yêu cầu nào",
+        "noRequestsDesc": "Bạn chưa tạo yêu cầu nào cho đơn này",
+        "create": "Tạo yêu cầu",
+        "createAmendment": "Tạo yêu cầu sửa đổi",
+        "createAssignment": "Tạo yêu cầu chuyển nhượng",
+        "createLicense": "Tạo yêu cầu li-xăng",
+        "createSplit": "Tạo yêu cầu tách đơn",
+        "createAppeal": "Tạo khiếu nại",
+        "submit": "Nộp yêu cầu",
+        "detail": "Chi tiết yêu cầu",
+        "loadError": "Không thể tải thông tin yêu cầu",
+        "notFound": "Không tìm thấy yêu cầu",
+        "backToApplication": "Quay lại đơn",
+        "draftNotice": "Đơn đang ở trạng thái nháp. Bạn cần nộp đơn trước khi tạo các yêu cầu liên quan.",
+        "processedDate": "Ngày xử lý",
+        "creator": "Người tạo",
+        "feeQuote": "Thông tin phí",
+        "totalFee": "Tổng phí",
+        "feeStatus": "Trạng thái",
+        "processingNotes": "Ghi chú xử lý",
+        "table": {
+            "id": "Mã",
+            "type": "Loại",
+            "date": "Ngày",
+            "status": "Trạng thái",
+            "actions": "Hành động"
+        },
+        "types": {
+            "AMENDMENT": "Sửa đổi đơn",
+            "ASSIGNMENT": "Chuyển nhượng",
+            "LICENSE": "Li-xăng",
+            "SPLIT": "Tách đơn",
+            "CONVERSION": "Chuyển đổi",
+            "APPEAL": "Khiếu nại",
+            "COMPLAINT": "Khiếu nại (SL)",
+            "RENEWAL": "Gia hạn",
+            "TERMINATION": "Chấm dứt",
+            "WITHDRAWAL": "Rút đơn"
+        },
+        "statuses": {
+            "DRAFT": "Bản nháp",
+            "SUBMITTED": "Đã nộp",
+            "EXAMINING": "Đang thẩm định",
+            "APPROVED": "Chấp nhận",
+            "REFUSED": "Từ chối",
+            "RECORDED": "Đã ghi nhận"
+        },
+        "confirm": {
+            "delete": "Bạn có chắc chắn muốn xóa yêu cầu này?",
+            "submit": "Bạn có chắc chắn muốn nộp yêu cầu này? Sau khi nộp, bạn không thể chỉnh sửa."
+        },
+        "amendment": {
+            "details": "Chi tiết sửa đổi",
+            "section": "Phần sửa đổi",
+            "sections": {
+                "BIBLIOGRAPHY": "Thông tin thư mục",
+                "SPECIFICATION": "Bản mô tả",
+                "CLAIMS": "Yêu cầu bảo hộ",
+                "DRAWINGS": "Bản vẽ/Hình ảnh",
+                "REPRESENTATIVE": "Người đại diện"
+            },
+            "changeSummary": "Tóm tắt thay đổi",
+            "changeSummaryPlaceholder": "Mô tả chi tiết những thay đổi bạn muốn thực hiện...",
+            "fieldName": "Tên trường",
+            "fieldNamePlaceholder": "Tên trường cần sửa đổi",
+            "oldValue": "Giá trị cũ",
+            "oldValuePlaceholder": "Giá trị hiện tại cần thay đổi",
+            "newValue": "Giá trị mới",
+            "newValuePlaceholder": "Giá trị mới muốn cập nhật"
+        },
+        "assignment": {
+            "details": "Chi tiết chuyển nhượng",
+            "transferType": "Loại chuyển nhượng",
+            "transferTypes": {
+                "CONTRACT": "Hợp đồng chuyển nhượng",
+                "INHERITANCE": "Thừa kế",
+                "MERGER": "Sáp nhập doanh nghiệp",
+                "COURT_DECISION": "Quyết định của tòa án"
+            },
+            "assignor": "Bên chuyển nhượng",
+            "assignorPlaceholder": "ID người dùng bên chuyển nhượng",
+            "assignee": "Bên nhận chuyển nhượng",
+            "assigneePlaceholder": "ID người dùng bên nhận chuyển nhượng",
+            "contractNumber": "Số hợp đồng",
+            "contractNumberPlaceholder": "Nhập số hợp đồng",
+            "contractDate": "Ngày hợp đồng"
+        },
+        "license": {
+            "details": "Chi tiết li-xăng",
+            "licenseType": "Loại li-xăng",
+            "licenseTypes": {
+                "EXCLUSIVE": "Li-xăng độc quyền",
+                "NON_EXCLUSIVE": "Li-xăng không độc quyền",
+                "COMPULSORY": "Li-xăng bắt buộc"
+            },
+            "duration": "Thời hạn",
+            "licensor": "Bên cấp li-xăng",
+            "licensorPlaceholder": "ID người dùng bên cấp li-xăng",
+            "licensee": "Bên nhận li-xăng",
+            "licenseePlaceholder": "ID người dùng bên nhận li-xăng",
+            "validFrom": "Có hiệu lực từ",
+            "validTo": "Có hiệu lực đến",
+            "scopeTerritory": "Phạm vi lãnh thổ",
+            "scopeTerritoryPlaceholder": "VD: Việt Nam, Đông Nam Á...",
+            "scopeProducts": "Phạm vi sản phẩm",
+            "scopeProductsPlaceholder": "Mô tả các sản phẩm được phép sản xuất...",
+            "contractNumber": "Số hợp đồng",
+            "contractNumberPlaceholder": "Nhập số hợp đồng li-xăng"
+        },
+        "split": {
+            "description": "Mô tả tách đơn",
+            "descriptionPlaceholder": "Mô tả chi tiết phần sáng chế cần tách ra thành đơn riêng...",
+            "infoTitle": "Lưu ý về tách đơn",
+            "infoDescription": "Yêu cầu tách đơn được sử dụng khi đơn ban đầu chứa nhiều sáng chế/kiểu dáng độc lập và cần tách thành các đơn riêng biệt."
+        },
+        "appeal": {
+            "details": "Chi tiết khiếu nại",
+            "type": "Loại khiếu nại",
+            "types": {
+                "DECISION_APPEAL": "Khiếu nại quyết định",
+                "NOTICE_OBJECTION": "Phản đối thông báo"
+            },
+            "targetDecision": "Quyết định khiếu nại",
+            "targetDecisionPlaceholder": "ID quyết định",
+            "targetEvent": "Sự kiện khiếu nại",
+            "targetEventPlaceholder": "ID sự kiện",
+            "noticeDate": "Ngày nhận thông báo",
+            "noticeDateHelp": "Ngày bạn nhận được thông báo/quyết định cần khiếu nại",
+            "grounds": "Lý do khiếu nại",
+            "groundsPlaceholder": "Trình bày chi tiết lý do khiếu nại, bao gồm cơ sở pháp lý và chứng cứ...",
+            "deadline": "Thời hạn khiếu nại",
+            "resolution": "Kết quả giải quyết",
+            "resolutions": {
+                "UPHELD": "Giữ nguyên quyết định",
+                "OVERTURNED": "Hủy bỏ quyết định",
+                "PARTIAL": "Sửa đổi một phần",
+                "WITHDRAWN": "Rút khiếu nại"
+            },
+            "resolvedAt": "Ngày giải quyết",
+            "deadlineWarning": "Thời hạn khiếu nại",
+            "deadlineWarningDesc": "Khiếu nại phải được nộp trong vòng 90 ngày kể từ ngày nhận thông báo/quyết định."
+        },
+        "complaint": {
+            "details": "Chi tiết khiếu nại",
+            "number": "Số lần khiếu nại",
+            "grounds": "Lý do khiếu nại",
+            "groundsPlaceholder": "Mô tả chi tiết lý do khiếu nại, bao gồm các sự kiện liên quan và cơ sở pháp lý...",
+            "deadline": "Thời hạn nộp",
+            "deadlineInfo": "Thời hạn nộp",
+            "resolution": "Kết quả giải quyết",
+            "resolutions": {
+                "ACCEPTED": "Chấp nhận khiếu nại (Quay lại thẩm định)",
+                "REJECTED": "Từ chối khiếu nại (Quyết định cuối cùng)"
+            },
+            "resolvedAt": "Ngày giải quyết",
+            "resolutionDetails": "Chi tiết kết quả",
+            "deadlineWarning": "Thời hạn nộp khiếu nại",
+            "deadlineWarningDesc": "Khiếu nại phải được nộp trong vòng 90 ngày kể từ ngày có quyết định từ chối. Tối đa 3 lần khiếu nại cho mỗi đơn.",
+            "attemptNumber": "Lần {{number}} / {{max}}",
+            "attemptNo": "Lần thứ",
+            "remaining": "Còn lại",
+            "characters": "Ký tự"
+        }
+    },
+    "timeline": {
+        "title": "Lịch sử đơn",
+        "events": "sự kiện",
+        "empty": "Chưa có sự kiện nào được ghi nhận",
+        "loadError": "Không thể tải lịch sử",
+        "by": "Bởi:",
+        "showMore": "Xem thêm {{count}} sự kiện",
+        "showLess": "Thu gọn"
+    },
+    "payment": {
+        "payNow": "Thanh toán ({{amount}} {{currency}})",
+        "processing": "Đang xử lý...",
+        "redirecting": "Đang chuyển đến trang thanh toán...",
+        "verifying": "Đang xác minh thanh toán...",
+        "invalidSession": "Phiên thanh toán không hợp lệ",
+        "amount": "Số tiền",
+        "status": "Trạng thái",
+        "paidAt": "Thanh toán lúc",
+        "receiptNo": "Số biên lai",
+        "viewApplication": "Xem đơn",
+        "tryAgain": "Thử lại",
+        "payFees": "Thanh toán phí",
+        "unpaidFees": "Phí chưa thanh toán",
+        "paidFees": "Phí đã thanh toán",
+        "noUnpaidFees": "Tất cả phí đã được thanh toán",
+        "paymentHistory": "Lịch sử thanh toán",
+        "noPayments": "Chưa có bản ghi thanh toán",
+        "feePayment": "Thanh toán phí",
+        "viewAll": "Xem tất cả",
+        "applicationFee": "Phí đơn",
+        "success": {
+            "title": "Thanh toán thành công",
+            "message": "Thanh toán của bạn đã được xử lý thành công. Cảm ơn bạn đã thanh toán."
+        },
+        "cancel": {
+            "title": "Thanh toán đã hủy",
+            "message": "Thanh toán của bạn đã bị hủy.",
+            "noCharge": "Không có khoản phí nào được trừ từ tài khoản của bạn."
+        },
+        "error": {
+            "title": "Lỗi thanh toán",
+            "message": "Đã xảy ra lỗi khi xử lý thanh toán của bạn."
+        },
+        "statuses": {
+            "PENDING": "Chờ xử lý",
+            "PROCESSING": "Đang xử lý",
+            "COMPLETED": "Hoàn thành",
+            "FAILED": "Thất bại",
+            "CANCELLED": "Đã hủy",
+            "REFUNDED": "Đã hoàn tiền",
+            "PARTIALLY_REFUNDED": "Hoàn tiền một phần",
+            "EXPIRED": "Hết hạn",
+            "PAID": "Đã thanh toán"
+        }
     }
 }

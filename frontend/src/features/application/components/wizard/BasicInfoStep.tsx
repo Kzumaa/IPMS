@@ -31,11 +31,11 @@ const BasicInfoStep: React.FC = () => {
     const isIndustrialDesign = appType === AppType.INDUSTRIAL_DESIGN;
     const isPatentOrUtility = appType === AppType.PATENT || appType === AppType.UTILITY;
 
-    // Get app type options from translations
-    const appTypeOptions = Object.keys(AppType).map((key) => ({
-        value: key,
-        label: t(`application.appTypes.${key}`),
-    }));
+    // Get app type options - only show PATENT and INDUSTRIAL_DESIGN (UTILITY merged with PATENT)
+    const appTypeOptions = [
+        { value: AppType.PATENT, label: t('application.appTypes.PATENT') },
+        { value: AppType.INDUSTRIAL_DESIGN, label: t('application.appTypes.INDUSTRIAL_DESIGN') },
+    ];
 
     // Priority type options
     const priorityTypeOptions: { value: PriorityKind; label: string }[] = [

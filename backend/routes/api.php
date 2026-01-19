@@ -4,12 +4,27 @@ use App\Http\Controllers\Application\ApplicationController;
 use App\Http\Controllers\Application\ApplicationAttachmentController;
 use App\Http\Controllers\Application\ApplicationClassificationController;
 use App\Http\Controllers\Application\ApplicationPartyController;
+use App\Http\Controllers\Application\ApplicationVersionController;
 use App\Http\Controllers\Application\FeeQuoteController;
 use App\Http\Controllers\Application\PriorityClaimController;
 use App\Http\Controllers\Application\ProtectionTitleController;
 use App\Http\Controllers\Application\SntcInfoController;
+use App\Http\Controllers\Application\ApplicationTimelineController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Payment\PaymentController;
+use App\Http\Controllers\Payment\StripeWebhookController;
+use App\Http\Controllers\Request\AmendmentController;
+use App\Http\Controllers\Request\AssignmentController;
+use App\Http\Controllers\Request\ComplaintController;
+use App\Http\Controllers\Request\LicenseController;
+use App\Http\Controllers\Request\RenewalController;
+use App\Http\Controllers\Request\SplitController;
+use App\Http\Controllers\Request\TerminationController;
+use App\Http\Controllers\Request\WithdrawalController;
+use App\Http\Controllers\Staff\RequestExaminationController;
+use App\Http\Controllers\Staff\StaffClassificationController;
 use App\Http\Controllers\Staff\StaffController;
+use App\Http\Controllers\CozeAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +41,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // Application CRUD
         Route::get('/', [ApplicationController::class, 'index']);
         Route::post('/', [ApplicationController::class, 'store']);
+
+        // Title endpoints (must be before /{id} to avoid route conflicts)
+        Route::get('/granted', [ApplicationController::class, 'grantedTitles']);
+        Route::get('/licensed', [ApplicationController::class, 'licensedToMe']);
+
         Route::get('/{id}', [ApplicationController::class, 'show']);
         Route::put('/{id}', [ApplicationController::class, 'update']);
         Route::delete('/{id}', [ApplicationController::class, 'destroy']);
@@ -34,6 +54,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}/metrics', [ApplicationController::class, 'updateMetrics']);
         Route::post('/{id}/submit', [ApplicationController::class, 'submit']);
         Route::post('/{id}/analyze', [ApplicationController::class, 'analyze']);
+        Route::post('/{id}/split', [ApplicationController::class, 'split']);
+        Route::post('/{id}/publish', [ApplicationController::class, 'publish']);
 
         // Parties
         Route::get('/{id}/parties', [ApplicationPartyController::class, 'index']);
@@ -69,20 +91,137 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/fee-quotes/generate', [FeeQuoteController::class, 'generate']);
         Route::post('/{id}/calculate-fees', [FeeQuoteController::class, 'generate']); // Alias for frontend compatibility
 
+        // Timeline (aggregated events history)
+        Route::get('/{application}/timeline', [ApplicationTimelineController::class, 'index']);
+
+        // Version History
+        Route::prefix('/{id}/versions')->group(function () {
+            Route::get('/', [ApplicationVersionController::class, 'index']);
+            Route::get('/{version}', [ApplicationVersionController::class, 'show']);
+            Route::get('/{versionA}/compare/{versionB}', [ApplicationVersionController::class, 'compare']);
+        });
+
         // Examination (staff only)
         Route::post('/{id}/examination/complete', [ApplicationController::class, 'completeExamination']);
         Route::post('/{id}/substantive-examination/complete', [ApplicationController::class, 'completeSubstantiveExamination']);
         Route::post('/{id}/decision', [ApplicationController::class, 'issueDecision']);
+
+        // Amendment Requests
+        Route::prefix('/{id}/requests/amendments')->group(function () {
+            Route::get('/', [AmendmentController::class, 'index']);
+            Route::post('/', [AmendmentController::class, 'store']);
+            Route::get('/{requestId}', [AmendmentController::class, 'show']);
+            Route::put('/{requestId}', [AmendmentController::class, 'update']);
+            Route::delete('/{requestId}', [AmendmentController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [AmendmentController::class, 'submit']);
+        });
+
+        // Edit-mode Amendment (versioning) endpoints
+        Route::get('/{id}/amendment-data', [AmendmentController::class, 'getAmendmentData']);
+        Route::post('/{id}/amendments/edit-mode', [AmendmentController::class, 'storeEditMode']);
+        Route::get('/{id}/pending-version', [AmendmentController::class, 'getPendingVersion']);
+
+        // Assignment/Transfer Requests
+        Route::prefix('/{id}/requests/assignments')->group(function () {
+            Route::get('/', [AssignmentController::class, 'index']);
+            Route::post('/', [AssignmentController::class, 'store']);
+            Route::get('/{requestId}', [AssignmentController::class, 'show']);
+            Route::delete('/{requestId}', [AssignmentController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [AssignmentController::class, 'submit']);
+        });
+
+        // License Requests
+        Route::prefix('/{id}/requests/licenses')->group(function () {
+            Route::get('/', [LicenseController::class, 'index']);
+            Route::post('/', [LicenseController::class, 'store']);
+            Route::get('/{requestId}', [LicenseController::class, 'show']);
+            Route::delete('/{requestId}', [LicenseController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [LicenseController::class, 'submit']);
+        });
+
+        // Split Requests
+        Route::prefix('/{id}/requests/splits')->group(function () {
+            Route::get('/', [SplitController::class, 'index']);
+            Route::post('/', [SplitController::class, 'store']);
+            Route::get('/{requestId}', [SplitController::class, 'show']);
+            Route::delete('/{requestId}', [SplitController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [SplitController::class, 'submit']);
+        });
+
+        // Complaint Requests (replaces Appeals per SRS Section 3.2)
+        Route::prefix('/{id}/requests/complaints')->group(function () {
+            Route::get('/', [ComplaintController::class, 'index']);
+            Route::post('/', [ComplaintController::class, 'store']);
+            Route::get('/{requestId}', [ComplaintController::class, 'show']);
+            Route::delete('/{requestId}', [ComplaintController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [ComplaintController::class, 'submit']);
+        });
+
+        // Renewal Requests (for GRANTED applications - SRS Section 4.5)
+        Route::prefix('/{id}/requests/renewals')->group(function () {
+            Route::get('/', [RenewalController::class, 'index']);
+            Route::post('/', [RenewalController::class, 'store']);
+            Route::get('/{requestId}', [RenewalController::class, 'show']);
+            Route::delete('/{requestId}', [RenewalController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [RenewalController::class, 'submit']);
+        });
+
+        // Termination Requests (for GRANTED applications - SRS Section 4.5)
+        Route::prefix('/{id}/requests/terminations')->group(function () {
+            Route::get('/', [TerminationController::class, 'index']);
+            Route::post('/', [TerminationController::class, 'store']);
+            Route::get('/{requestId}', [TerminationController::class, 'show']);
+            Route::delete('/{requestId}', [TerminationController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [TerminationController::class, 'submit']);
+        });
+
+        // Withdrawal Requests (for pre-grant applications)
+        Route::prefix('/{id}/requests/withdrawals')->group(function () {
+            Route::get('/', [WithdrawalController::class, 'index']);
+            Route::post('/', [WithdrawalController::class, 'store']);
+            Route::get('/{requestId}', [WithdrawalController::class, 'show']);
+            Route::put('/{requestId}', [WithdrawalController::class, 'update']);
+            Route::delete('/{requestId}', [WithdrawalController::class, 'destroy']);
+            Route::post('/{requestId}/submit', [WithdrawalController::class, 'submit']);
+        });
+        Route::get('/{id}/can-withdraw', [WithdrawalController::class, 'canWithdraw']);
     });
 
     Route::get('/protection-titles/{id}/schedule', [ProtectionTitleController::class, 'getSchedule']);
     Route::post('/maintenance-fees/{id}/pay', [ProtectionTitleController::class, 'payFee']);
+
+    // Payment routes
+    Route::prefix('payments')->group(function () {
+        Route::get('/', [PaymentController::class, 'myPayments']);
+        Route::post('/checkout', [PaymentController::class, 'createCheckout']);
+        Route::post('/maintenance/{scheduleId}/checkout', [PaymentController::class, 'createMaintenanceCheckout']);
+        Route::get('/status/{sessionId}', [PaymentController::class, 'status']);
+        Route::get('/{id}', [PaymentController::class, 'show']);
+        Route::post('/{id}/refund', [PaymentController::class, 'refund']);
+    });
+
+    // Application-scoped payments
+    Route::get('/applications/{applicationId}/payments', [PaymentController::class, 'index']);
 
     // Staff-specific routes
     Route::prefix('staff')->group(function () {
         Route::get('/applications', [StaffController::class, 'listApplications']);
         Route::get('/applications/assigned', [StaffController::class, 'getMyApplications']);
         Route::get('/dashboard/stats', [StaffController::class, 'getDashboardStats']);
+
+        // Classification assignment (formality exam only)
+        Route::get('/applications/{applicationId}/classification', [StaffClassificationController::class, 'show']);
+        Route::post('/applications/{applicationId}/assign-classification', [StaffClassificationController::class, 'assign']);
+
+        // Request examination
+        Route::prefix('requests')->group(function () {
+            Route::get('/', [RequestExaminationController::class, 'index']);
+            Route::get('/{requestId}', [RequestExaminationController::class, 'show']);
+            Route::post('/{requestId}/start-examination', [RequestExaminationController::class, 'startExamination']);
+            Route::post('/{requestId}/approve', [RequestExaminationController::class, 'approve']);
+            Route::post('/{requestId}/refuse', [RequestExaminationController::class, 'refuse']);
+            Route::post('/{requestId}/resolve-complaint', [RequestExaminationController::class, 'resolveComplaint']);
+        });
     });
 
     Route::get('/auth/me', [AuthController::class, 'me']);      // returns type + data
@@ -103,4 +242,8 @@ Route::prefix('auth/staff')->group(function () {
     Route::post('/login', [AuthController::class, 'loginStaff']);            // staff login
 });
 
+// Stripe webhook (no auth required - signature verified in controller)
+Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle']);
 
+// Coze AI token (no auth required - for frontend SDK initialization)
+Route::get('/coze-token', [CozeAuthController::class, 'getToken']);
