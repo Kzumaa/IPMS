@@ -53,6 +53,8 @@ class FeeCatalogSeeder extends Seeder
             ['code' => 'ID-GRANT-CERT-ADD-VARIANT', 'app_type' => 'INDUSTRIAL_DESIGN', 'label' => 'Lệ phí cấp VBBH từ phương án thứ 2 trở đi (mỗi phương án)', 'basis' => 'PER_VARIANT', 'unit_price' => 100000, 'unit_name' => 'PA bổ sung', 'law_version' => $law, 'effective_from' => $from],
             ['code' => 'ID-PUBLICATION-GRANT-BASE', 'app_type' => 'INDUSTRIAL_DESIGN', 'label' => 'Phí công bố QĐ cấp VBBH (hình đầu tiên)', 'basis' => 'FIXED', 'unit_price' => 120000, 'unit_name' => 'bài', 'law_version' => $law, 'effective_from' => $from],
             ['code' => 'ID-PUBLICATION-GRANT-ADDL-IMAGE', 'app_type' => 'INDUSTRIAL_DESIGN', 'label' => 'Phí công bố QĐ cấp VBBH từ hình thứ 2 trở đi (mỗi hình)', 'basis' => 'PER_IMAGE', 'unit_price' => 60000, 'unit_name' => 'hình bổ sung', 'law_version' => $law, 'effective_from' => $from],
+
+            ['code' => 'ID-REQ-RENEWAL', 'app_type' => 'INDUSTRIAL_DESIGN', 'label' => 'Lệ phí gia hạn hiệu lực', 'basis' => 'PER_UNIT', 'unit_price' => 100000, 'unit_name' => 'phương án', 'law_version' => $law, 'effective_from' => $from],
         ];
 
 

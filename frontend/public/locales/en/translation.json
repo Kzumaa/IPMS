@@ -398,6 +398,7 @@
             "WAITING_RESPONSE": "Waiting for Applicant Response",
             "FORMALITY_PASSED": "Formality Exam Passed",
             "COMPLAINING": "Under Complaint",
+            "TERMINATED": "Terminated",
             "WAITING_FOR_PAYMENT": "Waiting for Payment"
         },
         "partyTypes": {
@@ -753,6 +754,10 @@
             "RENEWAL": "Renewal",
             "TERMINATION": "Termination",
             "WITHDRAWAL": "Withdrawal"
+        },
+        "termination": {
+            "details": "Termination Details",
+            "reason": "Reason for Termination"
         },
         "statuses": {
             "DRAFT": "Draft",

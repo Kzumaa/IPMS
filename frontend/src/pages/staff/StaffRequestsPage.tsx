@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { fetchRequests } from '@/features/staff/store/staffSlice';
+import { fetchRequests, startRequestExamination } from '@/features/staff/store/staffSlice';
 import { RequestStatusBadge, RequestTypeBadge } from '@/features/request/components';
 import type { RequestType, RequestStatus } from '@/features/request/types/enums';
 
@@ -34,6 +34,17 @@ export default function StaffRequestsPage() {
             type: typeFilter || undefined,
             status: statusFilter || undefined,
             page: page,
+            per_page: 15,
+        };
+        dispatch(fetchRequests(params));
+    };
+
+    const handleStartExamination = async (requestId: number) => {
+        await dispatch(startRequestExamination(requestId));
+        const params = {
+            type: typeFilter || undefined,
+            status: statusFilter || undefined,
+            page: requestsPage,
             per_page: 15,
         };
         dispatch(fetchRequests(params));
@@ -173,6 +184,15 @@ export default function StaffRequestsPage() {
                                                 {formatDate(request.request_date)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                {request.status === 'SUBMITTED' && (
+                                                    <button
+                                                        onClick={() => handleStartExamination(request.id)}
+                                                        className="text-indigo-600 hover:text-indigo-900 mr-3 inline-flex items-center"
+                                                        title={t('staff.requests.startExamination')}
+                                                    >
+                                                        <span className="material-symbols-outlined">play_arrow</span>
+                                                    </button>
+                                                )}
                                                 <Link
                                                     to={`/staff/requests/${request.id}`}
                                                     className="text-blue-600 hover:text-blue-900"

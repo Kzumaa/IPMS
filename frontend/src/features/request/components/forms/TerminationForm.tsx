@@ -30,7 +30,6 @@ const TerminationForm: React.FC<TerminationFormProps> = ({
     resolver: zodResolver(terminationSchema),
     defaultValues: {
       reason: defaultValues?.reason || '',
-      effective_date: defaultValues?.effective_date || new Date().toISOString().split('T')[0],
     },
   });
 
@@ -91,30 +90,6 @@ const TerminationForm: React.FC<TerminationFormProps> = ({
             <p>{t('request.termination.warningDesc', 'Terminating a protection title is irreversible. Once terminated, you will lose all rights associated with this intellectual property. Please consider carefully before proceeding.')}</p>
           </div>
         </div>
-      </div>
-
-      {/* Effective Date */}
-      <div>
-        <label
-          htmlFor="effective_date"
-          className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-        >
-          {t('request.termination.effectiveDate', 'Effective Date')}
-        </label>
-        <input
-          type="date"
-          id="effective_date"
-          {...register('effective_date')}
-          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
-            bg-white dark:bg-slate-700 text-slate-900 dark:text-white
-            focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-        />
-        {errors.effective_date && (
-          <p className="mt-1 text-sm text-red-600">{errors.effective_date.message}</p>
-        )}
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          {t('request.termination.effectiveDateHelp', 'The date when the termination will take effect. Leave blank for immediate effect upon approval.')}
-        </p>
       </div>
 
       {/* Reason */}

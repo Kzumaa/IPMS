@@ -210,6 +210,41 @@ const ApplicationDetailPage: React.FC = () => {
                   </button>
                 </>
               )}
+              {currentApplication.status === ApplicationStatus.GRANTED && currentApplication.app_type === 'INDUSTRIAL_DESIGN' && (
+                (() => {
+                  if (!currentApplication.expiry_date) return null;
+                  const expiry = new Date(currentApplication.expiry_date);
+                  const sixMonthsBefore = new Date(expiry);
+                  sixMonthsBefore.setMonth(expiry.getMonth() - 6);
+                  const now = new Date();
+
+                  if (now >= sixMonthsBefore && now <= expiry) {
+                    return (
+                      <Link
+                        to={`/app/applications/${currentApplication.id}/requests/renewals/new`}
+                        className="flex items-center px-4 py-2 text-sm font-medium text-green-600 dark:text-green-400 border border-green-300 dark:border-green-600 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                      >
+                        <span className="material-symbols-outlined mr-2 !text-lg">
+                          autorenew
+                        </span>
+                        {t("request.renewal.renewTitle", "Renew")}
+                      </Link>
+                    );
+                  }
+                  return null;
+                })()
+              )}
+              {currentApplication.status === ApplicationStatus.GRANTED && (
+                <Link
+                  to={`/app/applications/${currentApplication.id}/requests/terminations/new`}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  <span className="material-symbols-outlined mr-2 !text-lg">
+                    cancel
+                  </span>
+                  {t("request.termination.terminateTitle", "Terminate")}
+                </Link>
+              )}
             </div>
           )}
         </div>
@@ -562,17 +597,19 @@ const ApplicationDetailPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </main>
+      </main >
 
       {/* Split Application Modal */}
-      {currentApplication && (
-        <SplitApplicationModal
-          application={currentApplication}
-          isOpen={showSplitModal}
-          onClose={() => setShowSplitModal(false)}
-        />
-      )}
-    </div>
+      {
+        currentApplication && (
+          <SplitApplicationModal
+            application={currentApplication}
+            isOpen={showSplitModal}
+            onClose={() => setShowSplitModal(false)}
+          />
+        )
+      }
+    </div >
   );
 };
 

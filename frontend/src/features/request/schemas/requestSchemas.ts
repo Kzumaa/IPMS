@@ -135,7 +135,6 @@ export type RenewalFormData = z.infer<typeof renewalSchema>;
 // Termination Schema
 export const terminationSchema = z.object({
   reason: z.string().max(5000, 'Lý do chấm dứt không được quá 5000 ký tự').optional(),
-  effective_date: z.string().optional(),
 });
 
 export type TerminationFormData = z.infer<typeof terminationSchema>;

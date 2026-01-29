@@ -32,9 +32,6 @@ class ApplicationRequestRepository implements ApplicationRequestRepositoryInterf
     {
         return ApplicationRequest::with([
             'amendment',
-            'assignment',
-            'assignment.assignor',
-            'assignment.assignee',
             'license',
             'license.licensor',
             'license.licensees.licensee',

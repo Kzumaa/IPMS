@@ -54,7 +54,23 @@ class SubstantiveExamService
                 default => $application->status,
             };
 
-            $this->applicationRepository->update($application, ['status' => $status]);
+            $updateData = ['status' => $status];
+
+            // Calculate Expiry Date if GRANTED
+            if ($status === ApplicationStatus::GRANTED && $application->filing_date) {
+                $years = match ($application->app_type) {
+                    \App\Enums\AppType::PATENT => 20,
+                    \App\Enums\AppType::UTILITY => 10,
+                    \App\Enums\AppType::INDUSTRIAL_DESIGN => 5,
+                    default => 0,
+                };
+
+                if ($years > 0) {
+                    $updateData['expiry_date'] = $application->filing_date->copy()->addYears($years)->toDateString();
+                }
+            }
+
+            $this->applicationRepository->update($application, $updateData);
 
             // 3. Complete Assignment
             $this->assignmentRepository->completeAssignment($application->id, Auth::id());

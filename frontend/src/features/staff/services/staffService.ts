@@ -87,6 +87,9 @@ export interface StaffRequest {
         total_amount: number;
         status: string;
     };
+    termination?: {
+        reason?: string;
+    };
 }
 
 export interface ComplaintResolutionRequest {
@@ -172,6 +175,11 @@ const staffService = {
     },
 
     // Examination Workflows
+    async startFormalityExamination(applicationId: number): Promise<ApiResponse<Application>> {
+        const response = await axiosClient.post(`/applications/${applicationId}/examination/start`);
+        return response.data;
+    },
+
     async completeFormalityExamination(applicationId: number, data: ExaminationResult): Promise<ApiResponse<any>> {
         const response = await axiosClient.post(`/applications/${applicationId}/examination/complete`, data);
         return response.data;

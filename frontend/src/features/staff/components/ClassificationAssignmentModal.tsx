@@ -127,7 +127,7 @@ const ClassificationAssignmentModal: React.FC<ClassificationAssignmentModalProps
                     // Construct full IPC code from parts
                     // Format: Section Class Subclass Group/Subgroup (e.g., A01B 1/00)
                     const fullCode = `${ipc.section}${ipc.class_code}${ipc.subclass || ''} ${ipc.group || ''}/${ipc.subgroup || ''}`.trim();
-                    
+
                     return {
                         ipc_code: fullCode,
                         section: ipc.section,
@@ -225,11 +225,10 @@ const ClassificationAssignmentModal: React.FC<ClassificationAssignmentModalProps
                                                 {classification.ipc_classes.map((ipc, index) => (
                                                     <span
                                                         key={index}
-                                                        className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-medium ${
-                                                            ipc.assigned_by_type === 'STAFF'
+                                                        className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-medium ${ipc.assigned_by_type === 'STAFF'
                                                                 ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
                                                                 : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {ipc.ipc_code}
                                                         {ipc.assigned_by_type === 'STAFF' && (
@@ -243,11 +242,10 @@ const ClassificationAssignmentModal: React.FC<ClassificationAssignmentModalProps
                                                 {classification.locarno_classes.map((loc, index) => (
                                                     <span
                                                         key={index}
-                                                        className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-medium ${
-                                                            loc.assigned_by_type === 'STAFF'
+                                                        className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-medium ${loc.assigned_by_type === 'STAFF'
                                                                 ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
                                                                 : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {loc.class_code}
                                                         {loc.subclass && `-${loc.subclass}`}
@@ -363,8 +361,8 @@ const ClassificationAssignmentModal: React.FC<ClassificationAssignmentModalProps
                                                         </label>
                                                         <input
                                                             type="text"
-                                                            value={newLocarno.class_code}
-                                                            onChange={(e) => setNewLocarno({ ...newLocarno, class_code: e.target.value })}
+                                                            value={newLocarno.class_no}
+                                                            onChange={(e) => setNewLocarno({ ...newLocarno, class_no: e.target.value })}
                                                             maxLength={2}
                                                             className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
                                                             placeholder="01"
@@ -376,8 +374,8 @@ const ClassificationAssignmentModal: React.FC<ClassificationAssignmentModalProps
                                                         </label>
                                                         <input
                                                             type="text"
-                                                            value={newLocarno.subclass || ''}
-                                                            onChange={(e) => setNewLocarno({ ...newLocarno, subclass: e.target.value })}
+                                                            value={newLocarno.subclass_no || ''}
+                                                            onChange={(e) => setNewLocarno({ ...newLocarno, subclass_no: e.target.value })}
                                                             maxLength={2}
                                                             className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
                                                             placeholder="01"
@@ -389,8 +387,8 @@ const ClassificationAssignmentModal: React.FC<ClassificationAssignmentModalProps
                                                         </label>
                                                         <input
                                                             type="text"
-                                                            value={newLocarno.label || ''}
-                                                            onChange={(e) => setNewLocarno({ ...newLocarno, label: e.target.value })}
+                                                            value={newLocarno.field_of_use || ''}
+                                                            onChange={(e) => setNewLocarno({ ...newLocarno, field_of_use: e.target.value })}
                                                             className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
                                                             placeholder="Description"
                                                         />
@@ -399,7 +397,7 @@ const ClassificationAssignmentModal: React.FC<ClassificationAssignmentModalProps
                                                         <button
                                                             type="button"
                                                             onClick={handleAddLocarno}
-                                                            disabled={!newLocarno.class_code}
+                                                            disabled={!newLocarno.class_no}
                                                             className="w-full px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         >
                                                             <span className="material-symbols-outlined !text-base">add</span>

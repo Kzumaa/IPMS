@@ -10,6 +10,7 @@ use App\Enums\RequestStatus;
 use App\Enums\RequestType;
 use App\Models\Application;
 use App\Models\ApplicationRequest;
+use App\Models\FeeQuote;
 use App\Models\ProtectionTitle;
 use App\Models\RequestRenewal;
 use App\Repositories\Request\ApplicationRequestRepositoryInterface;
@@ -59,13 +60,8 @@ class RenewalService extends BaseRequestService
             ]);
         }
 
-        // Check if there's a protection title
-        $protectionTitle = $application->protectionTitle;
-        if (!$protectionTitle) {
-            throw ValidationException::withMessages([
-                'application' => 'No protection title found for this application.',
-            ]);
-        }
+        // Validation is done in validateCanCreateRequest
+        // $protectionTitle check removed as we use Application->expiry_date now
 
         // Only Industrial Designs can be renewed
         if ($application->app_type !== AppType::INDUSTRIAL_DESIGN) {
@@ -128,18 +124,14 @@ class RenewalService extends BaseRequestService
         // Validation is done in validateCanCreateRequest
         $this->validateCanCreateRequest($application);
 
-        $protectionTitle = $application->protectionTitle;
-
-        if (!$protectionTitle) {
-            throw ValidationException::withMessages([
-                'application' => 'No protection title found for this application.',
-            ]);
-        }
-
         // Industrial Designs always renew for 5 years
         $renewalYears = 5;
 
-        $currentExpiration = Carbon::parse($protectionTitle->expiry_date);
+        // Use Application expiry date
+        $currentExpiration = $application->expiry_date 
+            ? \Carbon\Carbon::parse($application->expiry_date) 
+            : now(); // Fallback if missing, though should be set on grant
+            
         $newExpiration = $currentExpiration->copy()->addYears($renewalYears);
 
         return DB::transaction(function () use ($application, $userId, $renewalYears, $currentExpiration, $newExpiration) {
@@ -161,15 +153,100 @@ class RenewalService extends BaseRequestService
     /**
      * Apply changes when renewal is approved.
      */
+    /**
+     * Generate fee quote for this request.
+     * Override to calculate fee based on Locarno classes count.
+     */
+    public function generateFeeQuote(ApplicationRequest $request, string $lawVersion = 'TT263-2016'): FeeQuote
+    {
+        $application = $request->application;
+        $feeCode = $this->getFeeCode($application);
+
+        // Get fee from catalog
+        $feeCatalog = DB::table('fee_catalog')
+            ->where('code', $feeCode)
+            ->where('law_version', $lawVersion)
+            ->first();
+
+        if (!$feeCatalog) {
+            throw ValidationException::withMessages([
+                'fee' => "Fee code {$feeCode} not found in catalog.",
+            ]);
+        }
+
+        // Count Locarno classes
+        $classCount = $application->locarnoClasses()->count();
+        if ($classCount === 0) {
+            // Fallback to 1 if no classes defined (should rarely happen for ID)
+            $classCount = 1;
+        }
+
+        // Calculate total amount: Unit Price * Class Count
+        // SRS 5.3: "Renewal: 100,000 / Option (Class)"
+        $totalAmount = $feeCatalog->unit_price * $classCount;
+
+        // Get next version for this application
+        $nextVersion = FeeQuote::where('application_id', $application->id)->max('version') + 1;
+
+        return DB::transaction(function () use ($request, $application, $feeCatalog, $nextVersion, $lawVersion, $classCount, $totalAmount) {
+            // Create fee quote
+            $feeQuote = FeeQuote::create([
+                'application_id' => $application->id,
+                'request_id' => $request->id,
+                'version' => $nextVersion,
+                'currency' => 'VND',
+                'total_amount' => $totalAmount,
+                'status' => 'PENDING',
+                'law_version' => $lawVersion,
+            ]);
+
+            // Create fee quote line
+            $feeQuote->lines()->create([
+                'fee_code' => $feeCatalog->code,
+                'label' => "{$feeCatalog->label} ({$classCount} Class/Option" . ($classCount > 1 ? 's' : '') . ")",
+                'units' => $classCount,
+                'unit_price' => $feeCatalog->unit_price,
+                'amount' => $totalAmount,
+                'source' => 'AUTO',
+            ]);
+
+            return $feeQuote;
+        });
+    }
+
+    /**
+     * Auto-approve renewal after successful payment.
+     */
+    public function approveRenewalAfterPayment(ApplicationRequest $request): void
+    {
+        if ($request->type !== RequestType::RENEWAL) {
+            return;
+        }
+
+        DB::transaction(function () use ($request) {
+            // Set status to APPROVED
+            $updatedRequest = $this->requestRepository->update($request, [
+                'status' => RequestStatus::APPROVED,
+                'processed_date' => now()->toDateString(),
+                'processing_notes' => 'Auto-approved after payment',
+            ]);
+
+            // Apply extension logic
+            $this->applyApprovalChanges($updatedRequest);
+        });
+    }
+
+    /**
+     * Apply changes when renewal is approved.
+     */
     protected function applyApprovalChanges(ApplicationRequest $request): void
     {
         $renewal = $request->renewal;
         $application = $request->application;
-        $protectionTitle = $application->protectionTitle;
 
-        if ($protectionTitle && $renewal) {
-            // Update the protection title expiry date
-            $protectionTitle->update([
+        if ($renewal) {
+            // Update the application expiry date directly
+            $application->update([
                 'expiry_date' => $renewal->new_expiration_date,
             ]);
         }

@@ -31,11 +31,13 @@ class Application extends Model
         'file_validation_results',
         'current_version',
         'origin_application_id',
+        'expiry_date',
     ];
 
 
     protected $casts = [
         'filing_date' => 'datetime',
+        'expiry_date' => 'datetime',
         'submitted_at' => 'datetime',
         'applicant_is_inventor' => 'bool',
         'publication_early_requested' => 'bool',

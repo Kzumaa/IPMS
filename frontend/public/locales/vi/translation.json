@@ -397,6 +397,7 @@
             "ABANDONED": "Bỏ đơn",
             "FORMALITY_PASSED": "Đã qua thẩm định hình thức",
             "COMPLAINING": "Đang khiếu nại",
+            "TERMINATED": "Đã chấm dứt",
             "WAITING_FOR_PAYMENT": "Chờ thanh toán"
         },
         "partyTypes": {
@@ -718,6 +719,10 @@
             "RENEWAL": "Gia hạn",
             "TERMINATION": "Chấm dứt",
             "WITHDRAWAL": "Rút đơn"
+        },
+        "termination": {
+            "details": "Chi tiết chấm dứt",
+            "reason": "Lý do chấm dứt"
         },
         "statuses": {
             "DRAFT": "Bản nháp",

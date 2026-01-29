@@ -247,7 +247,6 @@ class AmendmentController extends Controller
             }
         }
 
-        // Create the amendment request with pending version
         $amendmentRequest = $this->amendmentService->createEditModeAmendment(
             $application,
             Auth::id(),

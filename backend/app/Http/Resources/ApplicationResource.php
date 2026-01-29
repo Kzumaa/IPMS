@@ -36,20 +36,8 @@ class ApplicationResource extends JsonResource
             }
         }
 
-        // Calculate Expiry Date
-        // Logic: Filing Date + Term (Patent: 20y, Utility: 10y, ID: 5y)
-        $expiryDate = null;
-        if ($this->status === ApplicationStatus::GRANTED && $this->filing_date) {
-            $years = match ($this->app_type) {
-                AppType::PATENT => 20,
-                AppType::UTILITY => 10,
-                AppType::INDUSTRIAL_DESIGN => 5,
-                default => 0,
-            };
-            if ($years > 0) {
-                $expiryDate = $this->filing_date->copy()->addYears($years)->toDateString();
-            }
-        }
+        // Expiry Date is now stored directly on the Application model
+        $expiryDate = $this->expiry_date?->toDateString();
 
         return [
             'id' => $this->id,

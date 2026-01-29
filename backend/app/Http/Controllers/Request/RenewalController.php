@@ -44,14 +44,9 @@ class RenewalController extends Controller
         $application = Application::findOrFail($applicationId);
         $this->authorize('update', $application);
 
-        $validated = $request->validate([
-            'renewal_years' => 'required|integer|min:1|max:20',
-        ]);
-
         $renewalRequest = $this->renewalService->createRenewal(
             $application,
-            Auth::id(),
-            $validated['renewal_years']
+            Auth::id()
         );
 
         return response()->json([
@@ -91,23 +86,16 @@ class RenewalController extends Controller
             ], 400);
         }
 
-        $validated = $request->validate([
-            'renewal_years' => 'required|integer|min:1|max:20',
-        ]);
-
-        // Recalculate new expiration date
-        $currentExpiration = $renewalRequest->renewal->current_expiration_date;
-        $newExpiration = $currentExpiration->copy()->addYears($validated['renewal_years']);
-
-        $renewalRequest->renewal->update([
-            'renewal_years' => $validated['renewal_years'],
-            'new_expiration_date' => $newExpiration->toDateString(),
-        ]);
+        // Renewal duration is fixed for Industrial Designs, so no update logic for years needed.
+        // If we had editable fields (like attachments), we would update them here.
+        // For now, just return the request.
 
         return response()->json([
             'data' => $renewalRequest->load('renewal'),
             'message' => 'Renewal updated successfully.',
         ]);
+
+
     }
 
     /**

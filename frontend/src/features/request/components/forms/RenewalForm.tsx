@@ -25,16 +25,15 @@ const RenewalForm: React.FC<RenewalFormProps> = ({
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<RenewalFormData>({
     resolver: zodResolver(renewalSchema),
     defaultValues: {
-      renewal_years: defaultValues?.renewal_years || 1,
+      renewal_years: 5, // Fixed 5 years for ID
     },
   });
 
-  const renewalYears = watch('renewal_years');
+  const renewalYears = 5; // Fixed
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '-';
@@ -46,7 +45,7 @@ const RenewalForm: React.FC<RenewalFormProps> = ({
   };
 
   const calculateNewExpiration = () => {
-    if (!currentExpirationDate || !renewalYears) return null;
+    if (!currentExpirationDate) return null;
     const date = new Date(currentExpirationDate);
     date.setFullYear(date.getFullYear() + renewalYears);
     return date.toISOString().split('T')[0];
@@ -91,29 +90,17 @@ const RenewalForm: React.FC<RenewalFormProps> = ({
         )}
       </div>
 
-      {/* Renewal Years */}
-      <div>
+      {/* Renewal Years Info */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 p-4">
         <label
-          htmlFor="renewal_years"
-          className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+          className="block text-sm font-medium text-blue-800 dark:text-blue-200 mb-1"
         >
-          {t('request.renewal.renewalYears', 'Number of Years to Renew')} <span className="text-red-500">*</span>
+          {t('request.renewal.renewalYears', 'Number of Years to Renew')}
         </label>
-        <div className="flex items-center gap-4">
-          <input
-            type="number"
-            id="renewal_years"
-            {...register('renewal_years', { valueAsNumber: true })}
-            min={1}
-            max={20}
-            className="w-32 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
-              bg-white dark:bg-slate-700 text-slate-900 dark:text-white
-              focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          />
-          <span className="text-slate-600 dark:text-slate-400">
-            {t('request.renewal.years', 'year(s)')}
-          </span>
-        </div>
+        <p className="text-blue-700 dark:text-blue-300 text-sm">
+          {t('request.renewal.fixedTermInfo', 'Industrial Design renewal is fixed for 5 years.')}
+        </p>
+        <input type="hidden" {...register('renewal_years', { valueAsNumber: true })} value={5} />
         {errors.renewal_years && (
           <p className="mt-1 text-sm text-red-600">{errors.renewal_years.message}</p>
         )}

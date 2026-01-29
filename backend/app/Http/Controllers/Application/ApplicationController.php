@@ -458,4 +458,23 @@ class ApplicationController extends Controller
             'message' => 'Application published successfully.',
         ]);
     }
+
+    public function startFormalityExamination(Request $request, $id)
+    {
+        $application = Application::findOrFail($id);
+        $this->authorize('examine', $application); // Assuming 'examine' policy covers this
+
+        if ($application->status !== ApplicationStatus::SUBMITTED) {
+            return response()->json([
+                'message' => 'Application must be in SUBMITTED status to start formality examination.',
+            ], 400);
+        }
+
+        $application->update(['status' => ApplicationStatus::FORMALITY_EXAM]);
+
+        return response()->json([
+            'data' => new ApplicationResource($application),
+            'message' => 'Formality examination started.',
+        ]);
+    }
 }

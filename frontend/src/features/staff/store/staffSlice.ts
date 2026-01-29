@@ -103,6 +103,18 @@ export const fetchMyApplications = createAsyncThunk(
     }
 );
 
+export const startFormalityExamination = createAsyncThunk(
+    'staff/startFormalityExamination',
+    async (applicationId: number, { rejectWithValue }) => {
+        try {
+            const response = await staffService.startFormalityExamination(applicationId);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to start formality examination');
+        }
+    }
+);
+
 export const completeFormalityExamination = createAsyncThunk(
     'staff/completeFormalityExamination',
     async ({ applicationId, data }: { applicationId: number; data: { result: 'PASS' | 'FAIL'; notes?: string } }, { rejectWithValue }) => {
@@ -294,6 +306,20 @@ const staffSlice = createSlice({
             .addCase(fetchMyApplications.rejected, (state, action) => {
                 state.applicationsLoading = false;
                 state.applicationsError = action.payload as string;
+            });
+
+        // Start Formality Examination
+        builder
+            .addCase(startFormalityExamination.pending, (state) => {
+                state.examinationLoading = true;
+                state.examinationError = null;
+            })
+            .addCase(startFormalityExamination.fulfilled, (state) => {
+                state.examinationLoading = false;
+            })
+            .addCase(startFormalityExamination.rejected, (state, action) => {
+                state.examinationLoading = false;
+                state.examinationError = action.payload as string;
             });
 
         // Formality Examination

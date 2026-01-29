@@ -333,34 +333,31 @@ export default function StaffRequestDetailPage() {
                     {currentRequest.complaint && (
                         <div className="bg-white rounded-lg shadow overflow-hidden">
                             {/* Complaint Header with Status */}
-                            <div className={`px-6 py-4 ${
-                                currentRequest.complaint.resolution === 'ACCEPTED'
+                            <div className={`px-6 py-4 ${currentRequest.complaint.resolution === 'ACCEPTED'
                                     ? 'bg-green-50 border-b border-green-200'
                                     : currentRequest.complaint.resolution === 'REJECTED'
-                                    ? 'bg-red-50 border-b border-red-200'
-                                    : 'bg-amber-50 border-b border-amber-200'
-                            }`}>
+                                        ? 'bg-red-50 border-b border-red-200'
+                                        : 'bg-amber-50 border-b border-amber-200'
+                                }`}>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                            currentRequest.complaint.resolution === 'ACCEPTED'
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentRequest.complaint.resolution === 'ACCEPTED'
                                                 ? 'bg-green-100'
                                                 : currentRequest.complaint.resolution === 'REJECTED'
-                                                ? 'bg-red-100'
-                                                : 'bg-amber-100'
-                                        }`}>
-                                            <span className={`material-symbols-outlined !text-xl ${
-                                                currentRequest.complaint.resolution === 'ACCEPTED'
+                                                    ? 'bg-red-100'
+                                                    : 'bg-amber-100'
+                                            }`}>
+                                            <span className={`material-symbols-outlined !text-xl ${currentRequest.complaint.resolution === 'ACCEPTED'
                                                     ? 'text-green-600'
                                                     : currentRequest.complaint.resolution === 'REJECTED'
-                                                    ? 'text-red-600'
-                                                    : 'text-amber-600'
-                                            }`}>
+                                                        ? 'text-red-600'
+                                                        : 'text-amber-600'
+                                                }`}>
                                                 {currentRequest.complaint.resolution === 'ACCEPTED'
                                                     ? 'check_circle'
                                                     : currentRequest.complaint.resolution === 'REJECTED'
-                                                    ? 'cancel'
-                                                    : 'report'
+                                                        ? 'cancel'
+                                                        : 'report'
                                                 }
                                             </span>
                                         </div>
@@ -377,11 +374,10 @@ export default function StaffRequestDetailPage() {
                                         </div>
                                     </div>
                                     {currentRequest.complaint.resolution && (
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                                            currentRequest.complaint.resolution === 'ACCEPTED'
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${currentRequest.complaint.resolution === 'ACCEPTED'
                                                 ? 'bg-green-100 text-green-800'
                                                 : 'bg-red-100 text-red-800'
-                                        }`}>
+                                            }`}>
                                             {t(`request.complaint.resolutions.${currentRequest.complaint.resolution}`)}
                                         </span>
                                     )}
@@ -420,11 +416,10 @@ export default function StaffRequestDetailPage() {
 
                                 {/* Resolution Info (if resolved) */}
                                 {currentRequest.complaint.resolution && currentRequest.complaint.resolved_at && (
-                                    <div className={`p-4 rounded-lg border ${
-                                        currentRequest.complaint.resolution === 'ACCEPTED'
+                                    <div className={`p-4 rounded-lg border ${currentRequest.complaint.resolution === 'ACCEPTED'
                                             ? 'bg-green-50 border-green-200'
                                             : 'bg-red-50 border-red-200'
-                                    }`}>
+                                        }`}>
                                         <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                                             <span className="material-symbols-outlined !text-lg">
                                                 {currentRequest.complaint.resolution === 'ACCEPTED' ? 'task_alt' : 'block'}
@@ -434,11 +429,10 @@ export default function StaffRequestDetailPage() {
                                         <div className="grid grid-cols-2 gap-4 text-sm">
                                             <div>
                                                 <span className="text-gray-500">{t('request.complaint.resolution')}:</span>
-                                                <span className={`ml-2 font-medium ${
-                                                    currentRequest.complaint.resolution === 'ACCEPTED'
+                                                <span className={`ml-2 font-medium ${currentRequest.complaint.resolution === 'ACCEPTED'
                                                         ? 'text-green-700'
                                                         : 'text-red-700'
-                                                }`}>
+                                                    }`}>
                                                     {t(`request.complaint.resolutions.${currentRequest.complaint.resolution}`)}
                                                 </span>
                                             </div>
@@ -486,6 +480,20 @@ export default function StaffRequestDetailPage() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    )}
+
+                    {currentRequest.termination && (
+                        <div className="bg-white rounded-lg shadow p-6">
+                            <h2 className="text-lg font-semibold mb-4">{t('request.termination.details', 'Termination Details')}</h2>
+                            <dl className="space-y-4">
+                                <div>
+                                    <dt className="text-sm font-medium text-gray-500">{t('request.termination.reason', 'Reason for Termination')}</dt>
+                                    <dd className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
+                                        {currentRequest.termination.reason || '-'}
+                                    </dd>
+                                </div>
+                            </dl>
                         </div>
                     )}
 
