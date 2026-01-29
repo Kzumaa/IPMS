@@ -23,6 +23,7 @@ export const ApplicationStatus = {
     TERMINATED: 'TERMINATED',
     COMPLAINING: 'COMPLAINING',
     CHECKING_COMPLAINT: 'CHECKING_COMPLAINT',
+    WAITING_FOR_PAYMENT: 'WAITING_FOR_PAYMENT',
 } as const;
 
 export type ApplicationStatus = typeof ApplicationStatus[keyof typeof ApplicationStatus];
@@ -114,6 +115,7 @@ export const ApplicationStatusLabels: Record<ApplicationStatus, string> = {
     [ApplicationStatus.TERMINATED]: 'Đã chấm dứt',
     [ApplicationStatus.COMPLAINING]: 'Đang khiếu nại',
     [ApplicationStatus.CHECKING_COMPLAINT]: 'Đang xử lý khiếu nại',
+    [ApplicationStatus.WAITING_FOR_PAYMENT]: 'Chờ thanh toán',
 };
 
 export const PartyTypeLabels: Record<PartyType, string> = {
@@ -156,6 +158,7 @@ export const ApplicationStatusColors: Record<ApplicationStatus, { bg: string; te
     [ApplicationStatus.TERMINATED]: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300' },
     [ApplicationStatus.COMPLAINING]: { bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-300' },
     [ApplicationStatus.CHECKING_COMPLAINT]: { bg: 'bg-fuchsia-100', text: 'text-fuchsia-700', border: 'border-fuchsia-300' },
+    [ApplicationStatus.WAITING_FOR_PAYMENT]: { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-300' },
 };
 
 // Helper to get all values for validation

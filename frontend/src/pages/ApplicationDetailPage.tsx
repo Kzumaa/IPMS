@@ -17,17 +17,8 @@ import { PaymentButton } from "../features/payment/components";
 import { ApplicationStatus } from "../features/application/types/enums";
 import { RequestsSection } from "../features/request/components";
 
-const formatDate = (dateString: string | null): string => {
-  if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("vi-VN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
-
 const ApplicationDetailPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -35,6 +26,16 @@ const ApplicationDetailPage: React.FC = () => {
     useAppSelector((state) => state.application);
   const { user } = useAppSelector((state) => state.auth);
   const [showSplitModal, setShowSplitModal] = useState(false);
+
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return "-";
+    const locale = i18n.language === 'vi' ? 'vi-VN' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   // Check if current user is the creator (owner) of the application
   const isCreator = user && currentApplication?.created_by === user.id;
@@ -50,10 +51,11 @@ const ApplicationDetailPage: React.FC = () => {
     currentApplication &&
     !terminalStates.includes(currentApplication.status as ApplicationStatus);
 
-  // Check if application can be amended (submitted but not in terminal states)
+  // Check if application can be amended (submitted but not in terminal states, or GRANTED)
   const canAmend =
     currentApplication &&
-    !terminalStates.includes(currentApplication.status as ApplicationStatus);
+    (!terminalStates.includes(currentApplication.status as ApplicationStatus) ||
+      currentApplication.status === ApplicationStatus.GRANTED);
 
   console.log(currentApplication);
 
@@ -209,6 +211,41 @@ const ApplicationDetailPage: React.FC = () => {
                   </button>
                 </>
               )}
+              {currentApplication.status === ApplicationStatus.GRANTED && currentApplication.app_type === 'INDUSTRIAL_DESIGN' && (
+                (() => {
+                  if (!currentApplication.expiry_date) return null;
+                  const expiry = new Date(currentApplication.expiry_date);
+                  const sixMonthsBefore = new Date(expiry);
+                  sixMonthsBefore.setMonth(expiry.getMonth() - 6);
+                  const now = new Date();
+
+                  if (now >= sixMonthsBefore && now <= expiry) {
+                    return (
+                      <Link
+                        to={`/app/applications/${currentApplication.id}/requests/renewals/new`}
+                        className="flex items-center px-4 py-2 text-sm font-medium text-green-600 dark:text-green-400 border border-green-300 dark:border-green-600 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                      >
+                        <span className="material-symbols-outlined mr-2 !text-lg">
+                          autorenew
+                        </span>
+                        {t("request.renewal.renewTitle", "Renew")}
+                      </Link>
+                    );
+                  }
+                  return null;
+                })()
+              )}
+              {currentApplication.status === ApplicationStatus.GRANTED && (
+                <Link
+                  to={`/app/applications/${currentApplication.id}/requests/terminations/new`}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  <span className="material-symbols-outlined mr-2 !text-lg">
+                    cancel
+                  </span>
+                  {t("request.termination.terminateTitle", "Terminate")}
+                </Link>
+              )}
             </div>
           )}
         </div>
@@ -237,7 +274,7 @@ const ApplicationDetailPage: React.FC = () => {
                     {t("application.detail.filingDate")}
                   </dt>
                   <dd className="text-sm text-slate-900 dark:text-white mt-1">
-                    {formatDate(currentApplication.filing_date)}
+                    {formatDate(currentApplication.filing_date || null)}
                   </dd>
                 </div>
 
@@ -247,9 +284,8 @@ const ApplicationDetailPage: React.FC = () => {
                   </dt>
                   <dd className="text-sm text-slate-900 dark:text-white mt-1">
                     {currentApplication.is_pct
-                      ? `${t("common.yes")} (${
-                          currentApplication.pct_number || "-"
-                        })`
+                      ? `${t("common.yes")} (${currentApplication.pct_number || "-"
+                      })`
                       : t("common.no")}
                   </dd>
                 </div>
@@ -263,7 +299,24 @@ const ApplicationDetailPage: React.FC = () => {
                   </dd>
                 </div>
 
-                {currentApplication.priority_number && (
+                {currentApplication.priority_claims && currentApplication.priority_claims.length > 0 ? (
+                  <div className="md:col-span-2">
+                    <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                      {t("application.detail.priority")}
+                    </dt>
+                    <dd className="text-sm text-slate-900 dark:text-white mt-1 space-y-1">
+                      {currentApplication.priority_claims.map((claim, index) => (
+                        <div key={index}>
+                          <span className="font-medium">
+                            {claim.kind ? t(`application.steps.priority.types.${claim.kind.toLowerCase().replace('_', '')}`, claim.kind) : '-'}
+                          </span>
+                          {": "}
+                          {claim.number} ({claim.country_code}) - {formatDate(claim.filing_date)}
+                        </div>
+                      ))}
+                    </dd>
+                  </div>
+                ) : currentApplication.priority_number && (
                   <div className="md:col-span-2">
                     <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">
                       {t("application.detail.priority")}
@@ -271,11 +324,102 @@ const ApplicationDetailPage: React.FC = () => {
                     <dd className="text-sm text-slate-900 dark:text-white mt-1">
                       {currentApplication.priority_number} (
                       {currentApplication.priority_country}) -{" "}
-                      {formatDate(currentApplication.priority_date)}
+                      {formatDate(currentApplication.priority_date || null)}
                     </dd>
                   </div>
                 )}
               </dl>
+
+              <hr className="my-6 border-slate-200 dark:border-slate-700" />
+
+              {/* SNTC Info (State Budget Task) - Only if available */}
+              {currentApplication.sntc_info &&
+                (currentApplication.sntc_info.agency_name ||
+                  currentApplication.sntc_info.project_name ||
+                  currentApplication.sntc_info.project_code) && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                      {t("application.steps.stateBudget.title")}
+                    </h3>
+                    <dl className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                          {t("application.steps.stateBudget.agencyName")}
+                        </dt>
+                        <dd className="text-sm text-slate-900 dark:text-white mt-1">
+                          {currentApplication.sntc_info.agency_name || "-"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                          {t("application.steps.stateBudget.taskName")}
+                        </dt>
+                        <dd className="text-sm text-slate-900 dark:text-white mt-1">
+                          {currentApplication.sntc_info.project_name || "-"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                          {t("application.steps.stateBudget.taskCode")}
+                        </dt>
+                        <dd className="text-sm text-slate-900 dark:text-white mt-1">
+                          {currentApplication.sntc_info.project_code || "-"}
+                        </dd>
+                      </div>
+                    </dl>
+                    <hr className="my-6 border-slate-200 dark:border-slate-700" />
+                  </div>
+                )}
+
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                {t("application.detail.classification", "Classification")}
+              </h2>
+
+              {currentApplication.ipc_classes && currentApplication.ipc_classes.length > 0 ? (
+                <div>
+                  <h4 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">IPC</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {currentApplication.ipc_classes.map((ipc, index) => (
+                      <span
+                        key={index}
+                        className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-medium ${ipc.assigned_by_type === 'STAFF'
+                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
+                          : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                          }`}
+                      >
+                        {ipc.ipc_code}
+                        {ipc.assigned_by_type === 'STAFF' && (
+                          <span className="ml-1 text-purple-500">(Staff)</span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : currentApplication.locarno_classes && currentApplication.locarno_classes.length > 0 ? (
+                <div>
+                  <h4 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Locarno</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {currentApplication.locarno_classes.map((loc, index) => (
+                      <span
+                        key={index}
+                        className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-medium ${loc.assigned_by_type === 'STAFF'
+                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
+                          : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                          }`}
+                      >
+                        {loc.class_no}
+                        {loc.subclass_no && `-${loc.subclass_no}`}
+                        {loc.assigned_by_type === 'STAFF' && (
+                          <span className="ml-1 text-purple-500">{t('staff.classification.assignedByStaff', '(Staff)')}</span>
+                        )}
+                      </span>
+                    ))}                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {t("application.detail.noClasses", "No classification assigned yet")}
+                </p>
+              )}
             </div>
 
             {/* Note: Abstract, description, and claims are uploaded as attachments */}
@@ -454,17 +598,19 @@ const ApplicationDetailPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </main>
+      </main >
 
       {/* Split Application Modal */}
-      {currentApplication && (
-        <SplitApplicationModal
-          application={currentApplication}
-          isOpen={showSplitModal}
-          onClose={() => setShowSplitModal(false)}
-        />
-      )}
-    </div>
+      {
+        currentApplication && (
+          <SplitApplicationModal
+            application={currentApplication}
+            isOpen={showSplitModal}
+            onClose={() => setShowSplitModal(false)}
+          />
+        )
+      }
+    </div >
   );
 };
 

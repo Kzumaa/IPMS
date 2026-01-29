@@ -22,7 +22,7 @@ import {
     deleteParty,
     setFormStep,
 } from '../store/applicationSlice';
-import { basicInfoSchema, partiesSchema } from '../schemas/applicationSchemas';
+import { basicInfoSchema, getPartiesSchema } from '../schemas/applicationSchemas';
 import type { BasicInfoFormData, PartiesFormData } from '../schemas/applicationSchemas';
 import { PartyType, AttachmentType } from '../types/enums';
 import type { Application, CreatePartyDTO } from '../types/applicationTypes';
@@ -82,11 +82,36 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
             priority_date: initialData?.priority_date || '',
             priority_number: initialData?.priority_number || '',
             priority_country: initialData?.priority_country || '',
+            // Populate priority claims
+            has_priority_claim: (initialData?.priority_claims && initialData.priority_claims.length > 0) || !!initialData?.priority_number,
+            priority_type: initialData?.priority_claims?.[0]?.kind as PriorityKind || undefined,
+            priority_claims: initialData?.priority_claims
+                ? initialData.priority_claims.map(c => ({
+                    id: c.id,
+                    kind: c.kind as PriorityKind,
+                    number: c.number,
+                    filing_date: c.filing_date,
+                    country_code: c.country_code,
+                    agreement_name: c.agreement_name
+                }))
+                : [],
+            // Populate classification from backend arrays if available
+            ipc_classification: initialData?.ipc_classes?.[0]?.ipc_code || initialData?.ipc_classification || '',
+            locarno_classification: initialData?.locarno_classes?.[0]
+                ? `${initialData.locarno_classes[0].class_no}-${initialData.locarno_classes[0].subclass_no}`
+                : (initialData?.locarno_classification || ''),
+            field_of_use: initialData?.locarno_classes?.[0]?.field_of_use || initialData?.field_of_use || '',
+
+            // Populate SNTC info (State Budget Task)
+            is_state_budget_task: !!(initialData?.sntc_info?.agency_name || initialData?.sntc_info?.project_name || initialData?.sntc_info?.project_code),
+            managing_agency_name: initialData?.sntc_info?.agency_name || '',
+            task_name: initialData?.sntc_info?.project_name || '',
+            task_code: initialData?.sntc_info?.project_code || '',
         },
     });
 
     const partiesMethods = useForm<PartiesFormData>({
-        resolver: zodResolver(partiesSchema),
+        resolver: zodResolver(getPartiesSchema(t)),
         defaultValues: {
             applicants: parties.filter(p => p.party_type === 'APPLICANT').length > 0
                 ? parties
@@ -140,6 +165,26 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                 isValid = await basicInfoMethods.trigger();
                 if (isValid) {
                     const data = basicInfoMethods.getValues();
+
+                    // Transform classification strings to arrays for backend
+                    let ipcClasses = undefined;
+                    let locarnoClasses = undefined;
+
+                    if (data.ipc_classification) {
+                        ipcClasses = [{ ipc_code: data.ipc_classification }];
+                    }
+
+                    if (data.locarno_classification) {
+                        const parts = data.locarno_classification.split('-');
+                        if (parts.length >= 2) {
+                            locarnoClasses = [{
+                                class_no: parts[0],
+                                subclass_no: parts[1],
+                                field_of_use: data.field_of_use
+                            }];
+                        }
+                    }
+
                     // Convert null to undefined for API compatibility
                     const cleanData = {
                         ...data,
@@ -149,6 +194,8 @@ const ApplicationFormWizard: React.FC<ApplicationFormWizardProps> = ({
                         priority_date: data.priority_date || undefined,
                         priority_number: data.priority_number || undefined,
                         priority_country: data.priority_country || undefined,
+                        ipc_classes: ipcClasses,
+                        locarno_classes: locarnoClasses,
                     };
                     if (currentApplication?.id) {
                         const result = await dispatch(updateApplication({ id: currentApplication.id, data: cleanData }));

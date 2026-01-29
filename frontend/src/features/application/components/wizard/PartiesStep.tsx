@@ -321,7 +321,10 @@ const PartiesStep: React.FC<PartiesStepProps> = ({ appType }) => {
     });
 
     const MAX_ADDITIONAL_APPLICANTS = 2; // Max 2 additional (total 3 including primary)
+    const MAX_INVENTORS = 3;
+
     const canAddMoreApplicants = applicantFields.length < (MAX_ADDITIONAL_APPLICANTS + 1);
+    const canAddMoreInventors = inventorFields.length < MAX_INVENTORS;
 
     const defaultParty: PartyFormData = {
         party_type: PartyType.APPLICANT,
@@ -356,6 +359,27 @@ const PartiesStep: React.FC<PartiesStepProps> = ({ appType }) => {
         };
 
         appendApplicant(newApplicant);
+    };
+
+    const handleInventorSelect = (user: UserSearchResult) => {
+        if (!canAddMoreInventors) return;
+
+        const newInventor: PartyFormData = {
+            party_type: PartyType.INVENTOR,
+            name: user.full_name,
+            address: user.address || '',
+            nationality: user.country || 'Việt Nam',
+            country_code: user.country?.slice(0, 2).toUpperCase() || 'VN',
+            email: user.email,
+            phone: user.phone || '',
+            id_number: null,
+            id_type: null,
+            is_primary: false,
+            share_percentage: null,
+            user_id: user.id,
+        };
+
+        appendInventor(newInventor);
     };
 
     const handleAddApplicant = () => {
@@ -488,15 +512,24 @@ const PartiesStep: React.FC<PartiesStepProps> = ({ appType }) => {
                                 : t('application.steps.parties.inventorsDesc')}
                         </p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => appendInventor({ ...defaultParty, party_type: PartyType.INVENTOR })}
-                        className="flex items-center px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-                    >
-                        <span className="material-symbols-outlined mr-1 !text-lg">add</span>
-                        {t('application.steps.parties.add')}
-                    </button>
+                    <div className="hidden">
+                        {/* Hiding the old add button in header since we moved it below */}
+                    </div>
                 </div>
+
+                {errors.inventors?.message && (
+                    <p className="text-sm text-red-500 mb-4">{errors.inventors.message}</p>
+                )}
+
+                {/* Inventor Search */}
+                {canAddMoreInventors && (
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            {t('application.steps.parties.searchExistingUser')}
+                        </label>
+                        <UserSearch onSelect={handleInventorSelect} />
+                    </div>
+                )}
 
                 <div className="space-y-4">
                     {inventorFields.map((field, index) => (
@@ -517,6 +550,18 @@ const PartiesStep: React.FC<PartiesStepProps> = ({ appType }) => {
                             {t('application.steps.parties.noData')}
                         </p>
                     </div>
+                )}
+
+                {/* Add Manual Inventor Button */}
+                {canAddMoreInventors && (
+                    <button
+                        type="button"
+                        onClick={() => appendInventor({ ...defaultParty, party_type: PartyType.INVENTOR })}
+                        className="mt-4 flex items-center px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+                    >
+                        <span className="material-symbols-outlined mr-1 !text-lg">add</span>
+                        {t('application.steps.parties.addManually')}
+                    </button>
                 )}
             </div>
         </div>

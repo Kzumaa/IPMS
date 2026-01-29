@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 class RequestFeeCatalogSeeder extends Seeder
 {
     /**
-     * Seed request-related fees for Amendment, Assignment, License, Split, and Appeals.
+     * Seed request-related fees for Amendment, Assignment, License, Split, and Complaints.
      */
     public function run(): void
     {

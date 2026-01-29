@@ -93,6 +93,7 @@ const CreateTerminationPage: React.FC = () => {
               onSubmit={handleSubmit}
               onCancel={handleCancel}
               loading={loading}
+              grantDate={currentApplication?.issue_date || undefined}
             />
           </div>
         )}

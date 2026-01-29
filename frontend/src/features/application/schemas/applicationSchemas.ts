@@ -104,13 +104,16 @@ export const basicInfoSchema = z.object({
 );
 
 // Parties step schema (at least one applicant required, max 3 total including primary)
-export const partiesSchema = z.object({
+// Exporting as function to support i18n
+import type { TFunction } from 'i18next';
+
+export const getPartiesSchema = (t: TFunction) => z.object({
     applicants: z.array(partySchema)
-        .min(1, 'Phải có ít nhất một người nộp đơn')
-        .max(3, 'Tối đa 3 người nộp đơn (1 chính + 2 khác)'),
+        .min(1, t('application.steps.review.validation.minApplicant'))
+        .max(3, t('application.steps.review.validation.maxApplicant')),
     inventors: z.array(partySchema)
-        .max(3, 'Tối đa 3 tác giả/nhà sáng chế')
-        .optional(),
+        .min(1, t('application.steps.review.validation.minInventor'))
+        .max(3, t('application.steps.review.validation.maxInventor')),
     // Representatives removed per requirement: "author implies applicant"
 });
 
@@ -131,7 +134,7 @@ export const attachmentSchema = z.object({
 
 // Export types inferred from schemas
 export type BasicInfoFormData = z.infer<typeof basicInfoSchema>;
-export type PartiesFormData = z.infer<typeof partiesSchema>;
+export type PartiesFormData = z.infer<ReturnType<typeof getPartiesSchema>>;
 export type ProtectionTitlesFormData = z.infer<typeof protectionTitlesSchema>;
 export type PartyFormData = z.infer<typeof partySchema>;
 export type ProtectionTitleFormData = z.infer<typeof protectionTitleSchema>;

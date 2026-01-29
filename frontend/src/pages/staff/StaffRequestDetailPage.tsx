@@ -7,7 +7,6 @@ import {
     startRequestExamination,
     approveRequest,
     refuseRequest,
-    resolveAppeal,
     resolveComplaint,
     clearCurrentRequest,
 } from '@/features/staff/store/staffSlice';
@@ -25,11 +24,9 @@ export default function StaffRequestDetailPage() {
     );
 
     const [notes, setNotes] = useState('');
-    const [appealResolution, setAppealResolution] = useState<'UPHELD' | 'OVERTURNED' | 'PARTIAL' | 'WITHDRAWN'>('UPHELD');
     const [complaintResolution, setComplaintResolution] = useState<'ACCEPTED' | 'REJECTED'>('ACCEPTED');
     const [showRefuseModal, setShowRefuseModal] = useState(false);
     const [showApproveModal, setShowApproveModal] = useState(false);
-    const [showAppealModal, setShowAppealModal] = useState(false);
     const [showComplaintModal, setShowComplaintModal] = useState(false);
 
     useEffect(() => {
@@ -58,17 +55,6 @@ export default function StaffRequestDetailPage() {
         if (!currentRequest || !notes) return;
         await dispatch(refuseRequest({ requestId: currentRequest.id, notes }));
         setShowRefuseModal(false);
-        setNotes('');
-        navigate('/staff/requests');
-    };
-
-    const handleResolveAppeal = async () => {
-        if (!currentRequest) return;
-        await dispatch(resolveAppeal({
-            requestId: currentRequest.id,
-            data: { resolution: appealResolution, notes: notes || undefined },
-        }));
-        setShowAppealModal(false);
         setNotes('');
         navigate('/staff/requests');
     };
@@ -125,7 +111,6 @@ export default function StaffRequestDetailPage() {
 
     const canStartExamination = currentRequest.status === 'SUBMITTED';
     const canProcess = currentRequest.status === 'EXAMINING';
-    const isAppeal = currentRequest.type === 'APPEAL';
     const isComplaint = currentRequest.type === 'COMPLAINT';
 
     return (
@@ -345,65 +330,34 @@ export default function StaffRequestDetailPage() {
                         </div>
                     )}
 
-                    {currentRequest.appeal && (
-                        <div className="bg-white rounded-lg shadow p-6">
-                            <h2 className="text-lg font-semibold mb-4">{t('request.appeal.details')}</h2>
-                            <dl className="space-y-4">
-                                {currentRequest.appeal.notice_date && (
-                                    <div>
-                                        <dt className="text-sm font-medium text-gray-500">{t('request.appeal.noticeDate')}</dt>
-                                        <dd className="mt-1 text-sm text-gray-900">{formatDate(currentRequest.appeal.notice_date)}</dd>
-                                    </div>
-                                )}
-                                <div>
-                                    <dt className="text-sm font-medium text-gray-500">{t('request.appeal.grounds')}</dt>
-                                    <dd className="mt-1 text-sm text-gray-900 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">
-                                        {currentRequest.appeal.grounds}
-                                    </dd>
-                                </div>
-                                {currentRequest.appeal.resolution && (
-                                    <div>
-                                        <dt className="text-sm font-medium text-gray-500">{t('request.appeal.resolution')}</dt>
-                                        <dd className="mt-1 text-sm text-gray-900">
-                                            {t(`request.appeal.resolutions.${currentRequest.appeal.resolution}`)}
-                                        </dd>
-                                    </div>
-                                )}
-                            </dl>
-                        </div>
-                    )}
-
                     {currentRequest.complaint && (
                         <div className="bg-white rounded-lg shadow overflow-hidden">
                             {/* Complaint Header with Status */}
-                            <div className={`px-6 py-4 ${
-                                currentRequest.complaint.resolution === 'ACCEPTED'
+                            <div className={`px-6 py-4 ${currentRequest.complaint.resolution === 'ACCEPTED'
                                     ? 'bg-green-50 border-b border-green-200'
                                     : currentRequest.complaint.resolution === 'REJECTED'
-                                    ? 'bg-red-50 border-b border-red-200'
-                                    : 'bg-amber-50 border-b border-amber-200'
-                            }`}>
+                                        ? 'bg-red-50 border-b border-red-200'
+                                        : 'bg-amber-50 border-b border-amber-200'
+                                }`}>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                            currentRequest.complaint.resolution === 'ACCEPTED'
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentRequest.complaint.resolution === 'ACCEPTED'
                                                 ? 'bg-green-100'
                                                 : currentRequest.complaint.resolution === 'REJECTED'
-                                                ? 'bg-red-100'
-                                                : 'bg-amber-100'
-                                        }`}>
-                                            <span className={`material-symbols-outlined !text-xl ${
-                                                currentRequest.complaint.resolution === 'ACCEPTED'
+                                                    ? 'bg-red-100'
+                                                    : 'bg-amber-100'
+                                            }`}>
+                                            <span className={`material-symbols-outlined !text-xl ${currentRequest.complaint.resolution === 'ACCEPTED'
                                                     ? 'text-green-600'
                                                     : currentRequest.complaint.resolution === 'REJECTED'
-                                                    ? 'text-red-600'
-                                                    : 'text-amber-600'
-                                            }`}>
+                                                        ? 'text-red-600'
+                                                        : 'text-amber-600'
+                                                }`}>
                                                 {currentRequest.complaint.resolution === 'ACCEPTED'
                                                     ? 'check_circle'
                                                     : currentRequest.complaint.resolution === 'REJECTED'
-                                                    ? 'cancel'
-                                                    : 'report'
+                                                        ? 'cancel'
+                                                        : 'report'
                                                 }
                                             </span>
                                         </div>
@@ -420,11 +374,10 @@ export default function StaffRequestDetailPage() {
                                         </div>
                                     </div>
                                     {currentRequest.complaint.resolution && (
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                                            currentRequest.complaint.resolution === 'ACCEPTED'
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${currentRequest.complaint.resolution === 'ACCEPTED'
                                                 ? 'bg-green-100 text-green-800'
                                                 : 'bg-red-100 text-red-800'
-                                        }`}>
+                                            }`}>
                                             {t(`request.complaint.resolutions.${currentRequest.complaint.resolution}`)}
                                         </span>
                                     )}
@@ -463,11 +416,10 @@ export default function StaffRequestDetailPage() {
 
                                 {/* Resolution Info (if resolved) */}
                                 {currentRequest.complaint.resolution && currentRequest.complaint.resolved_at && (
-                                    <div className={`p-4 rounded-lg border ${
-                                        currentRequest.complaint.resolution === 'ACCEPTED'
+                                    <div className={`p-4 rounded-lg border ${currentRequest.complaint.resolution === 'ACCEPTED'
                                             ? 'bg-green-50 border-green-200'
                                             : 'bg-red-50 border-red-200'
-                                    }`}>
+                                        }`}>
                                         <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                                             <span className="material-symbols-outlined !text-lg">
                                                 {currentRequest.complaint.resolution === 'ACCEPTED' ? 'task_alt' : 'block'}
@@ -477,11 +429,10 @@ export default function StaffRequestDetailPage() {
                                         <div className="grid grid-cols-2 gap-4 text-sm">
                                             <div>
                                                 <span className="text-gray-500">{t('request.complaint.resolution')}:</span>
-                                                <span className={`ml-2 font-medium ${
-                                                    currentRequest.complaint.resolution === 'ACCEPTED'
+                                                <span className={`ml-2 font-medium ${currentRequest.complaint.resolution === 'ACCEPTED'
                                                         ? 'text-green-700'
                                                         : 'text-red-700'
-                                                }`}>
+                                                    }`}>
                                                     {t(`request.complaint.resolutions.${currentRequest.complaint.resolution}`)}
                                                 </span>
                                             </div>
@@ -529,6 +480,20 @@ export default function StaffRequestDetailPage() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    )}
+
+                    {currentRequest.termination && (
+                        <div className="bg-white rounded-lg shadow p-6">
+                            <h2 className="text-lg font-semibold mb-4">{t('request.termination.details', 'Termination Details')}</h2>
+                            <dl className="space-y-4">
+                                <div>
+                                    <dt className="text-sm font-medium text-gray-500">{t('request.termination.reason', 'Reason for Termination')}</dt>
+                                    <dd className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
+                                        {currentRequest.termination.reason || '-'}
+                                    </dd>
+                                </div>
+                            </dl>
                         </div>
                     )}
 
@@ -580,7 +545,7 @@ export default function StaffRequestDetailPage() {
                                 </button>
                             )}
 
-                            {canProcess && !isAppeal && !isComplaint && (
+                            {canProcess && !isComplaint && (
                                 <>
                                     <button
                                         onClick={() => setShowApproveModal(true)}
@@ -599,17 +564,6 @@ export default function StaffRequestDetailPage() {
                                         {t('staff.requests.refuse')}
                                     </button>
                                 </>
-                            )}
-
-                            {canProcess && isAppeal && (
-                                <button
-                                    onClick={() => setShowAppealModal(true)}
-                                    disabled={examinationLoading}
-                                    className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-                                >
-                                    <span className="material-symbols-outlined mr-2 !text-lg align-middle">gavel</span>
-                                    {t('staff.requests.resolveAppeal')}
-                                </button>
                             )}
 
                             {canProcess && isComplaint && (
@@ -700,56 +654,6 @@ export default function StaffRequestDetailPage() {
                                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
                             >
                                 {t('staff.requests.refuse')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Appeal Resolution Modal */}
-            {showAppealModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-                        <h3 className="text-lg font-semibold mb-4">{t('staff.requests.resolveAppeal')}</h3>
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {t('request.appeal.resolution')} *
-                            </label>
-                            <select
-                                value={appealResolution}
-                                onChange={(e) => setAppealResolution(e.target.value as any)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="UPHELD">{t('request.appeal.resolutions.UPHELD')}</option>
-                                <option value="OVERTURNED">{t('request.appeal.resolutions.OVERTURNED')}</option>
-                                <option value="PARTIAL">{t('request.appeal.resolutions.PARTIAL')}</option>
-                                <option value="WITHDRAWN">{t('request.appeal.resolutions.WITHDRAWN')}</option>
-                            </select>
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                {t('staff.requests.notes')} ({t('common.optional')})
-                            </label>
-                            <textarea
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                                rows={3}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => { setShowAppealModal(false); setNotes(''); }}
-                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                            >
-                                {t('common.cancel')}
-                            </button>
-                            <button
-                                onClick={handleResolveAppeal}
-                                disabled={examinationLoading}
-                                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-                            >
-                                {t('staff.requests.resolve')}
                             </button>
                         </div>
                     </div>

@@ -6,8 +6,6 @@ import RequestTypeBadge from "./RequestTypeBadge";
 import {
   TransferTypeLabels,
   LicenseTypeLabels,
-  AppealTypeLabels,
-  AppealResolutionLabels,
   ComplaintResolutionLabels,
 } from "../types/enums";
 
@@ -669,78 +667,6 @@ const RequestDetail: React.FC<RequestDetailProps> = ({
     );
   };
 
-  const renderAppealDetails = () => {
-    if (!request.appeal) return null;
-    const { appeal } = request;
-
-    return (
-      <div className="space-y-4">
-        <h4 className="font-medium text-slate-900 dark:text-white">
-          {t("request.appeal.details")}
-        </h4>
-        <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <dt className="text-sm text-slate-500 dark:text-slate-400">
-              {t("request.appeal.type")}
-            </dt>
-            <dd className="text-sm text-slate-900 dark:text-white">
-              {AppealTypeLabels[appeal.appeal_type]}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm text-slate-500 dark:text-slate-400">
-              {t("request.appeal.deadline")}
-            </dt>
-            <dd className="text-sm text-slate-900 dark:text-white flex items-center">
-              {formatDate(appeal.deadline)}
-              {appeal.is_within_deadline ? (
-                <span className="ml-2 text-green-600 dark:text-green-400">
-                  <span className="material-symbols-outlined !text-sm">
-                    check_circle
-                  </span>
-                </span>
-              ) : (
-                <span className="ml-2 text-red-600 dark:text-red-400">
-                  <span className="material-symbols-outlined !text-sm">
-                    error
-                  </span>
-                </span>
-              )}
-            </dd>
-          </div>
-          {appeal.resolution && (
-            <div>
-              <dt className="text-sm text-slate-500 dark:text-slate-400">
-                {t("request.appeal.resolution")}
-              </dt>
-              <dd className="text-sm text-slate-900 dark:text-white">
-                {AppealResolutionLabels[appeal.resolution]}
-              </dd>
-            </div>
-          )}
-          {appeal.resolved_at && (
-            <div>
-              <dt className="text-sm text-slate-500 dark:text-slate-400">
-                {t("request.appeal.resolvedAt")}
-              </dt>
-              <dd className="text-sm text-slate-900 dark:text-white">
-                {formatDate(appeal.resolved_at)}
-              </dd>
-            </div>
-          )}
-        </dl>
-        <div>
-          <dt className="text-sm text-slate-500 dark:text-slate-400 mb-1">
-            {t("request.appeal.grounds")}
-          </dt>
-          <dd className="text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg">
-            {appeal.grounds}
-          </dd>
-        </div>
-      </div>
-    );
-  };
-
   const renderComplaintDetails = () => {
     if (!request.complaint) return null;
     const { complaint } = request;
@@ -880,8 +806,6 @@ const RequestDetail: React.FC<RequestDetailProps> = ({
         return renderAssignmentDetails();
       case "LICENSE":
         return renderLicenseDetails();
-      case "APPEAL":
-        return renderAppealDetails();
       case "COMPLAINT":
         return renderComplaintDetails();
       case "RENEWAL":

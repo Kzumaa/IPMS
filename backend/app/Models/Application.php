@@ -30,12 +30,14 @@ class Application extends Model
         'deadlines',
         'file_validation_results',
         'current_version',
-        'origin_application_id'
+        'origin_application_id',
+        'expiry_date',
     ];
 
 
     protected $casts = [
         'filing_date' => 'datetime',
+        'expiry_date' => 'datetime',
         'submitted_at' => 'datetime',
         'applicant_is_inventor' => 'bool',
         'publication_early_requested' => 'bool',
@@ -88,6 +90,16 @@ class Application extends Model
     public function priorityClaims(): HasMany
     {
         return $this->hasMany(PriorityClaim::class);
+    }
+
+    public function pctInfo(): HasOne
+    {
+        return $this->hasOne(PctInfo::class, 'application_id');
+    }
+
+    public function sntcInfo(): HasOne
+    {
+        return $this->hasOne(SntcInfo::class, 'application_id');
     }
 
     public function ipcClasses(): HasMany

@@ -220,7 +220,7 @@ class AmendmentVersionService
                 'snapshot_data' => $this->versioningService->captureSnapshot($application),
                 'change_summary' => $pending->request->amendment?->change_summary ?? 'Amendment applied',
                 'field_changes' => $pending->field_changes,
-                'created_by' => $staffId,
+                'created_by' => $pending->created_by,
                 'created_at' => now(),
             ]);
 
@@ -314,7 +314,7 @@ class AmendmentVersionService
         ];
 
         $currentById = collect($current)->keyBy('id')->toArray();
-        $proposedById = collect($proposed)->keyBy(fn ($p) => $p['id'] ?? 'new_' . uniqid())->toArray();
+        $proposedById = collect($proposed)->keyBy(fn($p) => $p['id'] ?? 'new_' . uniqid())->toArray();
 
         // Find removed parties
         foreach ($currentById as $id => $party) {

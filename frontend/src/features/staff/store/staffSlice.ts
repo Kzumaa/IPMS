@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import staffService, { type DashboardStats, type StaffRequest, type AppealResolutionRequest, type ComplaintResolutionRequest } from '../services/staffService';
+import staffService, { type DashboardStats, type StaffRequest, type ComplaintResolutionRequest } from '../services/staffService';
 import type { Application, PaginatedResponse } from '@/features/application/types/applicationTypes';
 
 interface StaffState {
@@ -77,6 +77,7 @@ export const fetchAllApplications = createAsyncThunk(
         search?: string;
         page?: number;
         per_page?: number;
+        published_only?: boolean;
     } | undefined, { rejectWithValue }) => {
         try {
             const response = await staffService.listAllApplications(params);
@@ -99,6 +100,18 @@ export const fetchMyApplications = createAsyncThunk(
             return response;
         } catch (error: any) {
             return rejectWithValue(error.message || 'Failed to fetch assigned applications');
+        }
+    }
+);
+
+export const startFormalityExamination = createAsyncThunk(
+    'staff/startFormalityExamination',
+    async (applicationId: number, { rejectWithValue }) => {
+        try {
+            const response = await staffService.startFormalityExamination(applicationId);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to start formality examination');
         }
     }
 );
@@ -205,18 +218,6 @@ export const refuseRequest = createAsyncThunk(
     }
 );
 
-export const resolveAppeal = createAsyncThunk(
-    'staff/resolveAppeal',
-    async ({ requestId, data }: { requestId: number; data: AppealResolutionRequest }, { rejectWithValue }) => {
-        try {
-            const response = await staffService.resolveAppeal(requestId, data);
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(error.message || 'Failed to resolve appeal');
-        }
-    }
-);
-
 export const resolveComplaint = createAsyncThunk(
     'staff/resolveComplaint',
     async ({ requestId, data }: { requestId: number; data: ComplaintResolutionRequest }, { rejectWithValue }) => {
@@ -306,6 +307,20 @@ const staffSlice = createSlice({
             .addCase(fetchMyApplications.rejected, (state, action) => {
                 state.applicationsLoading = false;
                 state.applicationsError = action.payload as string;
+            });
+
+        // Start Formality Examination
+        builder
+            .addCase(startFormalityExamination.pending, (state) => {
+                state.examinationLoading = true;
+                state.examinationError = null;
+            })
+            .addCase(startFormalityExamination.fulfilled, (state) => {
+                state.examinationLoading = false;
+            })
+            .addCase(startFormalityExamination.rejected, (state, action) => {
+                state.examinationLoading = false;
+                state.examinationError = action.payload as string;
             });
 
         // Formality Examination
@@ -424,21 +439,6 @@ const staffSlice = createSlice({
                 state.currentRequest = action.payload;
             })
             .addCase(refuseRequest.rejected, (state, action) => {
-                state.examinationLoading = false;
-                state.examinationError = action.payload as string;
-            });
-
-        // Resolve Appeal
-        builder
-            .addCase(resolveAppeal.pending, (state) => {
-                state.examinationLoading = true;
-                state.examinationError = null;
-            })
-            .addCase(resolveAppeal.fulfilled, (state, action: PayloadAction<StaffRequest>) => {
-                state.examinationLoading = false;
-                state.currentRequest = action.payload;
-            })
-            .addCase(resolveAppeal.rejected, (state, action) => {
                 state.examinationLoading = false;
                 state.examinationError = action.payload as string;
             });

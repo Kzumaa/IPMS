@@ -15,12 +15,9 @@ class RequestTermination extends Model
     protected $fillable = [
         'request_id',
         'reason',
-        'effective_date',
     ];
 
-    protected $casts = [
-        'effective_date' => 'date',
-    ];
+    protected $casts = [];
 
     /**
      * Get the parent request.

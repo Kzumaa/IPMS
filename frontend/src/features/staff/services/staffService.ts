@@ -10,6 +10,7 @@ export interface DashboardStats {
     pending_substantive_exam: number;
     by_status: Record<string, number>;
     by_type: Record<string, number>;
+    by_class: Array<{ name: string; count: number }>;
 }
 
 export interface ExaminationResult {
@@ -73,13 +74,6 @@ export interface StaffRequest {
         licensor?: { id: number; name: string; email: string };
         licensees?: Array<{ id: number; name: string; email: string }>;
     };
-    appeal?: {
-        notice_date?: string;
-        grounds: string;
-        deadline?: string;
-        resolution?: string;
-        resolved_at?: string;
-    };
     complaint?: {
         grounds: string;
         deadline: string;
@@ -94,11 +88,9 @@ export interface StaffRequest {
         total_amount: number;
         status: string;
     };
-}
-
-export interface AppealResolutionRequest {
-    resolution: 'UPHELD' | 'OVERTURNED' | 'PARTIAL' | 'WITHDRAWN';
-    notes?: string;
+    termination?: {
+        reason?: string;
+    };
 }
 
 export interface ComplaintResolutionRequest {
@@ -129,9 +121,9 @@ export interface IpcClassInfo {
 
 export interface LocarnoClassInfo {
     id?: number;
-    class_code: string;
-    subclass?: string | null;
-    label?: string | null;
+    class_no: string;
+    subclass_no?: string | null;
+    field_of_use?: string | null;
     assigned_by_type?: 'USER' | 'STAFF' | null;
     assigned_by_id?: number | null;
     assigned_at?: string | null;
@@ -139,6 +131,7 @@ export interface LocarnoClassInfo {
 
 export interface ClassificationAssignRequest {
     ipc_classes?: Array<{
+        ipc_code: string;
         section: string;
         class_code: string;
         subclass?: string;
@@ -147,10 +140,11 @@ export interface ClassificationAssignRequest {
         label?: string;
     }>;
     locarno_classes?: Array<{
-        class_code: string;
-        subclass?: string;
-        label?: string;
+        class_no: string;
+        subclass_no?: string;
+        field_of_use?: string;
     }>;
+    recalculate_fees?: boolean;
 }
 
 const staffService = {
@@ -167,6 +161,7 @@ const staffService = {
         search?: string;
         page?: number;
         per_page?: number;
+        published_only?: boolean;
     }): Promise<PaginatedResponse<Application>> {
         const response = await axiosClient.get(`${BASE_URL}/applications`, { params });
         return response.data;
@@ -182,6 +177,11 @@ const staffService = {
     },
 
     // Examination Workflows
+    async startFormalityExamination(applicationId: number): Promise<ApiResponse<Application>> {
+        const response = await axiosClient.post(`/applications/${applicationId}/examination/start`);
+        return response.data;
+    },
+
     async completeFormalityExamination(applicationId: number, data: ExaminationResult): Promise<ApiResponse<any>> {
         const response = await axiosClient.post(`/applications/${applicationId}/examination/complete`, data);
         return response.data;
@@ -225,11 +225,6 @@ const staffService = {
 
     async refuseRequest(requestId: number, notes: string): Promise<ApiResponse<StaffRequest>> {
         const response = await axiosClient.post(`${BASE_URL}/requests/${requestId}/refuse`, { notes });
-        return response.data;
-    },
-
-    async resolveAppeal(requestId: number, data: AppealResolutionRequest): Promise<ApiResponse<StaffRequest>> {
-        const response = await axiosClient.post(`${BASE_URL}/requests/${requestId}/resolve-appeal`, data);
         return response.data;
     },
 

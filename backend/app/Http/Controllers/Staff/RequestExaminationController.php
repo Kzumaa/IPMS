@@ -74,9 +74,13 @@ class RequestExaminationController extends Controller
             'feeQuote',
         ]);
 
-        // By default, show submitted requests (pending review)
-        $status = $validated['status'] ?? RequestStatus::SUBMITTED->value;
-        $query->where('status', $status);
+        // Always exclude drafts for staff
+        $query->where('status', '!=', RequestStatus::DRAFT->value);
+
+        // Filter by status if provided
+        if (!empty($validated['status'])) {
+            $query->where('status', $validated['status']);
+        }
 
         if (!empty($validated['type'])) {
             $query->where('type', $validated['type']);
@@ -117,7 +121,6 @@ class RequestExaminationController extends Controller
             'license',
             'license.licensor',
             'license.licensees.licensee',
-            'appeal',
             'complaint',
             'renewal',
             'termination',

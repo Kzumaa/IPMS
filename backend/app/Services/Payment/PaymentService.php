@@ -324,5 +324,14 @@ class PaymentService
                     'paid_at' => now(),
                 ]);
         }
+
+        // Auto-approve Renewal requests
+        if ($payment->fee_quote_id) {
+            $feeQuote = $payment->feeQuote;
+            if ($feeQuote && $feeQuote->request && $feeQuote->request->type === \App\Enums\RequestType::RENEWAL) {
+                 // Resolve RenewalService lazily to avoid circular dependency if any
+                app(\App\Services\Request\RenewalService::class)->approveRenewalAfterPayment($feeQuote->request);
+            }
+        }
     }
 }

@@ -7,7 +7,6 @@ use App\Http\Controllers\Application\ApplicationPartyController;
 use App\Http\Controllers\Application\ApplicationVersionController;
 use App\Http\Controllers\Application\FeeQuoteController;
 use App\Http\Controllers\Application\PriorityClaimController;
-use App\Http\Controllers\Application\ProtectionTitleController;
 use App\Http\Controllers\Application\SntcInfoController;
 use App\Http\Controllers\Application\ApplicationTimelineController;
 use App\Http\Controllers\AuthController;
@@ -102,6 +101,7 @@ Route::middleware('auth:sanctum')->group(function () {
         });
 
         // Examination (staff only)
+        Route::post('/{id}/examination/start', [ApplicationController::class, 'startFormalityExamination']);
         Route::post('/{id}/examination/complete', [ApplicationController::class, 'completeExamination']);
         Route::post('/{id}/substantive-examination/complete', [ApplicationController::class, 'completeSubstantiveExamination']);
         Route::post('/{id}/decision', [ApplicationController::class, 'issueDecision']);
@@ -148,7 +148,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/{requestId}/submit', [SplitController::class, 'submit']);
         });
 
-        // Complaint Requests (replaces Appeals per SRS Section 3.2)
+        // Complaint Requests (SRS Section 3.2)
         Route::prefix('/{id}/requests/complaints')->group(function () {
             Route::get('/', [ComplaintController::class, 'index']);
             Route::post('/', [ComplaintController::class, 'store']);
@@ -186,9 +186,6 @@ Route::middleware('auth:sanctum')->group(function () {
         });
         Route::get('/{id}/can-withdraw', [WithdrawalController::class, 'canWithdraw']);
     });
-
-    Route::get('/protection-titles/{id}/schedule', [ProtectionTitleController::class, 'getSchedule']);
-    Route::post('/maintenance-fees/{id}/pay', [ProtectionTitleController::class, 'payFee']);
 
     // Payment routes
     Route::prefix('payments')->group(function () {

@@ -9,8 +9,11 @@ export interface Application {
   // Note: abstract, description, claims are stored as file attachments
   // Use attachments with doc_type: ABSTRACT, DESCRIPTION, CLAIMS
   status: ApplicationStatus;
-  filing_date: string | null;
-  priority_date: string | null;
+  filing_date?: string | null;
+  issue_date?: string | null;
+  expiry_date?: string | null;
+  registration_number?: string | null;
+  priority_date?: string | null;
   priority_number: string | null;
   priority_country: string | null;
   is_pct: boolean;
@@ -32,6 +35,8 @@ export interface Application {
   priority_claims?: PriorityClaim[];
   sntc_info?: SntcInfo | null;
   requests?: ApplicationRequestSummary[];
+  ipc_classes?: IpcClass[];
+  locarno_classes?: LocarnoClass[];
 }
 
 // Protection title for GRANTED applications
@@ -307,14 +312,15 @@ export interface IpcClass {
   assigned_by_type: "USER" | "STAFF" | null;
   assigned_by_id: number | null;
   assigned_at: string | null;
+  ipc_code?: string;
 }
 
 export interface LocarnoClass {
   id: number;
   application_id: number;
-  class_code: string;
-  subclass: string | null;
-  label: string | null;
+  class_no: string;
+  subclass_no: string | null;
+  field_of_use: string | null;
   assigned_by_type: "USER" | "STAFF" | null;
   assigned_by_id: number | null;
   assigned_at: string | null;

@@ -42,10 +42,12 @@ const ClassificationAssignmentModal: React.FC<ClassificationAssignmentModalProps
     // Locarno class form state (for Industrial Design)
     const [locarnoClasses, setLocarnoClasses] = useState<LocarnoClassInfo[]>([]);
     const [newLocarno, setNewLocarno] = useState<LocarnoClassInfo>({
-        class_code: '',
-        subclass: '',
-        label: '',
+        class_no: '',
+        subclass_no: '',
+        field_of_use: '',
     });
+
+    const [recalculateFees, setRecalculateFees] = useState(true);
 
     const isDesign = appType === 'INDUSTRIAL_DESIGN';
 
@@ -96,14 +98,14 @@ const ClassificationAssignmentModal: React.FC<ClassificationAssignmentModalProps
     };
 
     const handleAddLocarno = () => {
-        if (!newLocarno.class_code) {
+        if (!newLocarno.class_no) {
             return;
         }
         setLocarnoClasses([...locarnoClasses, { ...newLocarno }]);
         setNewLocarno({
-            class_code: '',
-            subclass: '',
-            label: '',
+            class_no: '',
+            subclass_no: '',
+            field_of_use: '',
         });
     };
 
@@ -116,22 +118,31 @@ const ClassificationAssignmentModal: React.FC<ClassificationAssignmentModalProps
             setLoading(true);
             setError(null);
 
-            const data: ClassificationAssignRequest = {};
+            const data: ClassificationAssignRequest = {
+                recalculate_fees: recalculateFees,
+            };
 
             if (!isDesign) {
-                data.ipc_classes = ipcClasses.map(ipc => ({
-                    section: ipc.section,
-                    class_code: ipc.class_code,
-                    subclass: ipc.subclass || undefined,
-                    group: ipc.group || undefined,
-                    subgroup: ipc.subgroup || undefined,
-                    label: ipc.label || undefined,
-                }));
+                data.ipc_classes = ipcClasses.map(ipc => {
+                    // Construct full IPC code from parts
+                    // Format: Section Class Subclass Group/Subgroup (e.g., A01B 1/00)
+                    const fullCode = `${ipc.section}${ipc.class_code}${ipc.subclass || ''} ${ipc.group || ''}/${ipc.subgroup || ''}`.trim();
+
+                    return {
+                        ipc_code: fullCode,
+                        section: ipc.section,
+                        class_code: ipc.class_code,
+                        subclass: ipc.subclass || undefined,
+                        group: ipc.group || undefined,
+                        subgroup: ipc.subgroup || undefined,
+                        label: ipc.label || undefined,
+                    };
+                });
             } else {
                 data.locarno_classes = locarnoClasses.map(loc => ({
-                    class_code: loc.class_code,
-                    subclass: loc.subclass || undefined,
-                    label: loc.label || undefined,
+                    class_no: loc.class_no,
+                    subclass_no: loc.subclass_no || undefined,
+                    field_of_use: loc.field_of_use || undefined,
                 }));
             }
 
@@ -214,18 +225,14 @@ const ClassificationAssignmentModal: React.FC<ClassificationAssignmentModalProps
                                                 {classification.ipc_classes.map((ipc, index) => (
                                                     <span
                                                         key={index}
-                                                        className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-medium ${
-                                                            ipc.assigned_by_type === 'STAFF'
+                                                        className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-medium ${ipc.assigned_by_type === 'STAFF'
                                                                 ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
                                                                 : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                                                        }`}
+                                                            }`}
                                                     >
-                                                        {ipc.section}{ipc.class_code}
-                                                        {ipc.subclass && `.${ipc.subclass}`}
-                                                        {ipc.group && `/${ipc.group}`}
-                                                        {ipc.subgroup && `:${ipc.subgroup}`}
+                                                        {ipc.ipc_code}
                                                         {ipc.assigned_by_type === 'STAFF' && (
-                                                            <span className="ml-1 text-purple-500">(Staff)</span>
+                                                            <span className="ml-1 text-purple-500">{t('staff.classification.assignedByStaff', '(Staff)')}</span>
                                                         )}
                                                     </span>
                                                 ))}
@@ -235,16 +242,15 @@ const ClassificationAssignmentModal: React.FC<ClassificationAssignmentModalProps
                                                 {classification.locarno_classes.map((loc, index) => (
                                                     <span
                                                         key={index}
-                                                        className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-medium ${
-                                                            loc.assigned_by_type === 'STAFF'
+                                                        className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-medium ${loc.assigned_by_type === 'STAFF'
                                                                 ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
                                                                 : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {loc.class_code}
                                                         {loc.subclass && `-${loc.subclass}`}
                                                         {loc.assigned_by_type === 'STAFF' && (
-                                                            <span className="ml-1 text-purple-500">(Staff)</span>
+                                                            <span className="ml-1 text-purple-500">{t('staff.classification.assignedByStaff', '(Staff)')}</span>
                                                         )}
                                                     </span>
                                                 ))}
@@ -258,205 +264,198 @@ const ClassificationAssignmentModal: React.FC<ClassificationAssignmentModalProps
                                 )}
 
                                 {/* Add new classes */}
-                                <div>
-                                    <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-                                        {t('staff.classification.addNew', 'Add Classification')}
-                                    </h4>
+                                {!hasClasses && (
+                                    <div>
+                                        <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                                            {t('staff.classification.addNew', 'Add Classification')}
+                                        </h4>
 
-                                    {!isDesign ? (
-                                        // IPC Form
-                                        <div className="space-y-3">
-                                            <div className="grid grid-cols-6 gap-2">
-                                                <div>
-                                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                                        {t('staff.classification.section', 'Section')}
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={newIpc.section}
-                                                        onChange={(e) => setNewIpc({ ...newIpc, section: e.target.value.toUpperCase() })}
-                                                        maxLength={1}
-                                                        className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
-                                                        placeholder="A"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                                        {t('staff.classification.classCode', 'Class')}
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={newIpc.class_code}
-                                                        onChange={(e) => setNewIpc({ ...newIpc, class_code: e.target.value })}
-                                                        maxLength={2}
-                                                        className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
-                                                        placeholder="01"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                                        {t('staff.classification.subclass', 'Subclass')}
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={newIpc.subclass || ''}
-                                                        onChange={(e) => setNewIpc({ ...newIpc, subclass: e.target.value.toUpperCase() })}
-                                                        maxLength={1}
-                                                        className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
-                                                        placeholder="B"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                                        {t('staff.classification.group', 'Group')}
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={newIpc.group || ''}
-                                                        onChange={(e) => setNewIpc({ ...newIpc, group: e.target.value })}
-                                                        maxLength={4}
-                                                        className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
-                                                        placeholder="1"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                                        {t('staff.classification.subgroup', 'Subgroup')}
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={newIpc.subgroup || ''}
-                                                        onChange={(e) => setNewIpc({ ...newIpc, subgroup: e.target.value })}
-                                                        maxLength={6}
-                                                        className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
-                                                        placeholder="00"
-                                                    />
-                                                </div>
-                                                <div className="flex items-end">
-                                                    <button
-                                                        type="button"
-                                                        onClick={handleAddIpc}
-                                                        disabled={!newIpc.section || !newIpc.class_code}
-                                                        className="w-full px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    >
-                                                        <span className="material-symbols-outlined !text-base">add</span>
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            {/* Added IPC classes */}
-                                            {ipcClasses.length > 0 && (
-                                                <div className="mt-3">
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-                                                        {t('staff.classification.classesToAdd', 'Classes to add:')}
-                                                    </p>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {ipcClasses.map((ipc, index) => (
-                                                            <span
-                                                                key={index}
-                                                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
-                                                            >
-                                                                {ipc.section}{ipc.class_code}
-                                                                {ipc.subclass && `.${ipc.subclass}`}
-                                                                {ipc.group && `/${ipc.group}`}
-                                                                {ipc.subgroup && `:${ipc.subgroup}`}
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => handleRemoveIpc(index)}
-                                                                    className="text-indigo-500 hover:text-indigo-700"
-                                                                >
-                                                                    <span className="material-symbols-outlined !text-sm">close</span>
-                                                                </button>
-                                                            </span>
-                                                        ))}
+                                        {!isDesign ? (
+                                            // IPC Form
+                                            <div className="space-y-3">
+                                                <div className="grid grid-cols-6 gap-2">
+                                                    <div>
+                                                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                            {t('staff.classification.section', 'Section')}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={newIpc.section}
+                                                            onChange={(e) => setNewIpc({ ...newIpc, section: e.target.value.toUpperCase() })}
+                                                            maxLength={1}
+                                                            className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
+                                                            placeholder="A"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                            {t('staff.classification.classCode', 'Class')}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={newIpc.class_code}
+                                                            onChange={(e) => setNewIpc({ ...newIpc, class_code: e.target.value })}
+                                                            maxLength={2}
+                                                            className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
+                                                            placeholder="01"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                            {t('staff.classification.subclass', 'Subclass')}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={newIpc.subclass || ''}
+                                                            onChange={(e) => setNewIpc({ ...newIpc, subclass: e.target.value.toUpperCase() })}
+                                                            maxLength={1}
+                                                            className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
+                                                            placeholder="B"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                            {t('staff.classification.group', 'Group')}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={newIpc.group || ''}
+                                                            onChange={(e) => setNewIpc({ ...newIpc, group: e.target.value })}
+                                                            maxLength={4}
+                                                            className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
+                                                            placeholder="1"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                            {t('staff.classification.subgroup', 'Subgroup')}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={newIpc.subgroup || ''}
+                                                            onChange={(e) => setNewIpc({ ...newIpc, subgroup: e.target.value })}
+                                                            maxLength={6}
+                                                            className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
+                                                            placeholder="00"
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-end">
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleAddIpc}
+                                                            disabled={!newIpc.section || !newIpc.class_code}
+                                                            className="w-full px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        >
+                                                            <span className="material-symbols-outlined !text-base">add</span>
+                                                        </button>
                                                     </div>
                                                 </div>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        // Locarno Form
-                                        <div className="space-y-3">
-                                            <div className="grid grid-cols-4 gap-2">
-                                                <div>
-                                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                                        {t('staff.classification.classCode', 'Class')}
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={newLocarno.class_code}
-                                                        onChange={(e) => setNewLocarno({ ...newLocarno, class_code: e.target.value })}
-                                                        maxLength={2}
-                                                        className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
-                                                        placeholder="01"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                                        {t('staff.classification.subclass', 'Subclass')}
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={newLocarno.subclass || ''}
-                                                        onChange={(e) => setNewLocarno({ ...newLocarno, subclass: e.target.value })}
-                                                        maxLength={2}
-                                                        className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
-                                                        placeholder="01"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                                        {t('staff.classification.label', 'Label')}
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={newLocarno.label || ''}
-                                                        onChange={(e) => setNewLocarno({ ...newLocarno, label: e.target.value })}
-                                                        className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
-                                                        placeholder="Description"
-                                                    />
-                                                </div>
-                                                <div className="flex items-end">
-                                                    <button
-                                                        type="button"
-                                                        onClick={handleAddLocarno}
-                                                        disabled={!newLocarno.class_code}
-                                                        className="w-full px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    >
-                                                        <span className="material-symbols-outlined !text-base">add</span>
-                                                    </button>
-                                                </div>
                                             </div>
-
-                                            {/* Added Locarno classes */}
-                                            {locarnoClasses.length > 0 && (
-                                                <div className="mt-3">
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-                                                        {t('staff.classification.classesToAdd', 'Classes to add:')}
-                                                    </p>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {locarnoClasses.map((loc, index) => (
-                                                            <span
-                                                                key={index}
-                                                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
-                                                            >
-                                                                {loc.class_code}
-                                                                {loc.subclass && `-${loc.subclass}`}
-                                                                {loc.label && ` (${loc.label})`}
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => handleRemoveLocarno(index)}
-                                                                    className="text-indigo-500 hover:text-indigo-700"
-                                                                >
-                                                                    <span className="material-symbols-outlined !text-sm">close</span>
-                                                                </button>
-                                                            </span>
-                                                        ))}
+                                        ) : (
+                                            // Locarno Form
+                                            <div className="space-y-3">
+                                                <div className="grid grid-cols-4 gap-2">
+                                                    <div>
+                                                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                            {t('staff.classification.classCode', 'Class')}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={newLocarno.class_no}
+                                                            onChange={(e) => setNewLocarno({ ...newLocarno, class_no: e.target.value })}
+                                                            maxLength={2}
+                                                            className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
+                                                            placeholder="01"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                            {t('staff.classification.subclass', 'Subclass')}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={newLocarno.subclass_no || ''}
+                                                            onChange={(e) => setNewLocarno({ ...newLocarno, subclass_no: e.target.value })}
+                                                            maxLength={2}
+                                                            className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
+                                                            placeholder="01"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                            {t('staff.classification.label', 'Label')}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={newLocarno.field_of_use || ''}
+                                                            onChange={(e) => setNewLocarno({ ...newLocarno, field_of_use: e.target.value })}
+                                                            className="w-full px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded text-sm dark:bg-slate-700 dark:text-white"
+                                                            placeholder="Description"
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-end">
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleAddLocarno}
+                                                            disabled={!newLocarno.class_no}
+                                                            className="w-full px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        >
+                                                            <span className="material-symbols-outlined !text-base">add</span>
+                                                        </button>
                                                     </div>
                                                 </div>
-                                            )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Added Classes List */}
+                                {(ipcClasses.length > 0 || locarnoClasses.length > 0) && (
+                                    <div className="mt-3">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+                                            {t('staff.classification.classesToAdd', 'Classes to add:')}
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {!isDesign ? ipcClasses.map((ipc, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
+                                                >
+                                                    {ipc.section}{ipc.class_code}
+                                                    {ipc.subclass && `.${ipc.subclass}`}
+                                                    {ipc.group && `/${ipc.group}`}
+                                                    {ipc.subgroup && `:${ipc.subgroup}`}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveIpc(index)}
+                                                        className="text-indigo-500 hover:text-indigo-700"
+                                                    >
+                                                        <span className="material-symbols-outlined !text-sm">close</span>
+                                                    </button>
+                                                </span>
+                                            )) : locarnoClasses.map((loc, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
+                                                >
+                                                    {loc.class_code}
+                                                    {loc.subclass && `-${loc.subclass}`}
+                                                    {loc.label && ` (${loc.label})`}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveLocarno(index)}
+                                                        className="text-indigo-500 hover:text-indigo-700"
+                                                    >
+                                                        <span className="material-symbols-outlined !text-sm">close</span>
+                                                    </button>
+                                                </span>
+                                            ))}
                                         </div>
-                                    )}
-                                </div>
+                                        <p className="text-xs text-slate-500 mt-2 italic">
+                                            {t('staff.classification.singleClassLimit', 'Only one classification can be assigned per application.')}
+                                        </p>
+                                    </div>
+                                )}
 
                                 {/* Error message */}
                                 {error && (

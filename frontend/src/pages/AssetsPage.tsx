@@ -11,7 +11,7 @@ import { AppTypeLabels } from '../features/application/types/enums';
 import type { Application } from '../features/application/types/applicationTypes';
 
 const AssetsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useAppDispatch();
   const { ownedTitles, licensedTitles, loading, error, activeTab } = useAppSelector(
     (state) => state.title
@@ -51,7 +51,8 @@ const AssetsPage: React.FC = () => {
   // Format date
   const formatDate = (date: string | null | undefined): string => {
     if (!date) return '-';
-    return new Date(date).toLocaleDateString('vi-VN');
+    const locale = i18n.language === 'vi' ? 'vi-VN' : 'en-US';
+    return new Date(date).toLocaleDateString(locale);
   };
 
   // Get status badge color
@@ -104,11 +105,10 @@ const AssetsPage: React.FC = () => {
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => dispatch(setActiveTab('owned'))}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'owned'
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'owned'
                   ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300'
-              }`}
+                }`}
             >
               <span className="flex items-center gap-2">
                 <span className="material-symbols-outlined !text-lg">verified</span>
@@ -120,11 +120,10 @@ const AssetsPage: React.FC = () => {
             </button>
             <button
               onClick={() => dispatch(setActiveTab('licensed'))}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'licensed'
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'licensed'
                   ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300'
-              }`}
+                }`}
             >
               <span className="flex items-center gap-2">
                 <span className="material-symbols-outlined !text-lg">license</span>
@@ -161,13 +160,13 @@ const AssetsPage: React.FC = () => {
           <p className="text-slate-500 dark:text-slate-400 max-w-md">
             {activeTab === 'owned'
               ? t(
-                  'assets.empty.owned.description',
-                  'Your granted intellectual property titles will appear here once your applications are approved.'
-                )
+                'assets.empty.owned.description',
+                'Your granted intellectual property titles will appear here once your applications are approved.'
+              )
               : t(
-                  'assets.empty.licensed.description',
-                  'Titles that others have licensed to you will appear here.'
-                )}
+                'assets.empty.licensed.description',
+                'Titles that others have licensed to you will appear here.'
+              )}
           </p>
         </div>
       )}
@@ -199,8 +198,13 @@ const AssetsPage: React.FC = () => {
                 {currentTitles.map((app) => {
                   const protectionTitle = app.protection_title;
                   const licenseInfo = activeTab === 'licensed' ? getLicenseInfo(app) : null;
-                  const expiryWarning = isExpiryWarning(protectionTitle?.expiry_date);
-                  const expired = isExpired(protectionTitle?.expiry_date);
+                  const expiryDate = app.expiry_date || protectionTitle?.expiry_date;
+                  const issueDate = app.issue_date || protectionTitle?.issue_date;
+                  const regNumber = app.registration_number || protectionTitle?.registration_number || app.filing_number || '-';
+                  const titleStatus = protectionTitle?.status || 'ACTIVE'; // Fallback to ACTIVE if no protection title status
+
+                  const expiryWarning = isExpiryWarning(expiryDate);
+                  const expired = isExpired(expiryDate);
 
                   return (
                     <tr
@@ -208,7 +212,7 @@ const AssetsPage: React.FC = () => {
                       className="bg-white dark:bg-[#111521] border-b dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
                     >
                       <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">
-                        {protectionTitle?.registration_number || app.filing_number || '-'}
+                        {regNumber}
                       </td>
                       <td className="px-6 py-4 max-w-xs truncate" title={app.title}>
                         {app.title}
@@ -218,18 +222,17 @@ const AssetsPage: React.FC = () => {
                           {AppTypeLabels[app.app_type] || app.app_type}
                         </span>
                       </td>
-                      <td className="px-6 py-4">{formatDate(protectionTitle?.issue_date)}</td>
+                      <td className="px-6 py-4">{formatDate(issueDate)}</td>
                       <td
-                        className={`px-6 py-4 font-medium ${
-                          expired
+                        className={`px-6 py-4 font-medium ${expired
                             ? 'text-red-600 dark:text-red-400'
                             : expiryWarning
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : ''
-                        }`}
+                              ? 'text-amber-600 dark:text-amber-400'
+                              : ''
+                          }`}
                       >
                         <span className="flex items-center gap-1">
-                          {formatDate(protectionTitle?.expiry_date)}
+                          {formatDate(expiryDate)}
                           {expiryWarning && (
                             <span
                               className="material-symbols-outlined !text-base"
@@ -283,10 +286,10 @@ const AssetsPage: React.FC = () => {
                       <td className="px-6 py-4">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(
-                            protectionTitle?.status
+                            titleStatus
                           )}`}
                         >
-                          {protectionTitle?.status || 'ACTIVE'}
+                          {titleStatus}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">

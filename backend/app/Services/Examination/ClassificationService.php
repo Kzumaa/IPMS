@@ -148,7 +148,7 @@ class ClassificationService
         // Get the current unpaid fee quote
         $currentQuote = $application->feeQuotes()
             ->whereIn('status', ['DRAFT', 'FINAL', 'PENDING'])
-            ->latest()
+            ->latest('generated_at')
             ->first();
 
         if (!$currentQuote) {

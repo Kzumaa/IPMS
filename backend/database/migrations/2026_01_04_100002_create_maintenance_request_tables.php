@@ -24,7 +24,6 @@ return new class extends Migration
         Schema::create('request_terminations', function (Blueprint $table) {
             $table->foreignId('request_id')->primary()->constrained('application_requests')->cascadeOnDelete();
             $table->text('reason')->nullable(); // Optional reason for termination
-            $table->date('effective_date'); // When termination takes effect
             $table->timestamps();
         });
     }

@@ -50,6 +50,7 @@ class FeeRulesSeeder extends Seeder
             ['fee_code' => 'ID-GRANT-CERT-ADD-VARIANT', 'expression' => 'max(0, id_variants-1)', 'metric_keys' => 'id_variants', 'notes' => 'Phương án bổ sung', 'law_version' => $law],
             ['fee_code' => 'ID-PUBLICATION-GRANT-BASE', 'expression' => '1', 'metric_keys' => null, 'notes' => 'Hình đầu tiên', 'law_version' => $law],
             ['fee_code' => 'ID-PUBLICATION-GRANT-ADDL-IMAGE', 'expression' => 'max(0, id_variants*id_images_per_variant - 1)', 'metric_keys' => 'id_variants,id_images_per_variant', 'notes' => 'Tổng hình = variants * images/variant', 'law_version' => $law],
+            ['fee_code' => 'ID-REQ-RENEWAL', 'expression' => 'id_variants', 'metric_keys' => 'id_variants', 'notes' => 'Lệ phí gia hạn hiệu lực: 100.000 đồng/phương án', 'law_version' => $law],
         ];
 
 

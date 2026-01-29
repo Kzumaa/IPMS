@@ -29,13 +29,15 @@ const StaffLayout: React.FC = () => {
         const breadcrumbs: { label: string; href?: string; active?: boolean }[] = [{ label: t('staff.nav.staff'), href: '/staff' }];
 
         if (path.includes('dashboard')) {
-            breadcrumbs.push({ label: t('staff.dashboard.title'), active: true });
+            breadcrumbs.push({ label: t('staff.nav.reports'), active: true });
+        } else if (path.includes('published')) {
+            breadcrumbs.push({ label: t('staff.nav.publishedApplications'), active: true });
         } else if (path.includes('applications')) {
             if (path.includes('assigned')) {
                 breadcrumbs.push({ label: t('staff.applications.assigned'), active: true });
             } else if (path.length > 2) {
                 // Specific application detail
-                breadcrumbs.push({ label: t('staff.applications.title'), href: '/staff/applications' });
+                breadcrumbs.push({ label: t('staff.nav.publishedApplications'), href: '/staff/published' });
                 breadcrumbs.push({ label: `#${path[2]}`, active: true });
             } else {
                 breadcrumbs.push({ label: t('staff.applications.title'), active: true });
@@ -48,8 +50,6 @@ const StaffLayout: React.FC = () => {
             } else {
                 breadcrumbs.push({ label: t('staff.nav.requests'), active: true });
             }
-        } else if (path.includes('reports')) {
-            breadcrumbs.push({ label: t('staff.nav.reports'), active: true });
         }
 
         return breadcrumbs;
@@ -70,13 +70,13 @@ const StaffLayout: React.FC = () => {
 
                     <div className="flex flex-col gap-1 mt-4">
                         <NavLink to="/staff/dashboard" className={({ isActive }) => getNavLinkClass(isActive)}>
-                            <span className="material-symbols-outlined">dashboard</span>
-                            <p className="text-sm font-medium leading-normal">{t('staff.nav.dashboard')}</p>
+                            <span className="material-symbols-outlined">bar_chart</span>
+                            <p className="text-sm font-medium leading-normal">{t('staff.nav.reports')}</p>
                         </NavLink>
 
-                        <NavLink to="/staff/applications" className={({ isActive }) => getNavLinkClass(isActive)}>
-                            <span className="material-symbols-outlined">description</span>
-                            <p className="text-sm font-medium leading-normal">{t('staff.nav.allApplications')}</p>
+                        <NavLink to="/staff/published" className={({ isActive }) => getNavLinkClass(isActive)}>
+                            <span className="material-symbols-outlined">public</span>
+                            <p className="text-sm font-medium leading-normal">{t('staff.nav.publishedApplications')}</p>
                         </NavLink>
 
                         <NavLink to="/staff/applications/assigned" className={({ isActive }) => getNavLinkClass(isActive)}>
@@ -87,11 +87,6 @@ const StaffLayout: React.FC = () => {
                         <NavLink to="/staff/requests" className={({ isActive }) => getNavLinkClass(isActive)}>
                             <span className="material-symbols-outlined">pending_actions</span>
                             <p className="text-sm font-medium leading-normal">{t('staff.nav.requests')}</p>
-                        </NavLink>
-
-                        <NavLink to="/staff/reports" className={({ isActive }) => getNavLinkClass(isActive)}>
-                            <span className="material-symbols-outlined">bar_chart</span>
-                            <p className="text-sm font-medium leading-normal">{t('staff.nav.reports')}</p>
                         </NavLink>
                     </div>
                 </div>

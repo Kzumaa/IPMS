@@ -5,8 +5,6 @@ import type {
   TransferType,
   LicenseType,
   ComplaintResolution,
-  AppealType,
-  AppealResolution,
 } from './enums';
 
 // User reference
@@ -84,18 +82,6 @@ export interface LicenseDetail {
   licensees?: UserRef[];
 }
 
-// Appeal Detail (deprecated - use ComplaintDetail)
-export interface AppealDetail {
-  appeal_type: AppealType;
-  appeal_type_label: string;
-  grounds: string;
-  deadline: string;
-  is_within_deadline: boolean;
-  resolved_at?: string;
-  resolution?: AppealResolution;
-  resolution_label?: string;
-}
-
 // Complaint Detail (replaces Appeal per SRS Section 3.2)
 export interface ComplaintDetail {
   grounds: string;
@@ -148,7 +134,6 @@ export interface ApplicationRequest {
   amendment?: AmendmentDetail;
   assignment?: AssignmentDetail;
   license?: LicenseDetail;
-  appeal?: AppealDetail; // Deprecated - use complaint
   complaint?: ComplaintDetail;
   renewal?: RenewalDetail;
   termination?: TerminationDetail;
@@ -199,13 +184,6 @@ export interface CreateLicenseDTO {
 
 export interface CreateSplitDTO {
   split_description: string;
-}
-
-export interface CreateAppealDTO {
-  target_decision_id?: number;
-  target_event_id?: number;
-  notice_date?: string;
-  grounds: string;
 }
 
 export interface CreateComplaintDTO {

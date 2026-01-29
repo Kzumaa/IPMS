@@ -81,7 +81,16 @@
     },
     "dashboard": {
         "title": "IPMS",
-        "subtitle": "",
+        "subtitle": "Overview of your IP portfolio and recent activities",
+        "activeApplications": "Active Applications",
+        "inProgressApplications": "In Progress",
+        "grantedCount": "{{count}} granted",
+        "totalLabel": "{{count}} total",
+        "upcomingDeadlines": "Upcoming Deadlines",
+        "noDeadlines": "No upcoming deadlines",
+        "recentActivity": "Recent Activity",
+        "noRecentActivity": "No recent activity to display",
+        "viewAllActivity": "View All Activity",
         "nav": {
             "dashboard": "Dashboard",
             "myApplications": "My Applications",
@@ -175,8 +184,12 @@
                 "typeLabel": "Priority Type",
                 "types": {
                     "vnFirst": "VN First Filing (Based on a previous VN application)",
+                    "vn_first": "VN First Filing (Based on a previous VN application)",
+                    "VN_FIRST": "VN First Filing (Based on a previous VN application)",
                     "paris": "Paris Convention Priority",
-                    "other": "Other International Agreement"
+                    "PARIS": "Paris Convention Priority",
+                    "other": "Other International Agreement",
+                    "OTHER": "Other International Agreement"
                 },
                 "number": "Priority Number",
                 "numberPlaceholder": "Priority number",
@@ -368,7 +381,11 @@
                     "missingPriorityDoc": "Missing priority document (required for priority claim)",
                     "missingPOA": "Missing power of attorney (required when using representative)",
                     "missingMetrics": "Application metrics required",
-                    "missingFees": "Fee calculation required"
+                    "missingFees": "Fee calculation required",
+                    "minApplicant": "At least one applicant is required",
+                    "maxApplicant": "Maximum 3 applicants (1 primary + 2 others)",
+                    "minInventor": "At least one inventor is required",
+                    "maxInventor": "Maximum 3 inventors"
                 }
             }
         },
@@ -389,7 +406,10 @@
             "WITHDRAWN": "Withdrawn",
             "WAITING_RESPONSE": "Waiting for Applicant Response",
             "FORMALITY_PASSED": "Formality Exam Passed",
-            "COMPLAINING": "Under Complaint"
+            "COMPLAINING": "Under Complaint",
+            "TERMINATED": "Terminated",
+            "WAITING_FOR_PAYMENT": "Waiting for Payment",
+            "UNDER_AMENDMENT": "Under Amendment"
         },
         "partyTypes": {
             "APPLICANT": "Applicant",
@@ -449,7 +469,9 @@
         "loading": "Loading...",
         "noData": "No data",
         "actions": "Actions",
-        "backToDashboard": "Back to Dashboard"
+        "backToDashboard": "Back to Dashboard",
+        "valid": "Valid",
+        "missing": "Missing"
     },
     "pdfViewer": {
         "loadError": "Failed to Load PDF",
@@ -466,7 +488,8 @@
             "myApplications": "My Applications",
             "dashboard": "Dashboard",
             "requests": "Requests",
-            "reports": "Reports"
+            "reports": "Reports & Statistics",
+            "publishedApplications": "Published Applications"
         },
         "common": {
             "error": "Error"
@@ -480,11 +503,17 @@
             "pendingSubstantiveExam": "Pending Substantive Exam",
             "applicationsByStatus": "Applications by Status",
             "applicationsByType": "Applications by Type",
+            "applicationsByClass": "Applications by Classification",
+            "count": "Count",
             "quickActions": "Quick Actions",
             "allApplications": "All Applications",
             "allApplicationsDesc": "View all applications in the system",
             "myApplications": "My Applications",
             "myApplicationsDesc": "View applications assigned to me",
+            "publishedApplications": "Published Applications",
+            "publishedApplicationsDesc": "View applications that have been published",
+            "requests": "Requests",
+            "requestsDesc": "View pending requests to process",
             "reports": "Reports",
             "reportsDesc": "Generate and view reports",
             "loadingDashboard": "Loading dashboard...",
@@ -497,6 +526,8 @@
         },
         "applications": {
             "title": "All Applications",
+            "publishedTitle": "Published Applications",
+            "publishedSubtitle": "Applications that have been published and are available for public search",
             "myAssigned": "My Assigned Applications",
             "subtitle": "All applications in the system",
             "myAssignedSubtitle": "Applications assigned to you for examination",
@@ -509,6 +540,7 @@
             "type": "Type",
             "status": "Status",
             "filingDate": "Filing Date",
+            "publishedDate": "Published Date",
             "actions": "Actions",
             "viewDetails": "View Details",
             "showing": "Showing {{count}} of {{total}} applications",
@@ -541,7 +573,6 @@
             "startExamination": "Start Examination",
             "approve": "Approve",
             "refuse": "Refuse",
-            "resolveAppeal": "Resolve Appeal",
             "resolveComplaint": "Resolve Complaint",
             "resolve": "Resolve",
             "complaintAcceptedInfo": "Accepting the complaint will revert the application to the previous examination stage for re-examination.",
@@ -593,7 +624,32 @@
             "designDescriptionExists": "Design description attached",
             "notAllRequirementsMet": "Warning: Not all required items are checked",
             "requiredForFail": "(Required for FAIL result)",
-            "failNotesGuidance": "Please specify which documents are missing or what corrections are needed."
+            "failNotesGuidance": "Please specify which documents are missing or what corrections are needed.",
+            "missingClassification": "Classification required"
+        },
+        "classification": {
+            "title": "Classification",
+            "modify": "Modify Class",
+            "assignButton": "Assign Class",
+            "assignedByStaff": "(Staff)",
+            "singleClassLimit": "Only one classification can be assigned per application.",
+            "recalculateFeesDesc": "If checked, the system will check for any additional fees associated with classification changes (e.g. staff classification fee).",
+            "classesToAdd": "Classes to add:",
+            "recalculateFees": "Recalculate Fees",
+            "loadError": "Failed to load classification data",
+            "assignError": "Failed to assign classification",
+            "currentClasses": "Current Classification",
+            "noClasses": "No classification assigned yet",
+            "addNew": "Add Classification",
+            "section": "Section",
+            "classCode": "Class",
+            "subclass": "Subclass",
+            "group": "Group",
+            "subgroup": "Subgroup",
+            "label": "Label",
+            "locarnoInfo": "Assign Locarno classification codes for this industrial design application.",
+            "ipcInfo": "Assign IPC (International Patent Classification) codes for this patent/utility application.",
+            "assign": "Assign Classification"
         },
         "contentCheck": {
             "title": "Substantive Examination (Content Check)",
@@ -689,7 +745,8 @@
         "createAssignment": "Create Assignment Request",
         "createLicense": "Create License Request",
         "createSplit": "Create Split Request",
-        "createAppeal": "Create Appeal",
+        "createRenewal": "Create Renewal Request",
+        "createTermination": "Create Termination Request",
         "submit": "Submit Request",
         "detail": "Request Detail",
         "loadError": "Unable to load request information",
@@ -715,11 +772,22 @@
             "LICENSE": "License",
             "SPLIT": "Split",
             "CONVERSION": "Conversion",
-            "APPEAL": "Appeal",
             "COMPLAINT": "Complaint",
             "RENEWAL": "Renewal",
             "TERMINATION": "Termination",
             "WITHDRAWAL": "Withdrawal"
+        },
+        "renewal": {
+            "notGranted": "Renewal Not Available",
+            "notGrantedDesc": "Renewal requests can only be created for applications that have been granted. Current status: {{status}}",
+            "renewTitle": "Renew"
+        },
+        "termination": {
+            "details": "Termination Details",
+            "reason": "Reason for Termination",
+            "notGranted": "Termination Not Available",
+            "notGrantedDesc": "Termination requests can only be created for applications that have been granted. Current status: {{status}}",
+            "terminateTitle": "Terminate"
         },
         "statuses": {
             "DRAFT": "Draft",
@@ -797,33 +865,6 @@
             "infoTitle": "Split Application Note",
             "infoDescription": "Split requests are used when the original application contains multiple independent inventions/designs and needs to be separated into distinct applications."
         },
-        "appeal": {
-            "details": "Appeal Details",
-            "type": "Appeal Type",
-            "types": {
-                "DECISION_APPEAL": "Decision Appeal",
-                "NOTICE_OBJECTION": "Notice Objection"
-            },
-            "targetDecision": "Target Decision",
-            "targetDecisionPlaceholder": "Decision ID",
-            "targetEvent": "Target Event",
-            "targetEventPlaceholder": "Event ID",
-            "noticeDate": "Notice Date",
-            "noticeDateHelp": "The date you received the notice/decision to appeal",
-            "grounds": "Appeal Grounds",
-            "groundsPlaceholder": "Present detailed grounds for appeal, including legal basis and evidence...",
-            "deadline": "Appeal Deadline",
-            "resolution": "Resolution",
-            "resolutions": {
-                "UPHELD": "Decision Upheld",
-                "OVERTURNED": "Decision Overturned",
-                "PARTIAL": "Partially Modified",
-                "WITHDRAWN": "Appeal Withdrawn"
-            },
-            "resolvedAt": "Resolved Date",
-            "deadlineWarning": "Appeal Deadline",
-            "deadlineWarningDesc": "Appeals must be filed within 90 days from the date of receiving the notice/decision."
-        },
         "complaint": {
             "details": "Complaint Details",
             "number": "Complaint Number",
@@ -899,6 +940,95 @@
             "PARTIALLY_REFUNDED": "Partially Refunded",
             "EXPIRED": "Expired",
             "PAID": "Paid"
+        },
+        "pageDescription": "Track and pay your IP application and maintenance fees.",
+        "transactions": "transactions",
+        "feeItems": "fee items"
+    },
+    "assets": {
+        "title": "My IP Assets",
+        "description": "View and manage your granted intellectual property rights.",
+        "tabs": {
+            "myTitles": "My Titles",
+            "licensedToMe": "Licensed to Me"
+        },
+        "table": {
+            "registrationNumber": "Registration No.",
+            "title": "Title",
+            "type": "Type",
+            "issueDate": "Issue Date",
+            "expiryDate": "Expiry Date",
+            "licenseInfo": "License Info",
+            "status": "Status"
+        },
+        "empty": {
+            "owned": {
+                "title": "No granted titles yet",
+                "description": "Your granted intellectual property titles will appear here once your applications are approved."
+            },
+            "licensed": {
+                "title": "No licensed titles yet",
+                "description": "Titles that others have licensed to you will appear here."
+            }
+        },
+        "expiryWarning": "Expiring soon",
+        "expired": "Expired",
+        "createLicense": "Create License",
+        "license": {
+            "type": "Type",
+            "exclusive": "Exclusive",
+            "nonExclusive": "Non-Exclusive",
+            "validUntil": "Valid until",
+            "from": "From"
+        }
+    },
+    "amendment": {
+        "title": "Amend",
+        "pageTitle": "Amend Application",
+        "pageDescription": "Make changes to your application. All changes will be reviewed by staff before being applied.",
+        "success": "Amendment request submitted successfully.",
+        "errors": {
+            "title": "Cannot Amend Application",
+            "hasPending": "This application already has a pending amendment request.",
+            "loadFailed": "Failed to load amendment data.",
+            "submitFailed": "Failed to submit amendment.",
+            "noData": "No amendment data available"
+        }
+    },
+    "patents": {
+        "title": "Patents",
+        "newPatent": "New Patent",
+        "searchPlaceholder": "Search patents...",
+        "statusAll": "Status: All",
+        "inventor": "Inventor",
+        "filingDate": "Filing Date",
+        "moreFilters": "More Filters",
+        "table": {
+            "patentNo": "Patent No.",
+            "title": "Title",
+            "filingDate": "Filing Date",
+            "status": "Status",
+            "inventors": "Inventor(s)"
+        },
+        "statuses": {
+            "Granted": "Granted",
+            "Pending": "Pending",
+            "Abandoned": "Abandoned",
+            "Rejected": "Rejected"
+        },
+        "breadcrumbs": {
+            "home": "Home",
+            "ipAssets": "IP Assets",
+            "patents": "Patents"
+        },
+        "globalSearch": "Global Search...",
+        "pagination": {
+            "showing": "Showing",
+            "to": "to",
+            "of": "of",
+            "results": "results",
+            "previous": "Previous",
+            "next": "Next"
         }
     }
 }

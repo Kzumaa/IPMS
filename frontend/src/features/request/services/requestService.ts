@@ -7,7 +7,6 @@ import type {
   CreateAssignmentDTO,
   CreateLicenseDTO,
   CreateSplitDTO,
-  CreateAppealDTO,
   CreateComplaintDTO,
   CreateRenewalDTO,
   CreateTerminationDTO,
@@ -119,31 +118,6 @@ export const requestService = {
 
   async submitSplit(applicationId: number, requestId: number): Promise<ApiResponse<ApplicationRequest>> {
     const response = await axiosClient.post(`${BASE_URL}/${applicationId}/requests/splits/${requestId}/submit`);
-    return response.data;
-  },
-
-  // ==================== APPEAL ====================
-  async getAppeals(applicationId: number): Promise<ApiResponse<ApplicationRequest[]>> {
-    const response = await axiosClient.get(`${BASE_URL}/${applicationId}/requests/appeals`);
-    return response.data;
-  },
-
-  async getAppeal(applicationId: number, requestId: number): Promise<ApiResponse<ApplicationRequest>> {
-    const response = await axiosClient.get(`${BASE_URL}/${applicationId}/requests/appeals/${requestId}`);
-    return response.data;
-  },
-
-  async createAppeal(applicationId: number, data: CreateAppealDTO): Promise<ApiResponse<ApplicationRequest>> {
-    const response = await axiosClient.post(`${BASE_URL}/${applicationId}/requests/appeals`, data);
-    return response.data;
-  },
-
-  async deleteAppeal(applicationId: number, requestId: number): Promise<void> {
-    await axiosClient.delete(`${BASE_URL}/${applicationId}/requests/appeals/${requestId}`);
-  },
-
-  async submitAppeal(applicationId: number, requestId: number): Promise<ApiResponse<ApplicationRequest>> {
-    const response = await axiosClient.post(`${BASE_URL}/${applicationId}/requests/appeals/${requestId}/submit`);
     return response.data;
   },
 

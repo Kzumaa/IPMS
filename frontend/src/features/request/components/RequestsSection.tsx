@@ -8,14 +8,12 @@ import {
   deleteAssignment,
   deleteLicense,
   deleteSplit,
-  deleteAppeal,
   deleteWithdrawal,
   deleteComplaint,
   submitAmendment,
   submitAssignment,
   submitLicense,
   submitSplit,
-  submitAppeal,
   submitWithdrawal,
   submitComplaint,
 } from '../store/requestSlice';
@@ -29,8 +27,6 @@ interface RequestsSectionProps {
   canAddRequest?: boolean;
 }
 
-// Maximum appeals allowed per decision
-const MAX_APPEALS = 3;
 // Maximum complaints allowed per application
 const MAX_COMPLAINTS = 3;
 
@@ -52,7 +48,6 @@ const RequestsSection: React.FC<RequestsSectionProps> = ({ applicationId, applic
       ASSIGNMENT: deleteAssignment,
       LICENSE: deleteLicense,
       SPLIT: deleteSplit,
-      APPEAL: deleteAppeal,
       WITHDRAWAL: deleteWithdrawal,
       COMPLAINT: deleteComplaint,
     };
@@ -71,7 +66,6 @@ const RequestsSection: React.FC<RequestsSectionProps> = ({ applicationId, applic
       ASSIGNMENT: submitAssignment,
       LICENSE: submitLicense,
       SPLIT: submitSplit,
-      APPEAL: submitAppeal,
       WITHDRAWAL: submitWithdrawal,
       COMPLAINT: submitComplaint,
     };
@@ -83,21 +77,6 @@ const RequestsSection: React.FC<RequestsSectionProps> = ({ applicationId, applic
   };
 
   const canCreateRequests = applicationStatus !== 'DRAFT' && canAddRequest;
-
-  // Calculate appeal count for validation
-  const appealCount = useMemo(() => {
-    return requests.filter((r) => r.type === 'APPEAL').length;
-  }, [requests]);
-
-  const remainingAppeals = MAX_APPEALS - appealCount;
-
-  // Statuses that can appeal (after a refusal decision)
-  const appealableStatuses: string[] = [
-    ApplicationStatus.REFUSED,
-    ApplicationStatus.APPEAL_PENDING,
-    ApplicationStatus.APPEAL_EXAMINING,
-  ];
-  const canAppeal = remainingAppeals > 0 && appealableStatuses.includes(applicationStatus);
 
   // Calculate complaint count for validation
   const complaintCount = useMemo(() => {
@@ -163,13 +142,6 @@ const RequestsSection: React.FC<RequestsSectionProps> = ({ applicationId, applic
     if (canSplit) {
       types.push({ type: 'splits', label: t('request.types.SPLIT'), icon: 'call_split' });
     }
-    if (canAppeal) {
-      types.push({
-        type: 'appeals',
-        label: `${t('request.types.APPEAL')} (${remainingAppeals}/${MAX_APPEALS})`,
-        icon: 'gavel',
-      });
-    }
     if (canWithdraw) {
       types.push({
         type: 'withdrawals',
@@ -186,7 +158,7 @@ const RequestsSection: React.FC<RequestsSectionProps> = ({ applicationId, applic
     }
 
     return types;
-  }, [canAmend, canAssign, canLicense, canSplit, canAppeal, canWithdraw, canComplain, remainingAppeals, remainingComplaints, t]);
+  }, [canAmend, canAssign, canLicense, canSplit, canWithdraw, canComplain, remainingComplaints, t]);
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">

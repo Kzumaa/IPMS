@@ -47,18 +47,12 @@ class TerminationController extends Controller
 
         $validated = $request->validate([
             'reason' => 'nullable|string|max:2000',
-            'effective_date' => 'nullable|date|after_or_equal:today',
         ]);
-
-        $effectiveDate = isset($validated['effective_date'])
-            ? Carbon::parse($validated['effective_date'])
-            : null;
 
         $terminationRequest = $this->terminationService->createTermination(
             $application,
             Auth::id(),
-            $validated['reason'] ?? null,
-            $effectiveDate
+            $validated['reason'] ?? null
         );
 
         return response()->json([
@@ -100,15 +94,11 @@ class TerminationController extends Controller
 
         $validated = $request->validate([
             'reason' => 'nullable|string|max:2000',
-            'effective_date' => 'nullable|date|after_or_equal:today',
         ]);
 
         $updateData = [];
         if (array_key_exists('reason', $validated)) {
             $updateData['reason'] = $validated['reason'];
-        }
-        if (isset($validated['effective_date'])) {
-            $updateData['effective_date'] = Carbon::parse($validated['effective_date'])->toDateString();
         }
 
         $terminationRequest->termination->update($updateData);

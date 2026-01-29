@@ -128,33 +128,3 @@ export const ComplaintResolutionLabels: Record<ComplaintResolution, string> = {
   ACCEPTED: 'Chấp nhận khiếu nại',
   REJECTED: 'Từ chối khiếu nại',
 };
-
-// Deprecated: Keep for backwards compatibility during migration
-// TODO: Remove after all code is migrated
-export const AppealType = {
-  DECISION_APPEAL: 'DECISION_APPEAL',
-  NOTICE_OBJECTION: 'NOTICE_OBJECTION',
-} as const;
-
-export type AppealType = (typeof AppealType)[keyof typeof AppealType];
-
-export const AppealTypeLabels: Record<AppealType, string> = {
-  DECISION_APPEAL: 'Khiếu nại quyết định',
-  NOTICE_OBJECTION: 'Phản đối thông báo',
-};
-
-export const AppealResolution = {
-  UPHELD: 'UPHELD',
-  OVERTURNED: 'OVERTURNED',
-  PARTIAL: 'PARTIAL',
-  WITHDRAWN: 'WITHDRAWN',
-} as const;
-
-export type AppealResolution = (typeof AppealResolution)[keyof typeof AppealResolution];
-
-export const AppealResolutionLabels: Record<AppealResolution, string> = {
-  UPHELD: 'Giữ nguyên quyết định',
-  OVERTURNED: 'Hủy bỏ quyết định',
-  PARTIAL: 'Chấp nhận một phần',
-  WITHDRAWN: 'Rút khiếu nại',
-};

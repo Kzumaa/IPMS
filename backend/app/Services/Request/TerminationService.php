@@ -52,18 +52,18 @@ class TerminationService extends BaseRequestService
     public function createTermination(
         Application $application,
         int $userId,
-        ?string $reason = null,
-        ?Carbon $effectiveDate = null
+        ?string $reason = null
     ): ApplicationRequest {
-        $effectiveDate = $effectiveDate ?? Carbon::now();
-
-        return DB::transaction(function () use ($application, $userId, $reason, $effectiveDate) {
-            $request = $this->createRequest($application, $userId);
+        return DB::transaction(function () use ($application, $userId, $reason) {
+            // Auto-submit the request (skip DRAFT)
+            $request = $this->createRequest($application, $userId, [
+                'status' => \App\Enums\RequestStatus::SUBMITTED,
+                'request_date' => now()->toDateString(),
+            ]);
 
             RequestTermination::create([
                 'request_id' => $request->id,
                 'reason' => $reason,
-                'effective_date' => $effectiveDate->toDateString(),
             ]);
 
             $this->generateFeeQuote($request);
@@ -78,15 +78,9 @@ class TerminationService extends BaseRequestService
     protected function applyApprovalChanges(ApplicationRequest $request): void
     {
         $application = $request->application;
-        $protectionTitle = $application->protectionTitle;
 
         // Update application status to TERMINATED
         $application->update(['status' => ApplicationStatus::TERMINATED]);
-
-        // Update protection title status if it exists
-        if ($protectionTitle) {
-            $protectionTitle->update(['status' => 'TERMINATED']);
-        }
     }
 
     /**
