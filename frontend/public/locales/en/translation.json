@@ -175,8 +175,12 @@
                 "typeLabel": "Priority Type",
                 "types": {
                     "vnFirst": "VN First Filing (Based on a previous VN application)",
+                    "vn_first": "VN First Filing (Based on a previous VN application)",
+                    "VN_FIRST": "VN First Filing (Based on a previous VN application)",
                     "paris": "Paris Convention Priority",
-                    "other": "Other International Agreement"
+                    "PARIS": "Paris Convention Priority",
+                    "other": "Other International Agreement",
+                    "OTHER": "Other International Agreement"
                 },
                 "number": "Priority Number",
                 "numberPlaceholder": "Priority number",
@@ -368,7 +372,11 @@
                     "missingPriorityDoc": "Missing priority document (required for priority claim)",
                     "missingPOA": "Missing power of attorney (required when using representative)",
                     "missingMetrics": "Application metrics required",
-                    "missingFees": "Fee calculation required"
+                    "missingFees": "Fee calculation required",
+                    "minApplicant": "At least one applicant is required",
+                    "maxApplicant": "Maximum 3 applicants (1 primary + 2 others)",
+                    "minInventor": "At least one inventor is required",
+                    "maxInventor": "Maximum 3 inventors"
                 }
             }
         },
@@ -389,7 +397,8 @@
             "WITHDRAWN": "Withdrawn",
             "WAITING_RESPONSE": "Waiting for Applicant Response",
             "FORMALITY_PASSED": "Formality Exam Passed",
-            "COMPLAINING": "Under Complaint"
+            "COMPLAINING": "Under Complaint",
+            "WAITING_FOR_PAYMENT": "Waiting for Payment"
         },
         "partyTypes": {
             "APPLICANT": "Applicant",
@@ -449,7 +458,9 @@
         "loading": "Loading...",
         "noData": "No data",
         "actions": "Actions",
-        "backToDashboard": "Back to Dashboard"
+        "backToDashboard": "Back to Dashboard",
+        "valid": "Valid",
+        "missing": "Missing"
     },
     "pdfViewer": {
         "loadError": "Failed to Load PDF",
@@ -592,7 +603,32 @@
             "designDescriptionExists": "Design description attached",
             "notAllRequirementsMet": "Warning: Not all required items are checked",
             "requiredForFail": "(Required for FAIL result)",
-            "failNotesGuidance": "Please specify which documents are missing or what corrections are needed."
+            "failNotesGuidance": "Please specify which documents are missing or what corrections are needed.",
+            "missingClassification": "Classification required"
+        },
+        "classification": {
+            "title": "Classification",
+            "modify": "Modify Class",
+            "assignButton": "Assign Class",
+            "assignedByStaff": "(Staff)",
+            "singleClassLimit": "Only one classification can be assigned per application.",
+            "recalculateFeesDesc": "If checked, the system will check for any additional fees associated with classification changes (e.g. staff classification fee).",
+            "classesToAdd": "Classes to add:",
+            "recalculateFees": "Recalculate Fees",
+            "loadError": "Failed to load classification data",
+            "assignError": "Failed to assign classification",
+            "currentClasses": "Current Classification",
+            "noClasses": "No classification assigned yet",
+            "addNew": "Add Classification",
+            "section": "Section",
+            "classCode": "Class",
+            "subclass": "Subclass",
+            "group": "Group",
+            "subgroup": "Subgroup",
+            "label": "Label",
+            "locarnoInfo": "Assign Locarno classification codes for this industrial design application.",
+            "ipcInfo": "Assign IPC (International Patent Classification) codes for this patent/utility application.",
+            "assign": "Assign Classification"
         },
         "contentCheck": {
             "title": "Substantive Examination (Content Check)",

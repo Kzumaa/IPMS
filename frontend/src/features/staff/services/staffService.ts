@@ -117,9 +117,9 @@ export interface IpcClassInfo {
 
 export interface LocarnoClassInfo {
     id?: number;
-    class_code: string;
-    subclass?: string | null;
-    label?: string | null;
+    class_no: string;
+    subclass_no?: string | null;
+    field_of_use?: string | null;
     assigned_by_type?: 'USER' | 'STAFF' | null;
     assigned_by_id?: number | null;
     assigned_at?: string | null;
@@ -127,6 +127,7 @@ export interface LocarnoClassInfo {
 
 export interface ClassificationAssignRequest {
     ipc_classes?: Array<{
+        ipc_code: string;
         section: string;
         class_code: string;
         subclass?: string;
@@ -135,10 +136,11 @@ export interface ClassificationAssignRequest {
         label?: string;
     }>;
     locarno_classes?: Array<{
-        class_code: string;
-        subclass?: string;
-        label?: string;
+        class_no: string;
+        subclass_no?: string;
+        field_of_use?: string;
     }>;
+    recalculate_fees?: boolean;
 }
 
 const staffService = {

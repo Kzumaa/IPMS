@@ -28,7 +28,7 @@ class StaffController extends Controller
         }
 
         $query = Application::query()
-            ->with(['metrics', 'parties', 'creator']);
+            ->with(['metrics', 'parties', 'creator', 'feeQuotes']);
 
         // Filter by status
         if ($request->has('status')) {
@@ -116,7 +116,7 @@ class StaffController extends Controller
         }
 
         $query = Application::query()
-            ->with(['metrics', 'parties', 'creator'])
+            ->with(['metrics', 'parties', 'creator', 'feeQuotes'])
             ->where('current_assignee_id', $user->id);
 
         // Filter by status

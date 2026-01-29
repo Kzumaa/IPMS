@@ -30,7 +30,7 @@ class Application extends Model
         'deadlines',
         'file_validation_results',
         'current_version',
-        'origin_application_id'
+        'origin_application_id',
     ];
 
 
@@ -88,6 +88,16 @@ class Application extends Model
     public function priorityClaims(): HasMany
     {
         return $this->hasMany(PriorityClaim::class);
+    }
+
+    public function pctInfo(): HasOne
+    {
+        return $this->hasOne(PctInfo::class, 'application_id');
+    }
+
+    public function sntcInfo(): HasOne
+    {
+        return $this->hasOne(SntcInfo::class, 'application_id');
     }
 
     public function ipcClasses(): HasMany

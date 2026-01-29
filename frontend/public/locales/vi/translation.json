@@ -174,8 +174,12 @@
                 "typeLabel": "Loại quyền ưu tiên",
                 "types": {
                     "vnFirst": "Đơn đầu tiên tại VN (Dựa trên đơn VN đã nộp trước)",
+                    "vn_first": "Đơn đầu tiên tại VN (Dựa trên đơn VN đã nộp trước)",
+                    "VN_FIRST": "Đơn đầu tiên tại VN (Dựa trên đơn VN đã nộp trước)",
                     "paris": "Quyền ưu tiên theo Công ước Paris",
-                    "other": "Hiệp định quốc tế khác"
+                    "PARIS": "Quyền ưu tiên theo Công ước Paris",
+                    "other": "Hiệp định quốc tế khác",
+                    "OTHER": "Hiệp định quốc tế khác"
                 },
                 "number": "Số đơn ưu tiên",
                 "numberPlaceholder": "Số đơn ưu tiên",
@@ -367,7 +371,11 @@
                     "missingPriorityDoc": "Thiếu tài liệu ưu tiên (bắt buộc khi yêu cầu quyền ưu tiên)",
                     "missingPOA": "Thiếu giấy ủy quyền (bắt buộc khi có đại diện)",
                     "missingMetrics": "Chưa nhập chỉ số đơn",
-                    "missingFees": "Chưa tính phí"
+                    "missingFees": "Chưa tính phí",
+                    "minApplicant": "Phải có ít nhất một người nộp đơn",
+                    "maxApplicant": "Tối đa 3 người nộp đơn (1 chính + 2 người khác)",
+                    "minInventor": "Phải có ít nhất một tác giả/nhà sáng chế",
+                    "maxInventor": "Tối đa 3 tác giả/nhà sáng chế"
                 }
             }
         },
@@ -388,7 +396,8 @@
             "WITHDRAWN": "Đã rút",
             "ABANDONED": "Bỏ đơn",
             "FORMALITY_PASSED": "Đã qua thẩm định hình thức",
-            "COMPLAINING": "Đang khiếu nại"
+            "COMPLAINING": "Đang khiếu nại",
+            "WAITING_FOR_PAYMENT": "Chờ thanh toán"
         },
         "partyTypes": {
             "APPLICANT": "Người nộp đơn",
@@ -448,7 +457,9 @@
         "loading": "Đang tải...",
         "noData": "Không có dữ liệu",
         "actions": "Hành động",
-        "backToDashboard": "Về trang chủ"
+        "backToDashboard": "Về trang chủ",
+        "valid": "Hợp lệ",
+        "missing": "Thiếu"
     },
     "pdfViewer": {
         "loadError": "Không thể tải PDF",
@@ -591,7 +602,32 @@
             "designDescriptionExists": "Có bản mô tả kiểu dáng",
             "notAllRequirementsMet": "Cảnh báo: Chưa đủ các mục yêu cầu",
             "requiredForFail": "(Bắt buộc khi kết quả là KHÔNG ĐẠT)",
-            "failNotesGuidance": "Vui lòng ghi rõ tài liệu nào còn thiếu hoặc cần sửa đổi gì."
+            "failNotesGuidance": "Vui lòng ghi rõ tài liệu nào còn thiếu hoặc cần sửa đổi gì.",
+            "missingClassification": "Yêu cầu phân loại"
+        },
+        "classification": {
+            "title": "Phân loại",
+            "modify": "Sửa phân loại",
+            "assignButton": "Gán phân loại",
+            "assignedByStaff": "(Cán bộ)",
+            "singleClassLimit": "Chỉ được gán một phân loại cho mỗi đơn.",
+            "recalculateFeesDesc": "Nếu chọn, hệ thống sẽ kiểm tra các khoản phí bổ sung liên quan đến thay đổi phân loại (ví dụ: phí phân loại bởi cán bộ).",
+            "classesToAdd": "Phân loại sẽ thêm:",
+            "recalculateFees": "Tính lại phí",
+            "loadError": "Không thể tải dữ liệu phân loại",
+            "assignError": "Không thể gán phân loại",
+            "currentClasses": "Phân loại hiện tại",
+            "noClasses": "Chưa có phân loại nào được gán",
+            "addNew": "Thêm phân loại",
+            "section": "Phần",
+            "classCode": "Lớp",
+            "subclass": "Phân lớp",
+            "group": "Nhóm",
+            "subgroup": "Phân nhóm",
+            "label": "Nhãn",
+            "locarnoInfo": "Gán mã phân loại Locarno cho đơn kiểu dáng công nghiệp này.",
+            "ipcInfo": "Gán mã phân loại IPC (Sáng chế quốc tế) cho đơn sáng chế/giải pháp hữu ích này.",
+            "assign": "Gán phân loại"
         },
         "contentCheck": {
             "title": "Thẩm định nội dung (Kiểm tra nội dung)",

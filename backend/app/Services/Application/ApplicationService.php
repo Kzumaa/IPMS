@@ -58,6 +58,52 @@ class ApplicationService
                 'application_id' => $application->id,
             ]);
 
+            // Handle PCT Info
+            if (!empty($data['is_pct'])) {
+                $application->pctInfo()->create([
+                    'pct_app_no' => $data['pct_number'] ?? null,
+                    'pct_filing_date' => $data['pct_filing_date'] ?? null,
+                    'pct_pub_date' => $data['pct_publication_date'] ?? null,
+                ]);
+            }
+
+            // Handle SNTC Info (State Budget)
+            if (!empty($data['is_state_budget_task'])) {
+                $application->sntcInfo()->create([
+                    'agency_name' => $data['managing_agency_name'] ?? null,
+                    'project_name' => $data['task_name'] ?? null,
+                    'project_code' => $data['task_code'] ?? null,
+                ]);
+            }
+
+            // Handle Priority Claims - Initial creation
+            if (isset($data['priority_claims'])) {
+                $this->applicationRepository->syncPriorityClaims($application, $data['priority_claims']);
+                $this->updateMetrics($application, ['priority_count' => count($data['priority_claims'])]);
+            }
+
+            // Handle IPC Classes (Patent/Utility) - Initial creation
+            if (!empty($data['ipc_classes'])) {
+                $this->applicationRepository->syncIpcClasses($application, $data['ipc_classes']);
+                
+                $count = count($data['ipc_classes']);
+                $this->updateMetrics($application, [
+                    'ipc_groups' => $count,
+                    'is_user_classified' => true
+                ]);
+            }
+
+            // Handle Locarno Classes (Industrial Design) - Initial creation
+            if (!empty($data['locarno_classes'])) {
+                $this->applicationRepository->syncLocarnoClasses($application, $data['locarno_classes']);
+                
+                $count = count($data['locarno_classes']);
+                $this->updateMetrics($application, [
+                    'ipc_groups' => $count, // Reuse ipc_groups field for class count
+                    'is_user_classified' => true
+                ]);
+            }
+
             // Note: Parties are created by the frontend in step 2 of the wizard
             // The frontend pre-populates the form with the logged-in user's data
 
@@ -76,6 +122,32 @@ class ApplicationService
 
                 // Update metric: priority_count
                 $this->updateMetrics($application, ['priority_count' => count($data['priority_claims'])]);
+            }
+
+            // Handle PCT Info
+            if (isset($data['is_pct'])) {
+                if ($data['is_pct']) {
+                    $application->pctInfo()->updateOrCreate([], [
+                        'pct_app_no' => $data['pct_number'] ?? null,
+                        'pct_filing_date' => $data['pct_filing_date'] ?? null,
+                        'pct_pub_date' => $data['pct_publication_date'] ?? null,
+                    ]);
+                } else {
+                    $application->pctInfo()->delete();
+                }
+            }
+
+            // Handle SNTC Info
+            if (isset($data['is_state_budget_task'])) {
+                if ($data['is_state_budget_task']) {
+                    $application->sntcInfo()->updateOrCreate([], [
+                        'agency_name' => $data['managing_agency_name'] ?? null,
+                        'project_name' => $data['task_name'] ?? null,
+                        'project_code' => $data['task_code'] ?? null,
+                    ]);
+                } else {
+                    $application->sntcInfo()->delete();
+                }
             }
 
             // Handle IPC Classes (Patent/Utility)

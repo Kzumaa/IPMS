@@ -11,9 +11,10 @@ interface ExaminationPanelProps {
     parties: ApplicationParty[];
     attachments: ApplicationAttachment[];
     onSuccess?: () => void;
+    onAssignClassification?: () => void;
 }
 
-export default function ExaminationPanel({ application, parties, attachments, onSuccess }: ExaminationPanelProps) {
+export default function ExaminationPanel({ application, parties, attachments, onSuccess, onAssignClassification }: ExaminationPanelProps) {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { examinationLoading, examinationError } = useAppSelector((state) => state.staff);
@@ -69,6 +70,7 @@ export default function ExaminationPanel({ application, parties, attachments, on
                     parties={parties}
                     attachments={attachments}
                     onSuccess={onSuccess}
+                    onAssignClassification={onAssignClassification}
                 />
             )}
 

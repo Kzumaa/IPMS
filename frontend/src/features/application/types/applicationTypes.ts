@@ -35,6 +35,8 @@ export interface Application {
   priority_claims?: PriorityClaim[];
   sntc_info?: SntcInfo | null;
   requests?: ApplicationRequestSummary[];
+  ipc_classes?: IpcClass[];
+  locarno_classes?: LocarnoClass[];
 }
 
 // Protection title for GRANTED applications
@@ -310,14 +312,15 @@ export interface IpcClass {
   assigned_by_type: "USER" | "STAFF" | null;
   assigned_by_id: number | null;
   assigned_at: string | null;
+  ipc_code?: string;
 }
 
 export interface LocarnoClass {
   id: number;
   application_id: number;
-  class_code: string;
-  subclass: string | null;
-  label: string | null;
+  class_no: string;
+  subclass_no: string | null;
+  field_of_use: string | null;
   assigned_by_type: "USER" | "STAFF" | null;
   assigned_by_id: number | null;
   assigned_at: string | null;

@@ -48,7 +48,7 @@ class ApplicationController extends Controller
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
-        $query = Application::with(['metrics', 'parties'])
+        $query = Application::with(['metrics', 'parties', 'feeQuotes'])
             ->where('created_by', Auth::id());
 
         if (!empty($validated['status'])) {
@@ -136,9 +136,39 @@ class ApplicationController extends Controller
             'applicant_is_inventor' => 'boolean',
             'publication_early_requested' => 'boolean',
             'pub_delay_months' => 'nullable|integer|min:0',
+            'ipc_classes' => 'nullable|array',
+            'ipc_classes.*.ipc_code' => 'required|string',
+            'locarno_classes' => 'nullable|array',
+            'locarno_classes.*.class_no' => 'required|string',
+            'locarno_classes.*.subclass_no' => 'nullable|string',
+            'locarno_classes.*.field_of_use' => 'nullable|string',
+            'priority_claims' => 'nullable|array',
+            'priority_claims.*.number' => 'required|string',
+            'priority_claims.*.country_code' => 'required|string|size:2',
+            'priority_claims.*.filing_date' => 'required|date',
+            'priority_claims.*.kind' => 'nullable|string',
+            'is_pct' => 'boolean',
+            'pct_number' => 'nullable|string',
+            'pct_filing_date' => 'nullable|date',
+            'pct_publication_date' => 'nullable|date',
+            'is_state_budget_task' => 'boolean',
+            'managing_agency_name' => 'nullable|string',
+            'task_name' => 'nullable|string',
+            'task_code' => 'nullable|string',
         ]);
 
         $application = $this->applicationService->createApplication($validated);
+        $application->load([
+            'metrics', 
+            'parties', 
+            'attachments.file', 
+            'feeQuotes', 
+            'priorityClaims', 
+            'pctInfo', 
+            'sntcInfo', 
+            'ipcClasses', 
+            'locarnoClasses'
+        ]);
 
         return response()->json(['data' => new ApplicationResource($application)], 201);
     }
@@ -154,6 +184,10 @@ class ApplicationController extends Controller
             },
             'feeQuotes',
             'priorityClaims',
+            'ipcClasses',
+            'locarnoClasses',
+            'pctInfo',
+            'sntcInfo',
         ])->findOrFail($id);
         $this->authorize('view', $application);
         return response()->json(['data' => new ApplicationResource($application)]);
@@ -182,12 +216,30 @@ class ApplicationController extends Controller
             'locarno_classes.*.class_no' => 'required|string',
             'locarno_classes.*.subclass_no' => 'nullable|string',
             'locarno_classes.*.field_of_use' => 'nullable|string',
+            'is_pct' => 'boolean',
+            'pct_number' => 'nullable|string',
+            'pct_filing_date' => 'nullable|date',
+            'pct_publication_date' => 'nullable|date',
+            'is_state_budget_task' => 'boolean',
+            'managing_agency_name' => 'nullable|string',
+            'task_name' => 'nullable|string',
+            'task_code' => 'nullable|string',
         ]);
 
         $application = $this->applicationService->updateApplication($application, $validated);
 
         // Reload with all relations for complete response
-        $application->load(['metrics', 'parties', 'attachments.file', 'feeQuotes', 'priorityClaims']);
+        $application->load([
+            'metrics', 
+            'parties', 
+            'attachments.file', 
+            'feeQuotes', 
+            'priorityClaims', 
+            'pctInfo', 
+            'sntcInfo', 
+            'ipcClasses', 
+            'locarnoClasses'
+        ]);
 
         return response()->json(['data' => new ApplicationResource($application)]);
     }
