@@ -81,7 +81,16 @@
     },
     "dashboard": {
         "title": "IPMS",
-        "subtitle": "",
+        "subtitle": "Overview of your IP portfolio and recent activities",
+        "activeApplications": "Active Applications",
+        "inProgressApplications": "In Progress",
+        "grantedCount": "{{count}} granted",
+        "totalLabel": "{{count}} total",
+        "upcomingDeadlines": "Upcoming Deadlines",
+        "noDeadlines": "No upcoming deadlines",
+        "recentActivity": "Recent Activity",
+        "noRecentActivity": "No recent activity to display",
+        "viewAllActivity": "View All Activity",
         "nav": {
             "dashboard": "Dashboard",
             "myApplications": "My Applications",
@@ -399,7 +408,8 @@
             "FORMALITY_PASSED": "Formality Exam Passed",
             "COMPLAINING": "Under Complaint",
             "TERMINATED": "Terminated",
-            "WAITING_FOR_PAYMENT": "Waiting for Payment"
+            "WAITING_FOR_PAYMENT": "Waiting for Payment",
+            "UNDER_AMENDMENT": "Under Amendment"
         },
         "partyTypes": {
             "APPLICANT": "Applicant",
@@ -478,7 +488,8 @@
             "myApplications": "My Applications",
             "dashboard": "Dashboard",
             "requests": "Requests",
-            "reports": "Reports"
+            "reports": "Reports & Statistics",
+            "publishedApplications": "Published Applications"
         },
         "common": {
             "error": "Error"
@@ -492,11 +503,17 @@
             "pendingSubstantiveExam": "Pending Substantive Exam",
             "applicationsByStatus": "Applications by Status",
             "applicationsByType": "Applications by Type",
+            "applicationsByClass": "Applications by Classification",
+            "count": "Count",
             "quickActions": "Quick Actions",
             "allApplications": "All Applications",
             "allApplicationsDesc": "View all applications in the system",
             "myApplications": "My Applications",
             "myApplicationsDesc": "View applications assigned to me",
+            "publishedApplications": "Published Applications",
+            "publishedApplicationsDesc": "View applications that have been published",
+            "requests": "Requests",
+            "requestsDesc": "View pending requests to process",
             "reports": "Reports",
             "reportsDesc": "Generate and view reports",
             "loadingDashboard": "Loading dashboard...",
@@ -509,6 +526,8 @@
         },
         "applications": {
             "title": "All Applications",
+            "publishedTitle": "Published Applications",
+            "publishedSubtitle": "Applications that have been published and are available for public search",
             "myAssigned": "My Assigned Applications",
             "subtitle": "All applications in the system",
             "myAssignedSubtitle": "Applications assigned to you for examination",
@@ -521,6 +540,7 @@
             "type": "Type",
             "status": "Status",
             "filingDate": "Filing Date",
+            "publishedDate": "Published Date",
             "actions": "Actions",
             "viewDetails": "View Details",
             "showing": "Showing {{count}} of {{total}} applications",
@@ -725,6 +745,8 @@
         "createAssignment": "Create Assignment Request",
         "createLicense": "Create License Request",
         "createSplit": "Create Split Request",
+        "createRenewal": "Create Renewal Request",
+        "createTermination": "Create Termination Request",
         "submit": "Submit Request",
         "detail": "Request Detail",
         "loadError": "Unable to load request information",
@@ -755,9 +777,17 @@
             "TERMINATION": "Termination",
             "WITHDRAWAL": "Withdrawal"
         },
+        "renewal": {
+            "notGranted": "Renewal Not Available",
+            "notGrantedDesc": "Renewal requests can only be created for applications that have been granted. Current status: {{status}}",
+            "renewTitle": "Renew"
+        },
         "termination": {
             "details": "Termination Details",
-            "reason": "Reason for Termination"
+            "reason": "Reason for Termination",
+            "notGranted": "Termination Not Available",
+            "notGrantedDesc": "Termination requests can only be created for applications that have been granted. Current status: {{status}}",
+            "terminateTitle": "Terminate"
         },
         "statuses": {
             "DRAFT": "Draft",
@@ -910,6 +940,95 @@
             "PARTIALLY_REFUNDED": "Partially Refunded",
             "EXPIRED": "Expired",
             "PAID": "Paid"
+        },
+        "pageDescription": "Track and pay your IP application and maintenance fees.",
+        "transactions": "transactions",
+        "feeItems": "fee items"
+    },
+    "assets": {
+        "title": "My IP Assets",
+        "description": "View and manage your granted intellectual property rights.",
+        "tabs": {
+            "myTitles": "My Titles",
+            "licensedToMe": "Licensed to Me"
+        },
+        "table": {
+            "registrationNumber": "Registration No.",
+            "title": "Title",
+            "type": "Type",
+            "issueDate": "Issue Date",
+            "expiryDate": "Expiry Date",
+            "licenseInfo": "License Info",
+            "status": "Status"
+        },
+        "empty": {
+            "owned": {
+                "title": "No granted titles yet",
+                "description": "Your granted intellectual property titles will appear here once your applications are approved."
+            },
+            "licensed": {
+                "title": "No licensed titles yet",
+                "description": "Titles that others have licensed to you will appear here."
+            }
+        },
+        "expiryWarning": "Expiring soon",
+        "expired": "Expired",
+        "createLicense": "Create License",
+        "license": {
+            "type": "Type",
+            "exclusive": "Exclusive",
+            "nonExclusive": "Non-Exclusive",
+            "validUntil": "Valid until",
+            "from": "From"
+        }
+    },
+    "amendment": {
+        "title": "Amend",
+        "pageTitle": "Amend Application",
+        "pageDescription": "Make changes to your application. All changes will be reviewed by staff before being applied.",
+        "success": "Amendment request submitted successfully.",
+        "errors": {
+            "title": "Cannot Amend Application",
+            "hasPending": "This application already has a pending amendment request.",
+            "loadFailed": "Failed to load amendment data.",
+            "submitFailed": "Failed to submit amendment.",
+            "noData": "No amendment data available"
+        }
+    },
+    "patents": {
+        "title": "Patents",
+        "newPatent": "New Patent",
+        "searchPlaceholder": "Search patents...",
+        "statusAll": "Status: All",
+        "inventor": "Inventor",
+        "filingDate": "Filing Date",
+        "moreFilters": "More Filters",
+        "table": {
+            "patentNo": "Patent No.",
+            "title": "Title",
+            "filingDate": "Filing Date",
+            "status": "Status",
+            "inventors": "Inventor(s)"
+        },
+        "statuses": {
+            "Granted": "Granted",
+            "Pending": "Pending",
+            "Abandoned": "Abandoned",
+            "Rejected": "Rejected"
+        },
+        "breadcrumbs": {
+            "home": "Home",
+            "ipAssets": "IP Assets",
+            "patents": "Patents"
+        },
+        "globalSearch": "Global Search...",
+        "pagination": {
+            "showing": "Showing",
+            "to": "to",
+            "of": "of",
+            "results": "results",
+            "previous": "Previous",
+            "next": "Next"
         }
     }
 }

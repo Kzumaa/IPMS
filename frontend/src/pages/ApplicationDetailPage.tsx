@@ -17,17 +17,8 @@ import { PaymentButton } from "../features/payment/components";
 import { ApplicationStatus } from "../features/application/types/enums";
 import { RequestsSection } from "../features/request/components";
 
-const formatDate = (dateString: string | null): string => {
-  if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("vi-VN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
-
 const ApplicationDetailPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -35,6 +26,16 @@ const ApplicationDetailPage: React.FC = () => {
     useAppSelector((state) => state.application);
   const { user } = useAppSelector((state) => state.auth);
   const [showSplitModal, setShowSplitModal] = useState(false);
+
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return "-";
+    const locale = i18n.language === 'vi' ? 'vi-VN' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   // Check if current user is the creator (owner) of the application
   const isCreator = user && currentApplication?.created_by === user.id;

@@ -77,6 +77,7 @@ export const fetchAllApplications = createAsyncThunk(
         search?: string;
         page?: number;
         per_page?: number;
+        published_only?: boolean;
     } | undefined, { rejectWithValue }) => {
         try {
             const response = await staffService.listAllApplications(params);

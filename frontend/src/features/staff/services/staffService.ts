@@ -10,6 +10,7 @@ export interface DashboardStats {
     pending_substantive_exam: number;
     by_status: Record<string, number>;
     by_type: Record<string, number>;
+    by_class: Array<{ name: string; count: number }>;
 }
 
 export interface ExaminationResult {
@@ -160,6 +161,7 @@ const staffService = {
         search?: string;
         page?: number;
         per_page?: number;
+        published_only?: boolean;
     }): Promise<PaginatedResponse<Application>> {
         const response = await axiosClient.get(`${BASE_URL}/applications`, { params });
         return response.data;

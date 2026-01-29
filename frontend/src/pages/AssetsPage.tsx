@@ -11,7 +11,7 @@ import { AppTypeLabels } from '../features/application/types/enums';
 import type { Application } from '../features/application/types/applicationTypes';
 
 const AssetsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useAppDispatch();
   const { ownedTitles, licensedTitles, loading, error, activeTab } = useAppSelector(
     (state) => state.title
@@ -51,7 +51,8 @@ const AssetsPage: React.FC = () => {
   // Format date
   const formatDate = (date: string | null | undefined): string => {
     if (!date) return '-';
-    return new Date(date).toLocaleDateString('vi-VN');
+    const locale = i18n.language === 'vi' ? 'vi-VN' : 'en-US';
+    return new Date(date).toLocaleDateString(locale);
   };
 
   // Get status badge color
@@ -104,11 +105,10 @@ const AssetsPage: React.FC = () => {
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => dispatch(setActiveTab('owned'))}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'owned'
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'owned'
                   ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300'
-              }`}
+                }`}
             >
               <span className="flex items-center gap-2">
                 <span className="material-symbols-outlined !text-lg">verified</span>
@@ -120,11 +120,10 @@ const AssetsPage: React.FC = () => {
             </button>
             <button
               onClick={() => dispatch(setActiveTab('licensed'))}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'licensed'
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'licensed'
                   ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300'
-              }`}
+                }`}
             >
               <span className="flex items-center gap-2">
                 <span className="material-symbols-outlined !text-lg">license</span>
@@ -161,13 +160,13 @@ const AssetsPage: React.FC = () => {
           <p className="text-slate-500 dark:text-slate-400 max-w-md">
             {activeTab === 'owned'
               ? t(
-                  'assets.empty.owned.description',
-                  'Your granted intellectual property titles will appear here once your applications are approved.'
-                )
+                'assets.empty.owned.description',
+                'Your granted intellectual property titles will appear here once your applications are approved.'
+              )
               : t(
-                  'assets.empty.licensed.description',
-                  'Titles that others have licensed to you will appear here.'
-                )}
+                'assets.empty.licensed.description',
+                'Titles that others have licensed to you will appear here.'
+              )}
           </p>
         </div>
       )}
@@ -225,13 +224,12 @@ const AssetsPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">{formatDate(issueDate)}</td>
                       <td
-                        className={`px-6 py-4 font-medium ${
-                          expired
+                        className={`px-6 py-4 font-medium ${expired
                             ? 'text-red-600 dark:text-red-400'
                             : expiryWarning
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : ''
-                        }`}
+                              ? 'text-amber-600 dark:text-amber-400'
+                              : ''
+                          }`}
                       >
                         <span className="flex items-center gap-1">
                           {formatDate(expiryDate)}

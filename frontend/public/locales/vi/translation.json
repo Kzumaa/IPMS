@@ -81,7 +81,16 @@
     },
     "dashboard": {
         "title": "IPMS",
-        "subtitle": "",
+        "subtitle": "Tổng quan danh mục SHTT và hoạt động gần đây",
+        "activeApplications": "Đơn đang hoạt động",
+        "inProgressApplications": "Đang xử lý",
+        "grantedCount": "{{count}} đã cấp",
+        "totalLabel": "{{count}} tổng cộng",
+        "upcomingDeadlines": "Hạn chót sắp tới",
+        "noDeadlines": "Không có hạn chót sắp tới",
+        "recentActivity": "Hoạt động gần đây",
+        "noRecentActivity": "Không có hoạt động gần đây",
+        "viewAllActivity": "Xem tất cả hoạt động",
         "nav": {
             "dashboard": "Tổng Quan",
             "myApplications": "Đơn Của Tôi",
@@ -398,7 +407,8 @@
             "FORMALITY_PASSED": "Đã qua thẩm định hình thức",
             "COMPLAINING": "Đang khiếu nại",
             "TERMINATED": "Đã chấm dứt",
-            "WAITING_FOR_PAYMENT": "Chờ thanh toán"
+            "WAITING_FOR_PAYMENT": "Chờ thanh toán",
+            "UNDER_AMENDMENT": "Đang sửa đổi"
         },
         "partyTypes": {
             "APPLICANT": "Người nộp đơn",
@@ -477,7 +487,8 @@
             "myApplications": "Đơn của tôi",
             "dashboard": "Bảng điều khiển",
             "requests": "Yêu cầu",
-            "reports": "Báo cáo"
+            "reports": "Báo cáo & Thống kê",
+            "publishedApplications": "Đơn đã công bố"
         },
         "common": {
             "error": "Lỗi"
@@ -491,11 +502,17 @@
             "pendingSubstantiveExam": "Chờ thẩm định nội dung",
             "applicationsByStatus": "Đơn theo trạng thái",
             "applicationsByType": "Đơn theo loại",
+            "applicationsByClass": "Đơn theo phân loại",
+            "count": "Số lượng",
             "quickActions": "Thao tác nhanh",
             "allApplications": "Tất cả đơn",
             "allApplicationsDesc": "Xem tất cả đơn trong hệ thống",
             "myApplications": "Đơn của tôi",
             "myApplicationsDesc": "Xem đơn được giao cho tôi",
+            "publishedApplications": "Đơn đã công bố",
+            "publishedApplicationsDesc": "Xem các đơn đã được công bố",
+            "requests": "Yêu cầu",
+            "requestsDesc": "Xem các yêu cầu cần xử lý",
             "reports": "Báo cáo",
             "reportsDesc": "Tạo và xem báo cáo",
             "loadingDashboard": "Đang tải bảng điều khiển...",
@@ -508,6 +525,8 @@
         },
         "applications": {
             "title": "Tất cả đơn đăng ký",
+            "publishedTitle": "Đơn đã công bố",
+            "publishedSubtitle": "Các đơn đã được công bố và có sẵn để tra cứu công khai",
             "myAssigned": "Đơn được giao cho tôi",
             "subtitle": "Tất cả đơn trong hệ thống",
             "myAssignedSubtitle": "Đơn được giao cho bạn để thẩm định",
@@ -520,6 +539,7 @@
             "type": "Loại",
             "status": "Trạng thái",
             "filingDate": "Ngày nộp",
+            "publishedDate": "Ngày công bố",
             "actions": "Hành động",
             "viewDetails": "Xem chi tiết",
             "showing": "Hiển thị {{count}} trong {{total}} đơn",
@@ -690,6 +710,8 @@
         "createAssignment": "Tạo yêu cầu chuyển nhượng",
         "createLicense": "Tạo yêu cầu li-xăng",
         "createSplit": "Tạo yêu cầu tách đơn",
+        "createRenewal": "Tạo yêu cầu gia hạn",
+        "createTermination": "Tạo yêu cầu chấm dứt",
         "submit": "Nộp yêu cầu",
         "detail": "Chi tiết yêu cầu",
         "loadError": "Không thể tải thông tin yêu cầu",
@@ -720,9 +742,17 @@
             "TERMINATION": "Chấm dứt",
             "WITHDRAWAL": "Rút đơn"
         },
+        "renewal": {
+            "notGranted": "Không thể gia hạn",
+            "notGrantedDesc": "Yêu cầu gia hạn chỉ có thể tạo cho các đơn đã được cấp bằng. Trạng thái hiện tại: {{status}}",
+            "renewTitle": "Gia hạn"
+        },
         "termination": {
             "details": "Chi tiết chấm dứt",
-            "reason": "Lý do chấm dứt"
+            "reason": "Lý do chấm dứt",
+            "notGranted": "Không thể chấm dứt",
+            "notGrantedDesc": "Yêu cầu chấm dứt chỉ có thể tạo cho các đơn đã được cấp bằng. Trạng thái hiện tại: {{status}}",
+            "terminateTitle": "Chấm dứt"
         },
         "statuses": {
             "DRAFT": "Bản nháp",
@@ -875,6 +905,95 @@
             "PARTIALLY_REFUNDED": "Hoàn tiền một phần",
             "EXPIRED": "Hết hạn",
             "PAID": "Đã thanh toán"
+        },
+        "pageDescription": "Theo dõi và thanh toán phí đơn và phí duy trì SHTT của bạn.",
+        "transactions": "giao dịch",
+        "feeItems": "mục phí"
+    },
+    "assets": {
+        "title": "Tài sản SHTT của tôi",
+        "description": "Xem và quản lý các quyền sở hữu trí tuệ đã được cấp của bạn.",
+        "tabs": {
+            "myTitles": "Văn bằng của tôi",
+            "licensedToMe": "Được cấp phép cho tôi"
+        },
+        "table": {
+            "registrationNumber": "Số đăng ký",
+            "title": "Tên",
+            "type": "Loại",
+            "issueDate": "Ngày cấp",
+            "expiryDate": "Ngày hết hạn",
+            "licenseInfo": "Thông tin li-xăng",
+            "status": "Trạng thái"
+        },
+        "empty": {
+            "owned": {
+                "title": "Chưa có văn bằng nào",
+                "description": "Các văn bằng sở hữu trí tuệ đã cấp sẽ xuất hiện tại đây sau khi đơn của bạn được phê duyệt."
+            },
+            "licensed": {
+                "title": "Chưa có văn bằng được cấp phép",
+                "description": "Các văn bằng mà người khác cấp phép cho bạn sẽ xuất hiện tại đây."
+            }
+        },
+        "expiryWarning": "Sắp hết hạn",
+        "expired": "Đã hết hạn",
+        "createLicense": "Tạo li-xăng",
+        "license": {
+            "type": "Loại",
+            "exclusive": "Độc quyền",
+            "nonExclusive": "Không độc quyền",
+            "validUntil": "Có hiệu lực đến",
+            "from": "Từ"
+        }
+    },
+    "amendment": {
+        "title": "Sửa đổi",
+        "pageTitle": "Sửa đổi đơn",
+        "pageDescription": "Thực hiện các thay đổi cho đơn của bạn. Tất cả thay đổi sẽ được cán bộ xem xét trước khi áp dụng.",
+        "success": "Yêu cầu sửa đổi đã được nộp thành công.",
+        "errors": {
+            "title": "Không thể sửa đổi đơn",
+            "hasPending": "Đơn này đã có yêu cầu sửa đổi đang chờ xử lý.",
+            "loadFailed": "Không thể tải dữ liệu sửa đổi.",
+            "submitFailed": "Không thể nộp yêu cầu sửa đổi.",
+            "noData": "Không có dữ liệu sửa đổi"
+        }
+    },
+    "patents": {
+        "title": "Sáng chế",
+        "newPatent": "Sáng chế mới",
+        "searchPlaceholder": "Tìm kiếm sáng chế...",
+        "statusAll": "Trạng thái: Tất cả",
+        "inventor": "Tác giả",
+        "filingDate": "Ngày nộp",
+        "moreFilters": "Thêm bộ lọc",
+        "table": {
+            "patentNo": "Số sáng chế",
+            "title": "Tên",
+            "filingDate": "Ngày nộp",
+            "status": "Trạng thái",
+            "inventors": "Tác giả"
+        },
+        "statuses": {
+            "Granted": "Đã cấp",
+            "Pending": "Đang chờ",
+            "Abandoned": "Đã bỏ",
+            "Rejected": "Từ chối"
+        },
+        "breadcrumbs": {
+            "home": "Trang chủ",
+            "ipAssets": "Tài sản SHTT",
+            "patents": "Sáng chế"
+        },
+        "globalSearch": "Tìm kiếm...",
+        "pagination": {
+            "showing": "Hiển thị",
+            "to": "đến",
+            "of": "của",
+            "results": "kết quả",
+            "previous": "Trước",
+            "next": "Sau"
         }
     }
 }
