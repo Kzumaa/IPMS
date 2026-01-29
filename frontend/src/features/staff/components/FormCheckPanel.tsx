@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { completeFormalityExamination } from '../store/staffSlice';
@@ -11,13 +11,6 @@ interface FormCheckPanelProps {
     onSuccess?: () => void;
 }
 
-interface ChecklistItem {
-    id: string;
-    label: string;
-    checked: boolean;
-    required: boolean;
-}
-
 export default function FormCheckPanel({ application, parties, attachments, onSuccess }: FormCheckPanelProps) {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
@@ -25,85 +18,6 @@ export default function FormCheckPanel({ application, parties, attachments, onSu
 
     const [result, setResult] = useState<'PASS' | 'FAIL'>('PASS');
     const [notes, setNotes] = useState('');
-    const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
-
-    useEffect(() => {
-        // Initialize checklist based on application type
-        const items: ChecklistItem[] = [];
-
-        // Basic checks for all types
-        items.push({
-            id: 'applicant_exists',
-            label: t('staff.formCheck.applicantExists'),
-            checked: parties.filter(p => p.party_type === 'APPLICANT').length > 0,
-            required: true,
-        });
-
-        items.push({
-            id: 'title_valid',
-            label: t('staff.formCheck.titleValid'),
-            checked: application.title ? application.title.length > 0 : false,
-            required: true,
-        });
-
-        // Patent-specific checks
-        if (application.app_type === 'PATENT' || application.app_type === 'UTILITY') {
-            // items.push({
-            //     id: 'inventor_exists',
-            //     label: t('staff.formCheck.inventorExists'),
-            //     checked: parties.filter(p => p.party_type === 'INVENTOR').length > 0,
-            //     required: !application.applicant_is_inventor,
-            // });
-
-            items.push({
-                id: 'description_exists',
-                label: t('staff.formCheck.descriptionExists'),
-                checked: attachments.some(a => a.attachment_type === 'DESCRIPTION'),
-                required: true,
-            });
-
-            items.push({
-                id: 'claims_exists',
-                label: t('staff.formCheck.claimsExists'),
-                checked: attachments.some(a => a.attachment_type === 'CLAIMS'),
-                required: true,
-            });
-
-            items.push({
-                id: 'abstract_exists',
-                label: t('staff.formCheck.abstractExists'),
-                checked: attachments.some(a => a.attachment_type === 'ABSTRACT'),
-                required: true,
-            });
-        }
-
-        // Design-specific checks
-        if (application.app_type === 'INDUSTRIAL_DESIGN') {
-            items.push({
-                id: 'drawings_exists',
-                label: t('staff.formCheck.drawingsExists'),
-                checked: attachments.some(a => a.attachment_type === 'DRAWINGS'),
-                required: true,
-            });
-
-            items.push({
-                id: 'design_description_exists',
-                label: t('staff.formCheck.designDescriptionExists'),
-                checked: attachments.some(a => a.attachment_type === 'DESCRIPTION'),
-                required: true,
-            });
-        }
-
-        // Note: Fee payment checks removed - system doesn't handle payments yet
-
-        setChecklist(items);
-    }, [application, parties, attachments, t]);
-
-    const handleChecklistChange = (id: string, checked: boolean) => {
-        setChecklist(prev => prev.map(item =>
-            item.id === id ? { ...item, checked } : item
-        ));
-    };
 
     const handleSubmit = async () => {
         const submitResult = await dispatch(
@@ -118,12 +32,6 @@ export default function FormCheckPanel({ application, parties, attachments, onSu
             onSuccess?.();
         }
     };
-
-    const allRequiredChecked = checklist
-        .filter(item => item.required)
-        .every(item => item.checked);
-
-    const shouldPass = allRequiredChecked;
 
     return (
         <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
@@ -181,49 +89,6 @@ export default function FormCheckPanel({ application, parties, attachments, onSu
                 </div>
             </div>
 
-            {/* Checklist */}
-            <div className="mb-6">
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
-                    {t('staff.formCheck.checklist')}
-                </h3>
-                <div className="space-y-2">
-                    {checklist.map((item) => (
-                        <label
-                            key={item.id}
-                            className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                                item.checked
-                                    ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800'
-                                    : item.required
-                                    ? 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800'
-                                    : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700'
-                            }`}
-                        >
-                            <input
-                                type="checkbox"
-                                checked={item.checked}
-                                onChange={(e) => handleChecklistChange(item.id, e.target.checked)}
-                                className="mt-0.5 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <div className="flex-1">
-                                <span className="text-sm font-medium text-slate-900 dark:text-white">
-                                    {item.label}
-                                    {item.required && (
-                                        <span className="ml-2 text-xs text-red-600 dark:text-red-400">
-                                            {t('staff.formCheck.required')}
-                                        </span>
-                                    )}
-                                </span>
-                            </div>
-                            {item.checked && (
-                                <span className="material-symbols-outlined text-green-600 dark:text-green-400">
-                                    check_circle
-                                </span>
-                            )}
-                        </label>
-                    ))}
-                </div>
-            </div>
-
             {/* Result Selection */}
             <div className="mb-6">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -244,11 +109,6 @@ export default function FormCheckPanel({ application, parties, attachments, onSu
                                 {t('staff.examination.pass')}
                             </span>
                         </div>
-                        {!shouldPass && result === 'PASS' && (
-                            <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
-                                {t('staff.formCheck.notAllRequirementsMet')}
-                            </p>
-                        )}
                     </button>
                     <button
                         onClick={() => setResult('FAIL')}

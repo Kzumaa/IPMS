@@ -8,7 +8,6 @@ import type {
   CreateAssignmentDTO,
   CreateLicenseDTO,
   CreateSplitDTO,
-  CreateAppealDTO,
   CreateComplaintDTO,
   CreateRenewalDTO,
   CreateTerminationDTO,
@@ -326,72 +325,6 @@ export const submitSplit = createAsyncThunk(
   }
 );
 
-// ==================== APPEAL THUNKS ====================
-export const fetchAppeals = createAsyncThunk(
-  'request/fetchAppeals',
-  async (applicationId: number, { rejectWithValue }) => {
-    try {
-      const response = await requestService.getAppeals(applicationId);
-      return response.data;
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      return rejectWithValue(err.response?.data?.message || 'Không thể tải danh sách khiếu nại');
-    }
-  }
-);
-
-export const fetchAppeal = createAsyncThunk(
-  'request/fetchAppeal',
-  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
-    try {
-      const response = await requestService.getAppeal(applicationId, requestId);
-      return response.data;
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      return rejectWithValue(err.response?.data?.message || 'Không thể tải thông tin khiếu nại');
-    }
-  }
-);
-
-export const createAppeal = createAsyncThunk(
-  'request/createAppeal',
-  async ({ applicationId, data }: { applicationId: number; data: CreateAppealDTO }, { rejectWithValue }) => {
-    try {
-      const response = await requestService.createAppeal(applicationId, data);
-      return response.data;
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      return rejectWithValue(err.response?.data?.message || 'Không thể tạo khiếu nại');
-    }
-  }
-);
-
-export const deleteAppeal = createAsyncThunk(
-  'request/deleteAppeal',
-  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
-    try {
-      await requestService.deleteAppeal(applicationId, requestId);
-      return requestId;
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      return rejectWithValue(err.response?.data?.message || 'Không thể xóa khiếu nại');
-    }
-  }
-);
-
-export const submitAppeal = createAsyncThunk(
-  'request/submitAppeal',
-  async ({ applicationId, requestId }: { applicationId: number; requestId: number }, { rejectWithValue }) => {
-    try {
-      const response = await requestService.submitAppeal(applicationId, requestId);
-      return response.data;
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      return rejectWithValue(err.response?.data?.message || 'Không thể nộp khiếu nại');
-    }
-  }
-);
-
 // ==================== COMPLAINT THUNKS ====================
 export const fetchComplaints = createAsyncThunk(
   'request/fetchComplaints',
@@ -677,9 +610,6 @@ export const fetchRequest = createAsyncThunk(
           break;
         case 'SPLIT':
           response = await requestService.getSplit(applicationId, requestId);
-          break;
-        case 'APPEAL':
-          response = await requestService.getAppeal(applicationId, requestId);
           break;
         case 'COMPLAINT':
           response = await requestService.getComplaint(applicationId, requestId);
@@ -978,54 +908,6 @@ export const requestSlice = createSlice({
         state.currentRequest = action.payload;
       })
       .addCase(submitSplit.rejected, (state, action) => {
-        state.submitting = false;
-        state.error = action.payload as string;
-      })
-      // ==================== APPEAL ====================
-      .addCase(fetchAppeals.fulfilled, (state, action) => {
-        state.loading = false;
-        state.requests = [
-          ...state.requests.filter((r) => r.type !== 'APPEAL'),
-          ...action.payload,
-        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      })
-      .addCase(fetchAppeal.fulfilled, (state, action) => {
-        state.loading = false;
-        state.currentRequest = action.payload;
-      })
-      .addCase(createAppeal.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(createAppeal.fulfilled, (state, action) => {
-        state.loading = false;
-        state.requests.unshift(action.payload);
-        state.currentRequest = action.payload;
-      })
-      .addCase(createAppeal.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(deleteAppeal.fulfilled, (state, action) => {
-        state.loading = false;
-        state.requests = state.requests.filter((r) => r.id !== action.payload);
-        if (state.currentRequest?.id === action.payload) {
-          state.currentRequest = null;
-        }
-      })
-      .addCase(submitAppeal.pending, (state) => {
-        state.submitting = true;
-        state.error = null;
-      })
-      .addCase(submitAppeal.fulfilled, (state, action) => {
-        state.submitting = false;
-        const index = state.requests.findIndex((r) => r.id === action.payload.id);
-        if (index !== -1) {
-          state.requests[index] = action.payload;
-        }
-        state.currentRequest = action.payload;
-      })
-      .addCase(submitAppeal.rejected, (state, action) => {
         state.submitting = false;
         state.error = action.payload as string;
       })

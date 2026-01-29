@@ -28,7 +28,6 @@ const getRequestTypeSlug = (type: string): string => {
     ASSIGNMENT: 'assignments',
     LICENSE: 'licenses',
     SPLIT: 'splits',
-    APPEAL: 'appeals',
     WITHDRAWAL: 'withdrawals',
     COMPLAINT: 'complaints',
   };

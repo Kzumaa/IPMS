@@ -43,12 +43,12 @@ export default function ExaminationPanel({ application, parties, attachments, on
     };
 
     // Determine which examination panel to show based on status
-    // Formality examination happens when application is SUBMITTED
-    const showFormalityExam = application.status === 'SUBMITTED';
+    // Formality examination happens when application is SUBMITTED or in FORMALITY_EXAM
+    const showFormalityExam = application.status === 'SUBMITTED' || application.status === 'FORMALITY_EXAM';
     // Publication can happen when application is FORMALITY_PASSED
     const showPublication = application.status === 'FORMALITY_PASSED';
-    // Substantive examination happens after application is PUBLISHED
-    const showSubstantiveExam = application.status === 'PUBLISHED';
+    // Substantive examination happens after application is PUBLISHED or in SUB_EXAM
+    const showSubstantiveExam = application.status === 'PUBLISHED' || application.status === 'SUB_EXAM';
     // Decision can be issued when in SUB_EXAM_REQ or WAITING_RESPONSE
     const showDecision = application.status === 'SUB_EXAM_REQ' || application.status === 'WAITING_RESPONSE';
 

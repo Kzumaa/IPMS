@@ -24,7 +24,6 @@ import {
     CreateAssignmentPage,
     CreateLicensePage,
     CreateSplitPage,
-    CreateAppealPage,
     CreateComplaintPage,
     CreateRenewalPage,
     CreateTerminationPage,
@@ -140,10 +139,6 @@ const router = createBrowserRouter([
                     {
                         path: 'applications/:id/requests/splits/new',
                         element: <CreateSplitPage />,
-                    },
-                    {
-                        path: 'applications/:id/requests/appeals/new',
-                        element: <CreateAppealPage />,
                     },
                     {
                         path: 'applications/:id/requests/complaints/new',

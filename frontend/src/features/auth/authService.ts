@@ -4,17 +4,35 @@ import type { AuthResponse, LoginPayload, RegisterPayload, User } from './authTy
 const authService = {
     registerApplicant: async (data: RegisterPayload): Promise<AuthResponse> => {
         const response = await axiosClient.post('/auth/register', data);
-        return response.data;
+        return {
+            ...response.data,
+            user: {
+                ...response.data.user,
+                role: 'applicant',
+            },
+        };
     },
 
     loginApplicant: async (data: LoginPayload): Promise<AuthResponse> => {
         const response = await axiosClient.post('/auth/login', data);
-        return response.data;
+        return {
+            ...response.data,
+            user: {
+                ...response.data.user,
+                role: 'applicant',
+            },
+        };
     },
 
     loginStaff: async (data: LoginPayload): Promise<AuthResponse> => {
         const response = await axiosClient.post('/auth/staff/login', data);
-        return response.data;
+        return {
+            ...response.data,
+            user: {
+                ...response.data.user,
+                role: 'staff',
+            },
+        };
     },
 
     logout: async (): Promise<void> => {

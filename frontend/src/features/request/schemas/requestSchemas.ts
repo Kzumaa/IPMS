@@ -112,28 +112,6 @@ export const splitSchema = z.object({
 
 export type SplitFormData = z.infer<typeof splitSchema>;
 
-// Appeal Base Schema (for type inference)
-const appealBaseSchema = z.object({
-  target_decision_id: z.number().optional(),
-  target_event_id: z.number().optional(),
-  notice_date: z.string().optional(),
-  grounds: z
-    .string()
-    .min(50, 'Lý do khiếu nại phải có ít nhất 50 ký tự')
-    .max(10000, 'Lý do khiếu nại không được quá 10000 ký tự'),
-});
-
-// Appeal Schema with refinements
-export const appealSchema = appealBaseSchema.refine(
-  (data) => data.target_decision_id || data.target_event_id,
-  {
-    message: 'Vui lòng chọn đối tượng khiếu nại',
-    path: ['target_decision_id'],
-  }
-);
-
-export type AppealFormData = z.infer<typeof appealBaseSchema>;
-
 // Complaint Schema (replaces Appeal per SRS Section 3.2)
 export const complaintSchema = z.object({
   grounds: z

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import staffService, { type DashboardStats, type StaffRequest, type AppealResolutionRequest, type ComplaintResolutionRequest } from '../services/staffService';
+import staffService, { type DashboardStats, type StaffRequest, type ComplaintResolutionRequest } from '../services/staffService';
 import type { Application, PaginatedResponse } from '@/features/application/types/applicationTypes';
 
 interface StaffState {
@@ -201,18 +201,6 @@ export const refuseRequest = createAsyncThunk(
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.message || 'Failed to refuse request');
-        }
-    }
-);
-
-export const resolveAppeal = createAsyncThunk(
-    'staff/resolveAppeal',
-    async ({ requestId, data }: { requestId: number; data: AppealResolutionRequest }, { rejectWithValue }) => {
-        try {
-            const response = await staffService.resolveAppeal(requestId, data);
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(error.message || 'Failed to resolve appeal');
         }
     }
 );
@@ -424,21 +412,6 @@ const staffSlice = createSlice({
                 state.currentRequest = action.payload;
             })
             .addCase(refuseRequest.rejected, (state, action) => {
-                state.examinationLoading = false;
-                state.examinationError = action.payload as string;
-            });
-
-        // Resolve Appeal
-        builder
-            .addCase(resolveAppeal.pending, (state) => {
-                state.examinationLoading = true;
-                state.examinationError = null;
-            })
-            .addCase(resolveAppeal.fulfilled, (state, action: PayloadAction<StaffRequest>) => {
-                state.examinationLoading = false;
-                state.currentRequest = action.payload;
-            })
-            .addCase(resolveAppeal.rejected, (state, action) => {
                 state.examinationLoading = false;
                 state.examinationError = action.payload as string;
             });

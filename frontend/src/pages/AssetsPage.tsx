@@ -199,8 +199,13 @@ const AssetsPage: React.FC = () => {
                 {currentTitles.map((app) => {
                   const protectionTitle = app.protection_title;
                   const licenseInfo = activeTab === 'licensed' ? getLicenseInfo(app) : null;
-                  const expiryWarning = isExpiryWarning(protectionTitle?.expiry_date);
-                  const expired = isExpired(protectionTitle?.expiry_date);
+                  const expiryDate = app.expiry_date || protectionTitle?.expiry_date;
+                  const issueDate = app.issue_date || protectionTitle?.issue_date;
+                  const regNumber = app.registration_number || protectionTitle?.registration_number || app.filing_number || '-';
+                  const titleStatus = protectionTitle?.status || 'ACTIVE'; // Fallback to ACTIVE if no protection title status
+
+                  const expiryWarning = isExpiryWarning(expiryDate);
+                  const expired = isExpired(expiryDate);
 
                   return (
                     <tr
@@ -208,7 +213,7 @@ const AssetsPage: React.FC = () => {
                       className="bg-white dark:bg-[#111521] border-b dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
                     >
                       <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">
-                        {protectionTitle?.registration_number || app.filing_number || '-'}
+                        {regNumber}
                       </td>
                       <td className="px-6 py-4 max-w-xs truncate" title={app.title}>
                         {app.title}
@@ -218,7 +223,7 @@ const AssetsPage: React.FC = () => {
                           {AppTypeLabels[app.app_type] || app.app_type}
                         </span>
                       </td>
-                      <td className="px-6 py-4">{formatDate(protectionTitle?.issue_date)}</td>
+                      <td className="px-6 py-4">{formatDate(issueDate)}</td>
                       <td
                         className={`px-6 py-4 font-medium ${
                           expired
@@ -229,7 +234,7 @@ const AssetsPage: React.FC = () => {
                         }`}
                       >
                         <span className="flex items-center gap-1">
-                          {formatDate(protectionTitle?.expiry_date)}
+                          {formatDate(expiryDate)}
                           {expiryWarning && (
                             <span
                               className="material-symbols-outlined !text-base"
@@ -283,10 +288,10 @@ const AssetsPage: React.FC = () => {
                       <td className="px-6 py-4">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(
-                            protectionTitle?.status
+                            titleStatus
                           )}`}
                         >
-                          {protectionTitle?.status || 'ACTIVE'}
+                          {titleStatus}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">

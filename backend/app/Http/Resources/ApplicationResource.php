@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\ApplicationStatus;
+use App\Enums\AppType;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,10 +19,43 @@ class ApplicationResource extends JsonResource
         // Get first priority claim for priority fields (only if relation is loaded)
         $priorityClaim = $this->relationLoaded('priorityClaims') ? $this->priorityClaims->first() : null;
 
+        // Calculate Issue Date (Grant Date)
+        // Logic: Use latest SubstantiveExamRecord with result ACCEPTABLE, fallback to updated_at if GRANTED
+        $issueDate = null;
+        if ($this->status === ApplicationStatus::GRANTED) {
+            if ($this->relationLoaded('substantiveExamRecords')) {
+                $examRecord = $this->substantiveExamRecords
+                    ->where('result', 'ACCEPTABLE')
+                    ->sortByDesc('exam_date')
+                    ->first();
+                $issueDate = $examRecord?->exam_date?->toDateString();
+            }
+            
+            if (!$issueDate) {
+                $issueDate = $this->updated_at?->toDateString();
+            }
+        }
+
+        // Calculate Expiry Date
+        // Logic: Filing Date + Term (Patent: 20y, Utility: 10y, ID: 5y)
+        $expiryDate = null;
+        if ($this->status === ApplicationStatus::GRANTED && $this->filing_date) {
+            $years = match ($this->app_type) {
+                AppType::PATENT => 20,
+                AppType::UTILITY => 10,
+                AppType::INDUSTRIAL_DESIGN => 5,
+                default => 0,
+            };
+            if ($years > 0) {
+                $expiryDate = $this->filing_date->copy()->addYears($years)->toDateString();
+            }
+        }
+
         return [
             'id' => $this->id,
             'created_by' => $this->created_by,
             'filing_number' => $this->app_no, // Map 'app_no' to 'filing_number'
+            'registration_number' => $this->app_no, // Fallback since ProtectionTitle is unused
             'app_type' => $this->app_type,
             'title' => $this->title,
             'abstract' => null, // Stored as attachment (doc_type: ABSTRACT)
@@ -28,6 +63,8 @@ class ApplicationResource extends JsonResource
             'claims' => null, // Stored as attachment (doc_type: CLAIMS)
             'status' => $this->status,
             'filing_date' => $this->filing_date?->toDateString(),
+            'issue_date' => $issueDate,
+            'expiry_date' => $expiryDate,
             'priority_date' => $priorityClaim?->priority_date?->toDateString(),
             'priority_number' => $priorityClaim?->priority_number,
             'priority_country' => $priorityClaim?->country_code,

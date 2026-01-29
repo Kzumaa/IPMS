@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFormContext, useFieldArray } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { FormInput, FormSelect, FormCheckbox } from '../forms';
@@ -21,6 +21,59 @@ const BasicInfoStep: React.FC = () => {
     const isStateBudgetTask = watch('is_state_budget_task');
     const hasPriorityClaim = watch('has_priority_claim');
     const priorityType = watch('priority_type');
+    
+    const ipcValue = watch('ipc_classification');
+    const locarnoValue = watch('locarno_classification');
+
+    // Local state for split inputs
+    const [ipcParts, setIpcParts] = useState({ section: '', classCode: '', subclass: '', group: '' });
+    const [locarnoParts, setLocarnoParts] = useState({ classCode: '', subclass: '', product: '' });
+
+    // Parse IPC value on load / change
+    useEffect(() => {
+        if (!ipcValue) return;
+        // Expected format: A01B 1/00 (Section Class Subclass Group)
+        // Heuristic parsing
+        const match = ipcValue.match(/^([A-Z])(\d{0,2})([A-Z]?)\s*(.*)$/);
+        if (match) {
+            setIpcParts({
+                section: match[1] || '',
+                classCode: match[2] || '',
+                subclass: match[3] || '',
+                group: match[4] || ''
+            });
+        }
+    }, [ipcValue]);
+
+    // Parse Locarno value on load / change
+    useEffect(() => {
+        if (!locarnoValue) return;
+        // Expected format: 01-01-100001 (Class-Subclass-Product)
+        const parts = locarnoValue.split('-');
+        setLocarnoParts({
+            classCode: parts[0] || '',
+            subclass: parts[1] || '',
+            product: parts.slice(2).join('-') || ''
+        });
+    }, [locarnoValue]);
+
+    const updateIpc = (newParts: typeof ipcParts) => {
+        setIpcParts(newParts);
+        // Construct: Section(1) + Class(2) + Subclass(1) + space + Group
+        const val = `${newParts.section}${newParts.classCode}${newParts.subclass} ${newParts.group}`.trim();
+        setValue('ipc_classification', val, { shouldValidate: true });
+    };
+
+    const updateLocarno = (newParts: typeof locarnoParts) => {
+        setLocarnoParts(newParts);
+        // Construct: Class-Subclass-Product
+        // Only add hyphens if previous part exists to avoid leading hyphens on partial entry?
+        // User asked for "01 - 01 - 100001".
+        const val = [newParts.classCode, newParts.subclass, newParts.product]
+            .filter(p => p) // simple join?
+            .join('-');
+        setValue('locarno_classification', val, { shouldValidate: true });
+    };
 
     // Priority claims field array
     const { fields: priorityClaims, append: appendPriorityClaim, remove: removePriorityClaim } = useFieldArray({
@@ -53,6 +106,8 @@ const BasicInfoStep: React.FC = () => {
             agreement_name: null,
         });
     };
+
+    const inputBaseClass = "w-full px-3 py-2 rounded-lg border bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 border-slate-300 dark:border-slate-600";
 
     return (
         <div className="space-y-6">
@@ -164,14 +219,43 @@ const BasicInfoStep: React.FC = () => {
                     </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormInput
-                            label={t('application.steps.classification.locarno')}
-                            name="locarno_classification"
-                            placeholder={t('application.steps.classification.locarnoPlaceholder')}
-                            register={register('locarno_classification')}
-                            error={errors.locarno_classification}
-                            helperText={t('application.steps.classification.locarnoHelper')}
-                        />
+                        {/* Locarno Split Input */}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                {t('application.steps.classification.locarno')}
+                            </label>
+                            <div className="flex gap-2 items-center">
+                                <input
+                                    type="text"
+                                    className={`${inputBaseClass} w-16 text-center`}
+                                    placeholder="01"
+                                    value={locarnoParts.classCode}
+                                    onChange={(e) => updateLocarno({ ...locarnoParts, classCode: e.target.value })}
+                                />
+                                <span className="text-slate-400">-</span>
+                                <input
+                                    type="text"
+                                    className={`${inputBaseClass} w-16 text-center`}
+                                    placeholder="01"
+                                    value={locarnoParts.subclass}
+                                    onChange={(e) => updateLocarno({ ...locarnoParts, subclass: e.target.value })}
+                                />
+                                <span className="text-slate-400">-</span>
+                                <input
+                                    type="text"
+                                    className={`${inputBaseClass} flex-1`}
+                                    placeholder="100001"
+                                    value={locarnoParts.product}
+                                    onChange={(e) => updateLocarno({ ...locarnoParts, product: e.target.value })}
+                                />
+                            </div>
+                            {errors.locarno_classification && (
+                                <p className="mt-1 text-sm text-red-500">{errors.locarno_classification.message}</p>
+                            )}
+                            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                {t('application.steps.classification.locarnoHelper')}
+                            </p>
+                        </div>
 
                         <FormInput
                             label={t('application.steps.classification.fieldOfUse')}
@@ -191,14 +275,54 @@ const BasicInfoStep: React.FC = () => {
                         {t('application.steps.classification.titleIpc')}
                     </h3>
 
-                    <FormInput
-                        label={t('application.steps.classification.ipc')}
-                        name="ipc_classification"
-                        placeholder={t('application.steps.classification.ipcPlaceholder')}
-                        register={register('ipc_classification')}
-                        error={errors.ipc_classification}
-                        helperText={t('application.steps.classification.ipcHelper')}
-                    />
+                    {/* IPC Split Input */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            {t('application.steps.classification.ipc')}
+                        </label>
+                        <div className="flex gap-2 items-center">
+                            <input
+                                type="text"
+                                className={`${inputBaseClass} w-14 text-center`}
+                                placeholder="A"
+                                maxLength={1}
+                                value={ipcParts.section}
+                                onChange={(e) => updateIpc({ ...ipcParts, section: e.target.value.toUpperCase() })}
+                            />
+                            <span className="text-slate-400">-</span>
+                            <input
+                                type="text"
+                                className={`${inputBaseClass} w-16 text-center`}
+                                placeholder="01"
+                                maxLength={2}
+                                value={ipcParts.classCode}
+                                onChange={(e) => updateIpc({ ...ipcParts, classCode: e.target.value })}
+                            />
+                            <span className="text-slate-400">-</span>
+                            <input
+                                type="text"
+                                className={`${inputBaseClass} w-14 text-center`}
+                                placeholder="B"
+                                maxLength={1}
+                                value={ipcParts.subclass}
+                                onChange={(e) => updateIpc({ ...ipcParts, subclass: e.target.value.toUpperCase() })}
+                            />
+                            <span className="text-slate-400">-</span>
+                            <input
+                                type="text"
+                                className={`${inputBaseClass} flex-1`}
+                                placeholder="1/00"
+                                value={ipcParts.group}
+                                onChange={(e) => updateIpc({ ...ipcParts, group: e.target.value })}
+                            />
+                        </div>
+                        {errors.ipc_classification && (
+                            <p className="mt-1 text-sm text-red-500">{errors.ipc_classification.message}</p>
+                        )}
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                            {t('application.steps.classification.ipcHelper')}
+                        </p>
+                    </div>
                 </div>
             )}
 

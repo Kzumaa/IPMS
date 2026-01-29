@@ -98,17 +98,6 @@ class ApplicationRequestResource extends JsonResource
                     : null,
             ]),
 
-            'appeal' => $this->whenLoaded('appeal', fn() => [
-                'appeal_type' => $this->appeal->appeal_type->value,
-                'appeal_type_label' => $this->appeal->appeal_type->label(),
-                'grounds' => $this->appeal->grounds,
-                'deadline' => $this->appeal->deadline?->format('Y-m-d'),
-                'is_within_deadline' => $this->appeal->isWithinDeadline(),
-                'resolved_at' => $this->appeal->resolved_at?->format('Y-m-d'),
-                'resolution' => $this->appeal->resolution?->value,
-                'resolution_label' => $this->appeal->resolution?->label(),
-            ]),
-
             'complaint' => $this->whenLoaded('complaint', fn() => [
                 'grounds' => $this->complaint->grounds,
                 'deadline' => $this->complaint->deadline?->format('Y-m-d'),

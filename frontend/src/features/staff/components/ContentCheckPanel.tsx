@@ -9,13 +9,6 @@ interface ContentCheckPanelProps {
     onSuccess?: () => void;
 }
 
-interface CriteriaItem {
-    id: string;
-    label: string;
-    description: string;
-    score: number; // 0: not assessed, 1: fail, 2: concern, 3: pass
-}
-
 export default function ContentCheckPanel({ application, onSuccess }: ContentCheckPanelProps) {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
@@ -23,88 +16,6 @@ export default function ContentCheckPanel({ application, onSuccess }: ContentChe
 
     const [result, setResult] = useState<'ACCEPTABLE' | 'OBJECTION' | 'REJECTED'>('ACCEPTABLE');
     const [notes, setNotes] = useState('');
-    const [criteria, setCriteria] = useState<CriteriaItem[]>(() => {
-        const items: CriteriaItem[] = [];
-
-        // Patent and Utility Solution criteria
-        if (application.app_type === 'PATENT' || application.app_type === 'UTILITY') {
-            items.push({
-                id: 'novelty',
-                label: t('staff.contentCheck.novelty'),
-                description: t('staff.contentCheck.noveltyDesc'),
-                score: 0,
-            });
-
-            if (application.app_type === 'PATENT') {
-                items.push({
-                    id: 'inventive_step',
-                    label: t('staff.contentCheck.inventiveStep'),
-                    description: t('staff.contentCheck.inventiveStepDesc'),
-                    score: 0,
-                });
-            }
-
-            items.push({
-                id: 'industrial_applicability',
-                label: t('staff.contentCheck.industrialApplicability'),
-                description: t('staff.contentCheck.industrialApplicabilityDesc'),
-                score: 0,
-            });
-
-            items.push({
-                id: 'sufficient_disclosure',
-                label: t('staff.contentCheck.sufficientDisclosure'),
-                description: t('staff.contentCheck.sufficientDisclosureDesc'),
-                score: 0,
-            });
-
-            items.push({
-                id: 'claims_supported',
-                label: t('staff.contentCheck.claimsSupported'),
-                description: t('staff.contentCheck.claimsSupportedDesc'),
-                score: 0,
-            });
-
-            items.push({
-                id: 'unity_invention',
-                label: t('staff.contentCheck.unityInvention'),
-                description: t('staff.contentCheck.unityInventionDesc'),
-                score: 0,
-            });
-        }
-
-        // Design criteria
-        if (application.app_type === 'INDUSTRIAL_DESIGN') {
-            items.push({
-                id: 'design_novelty',
-                label: t('staff.contentCheck.designNovelty'),
-                description: t('staff.contentCheck.designNoveltyDesc'),
-                score: 0,
-            });
-
-            items.push({
-                id: 'design_originality',
-                label: t('staff.contentCheck.designOriginality'),
-                description: t('staff.contentCheck.designOriginalityDesc'),
-                score: 0,
-            });
-
-            items.push({
-                id: 'design_clarity',
-                label: t('staff.contentCheck.designClarity'),
-                description: t('staff.contentCheck.designClarityDesc'),
-                score: 0,
-            });
-        }
-
-        return items;
-    });
-
-    const handleCriteriaChange = (id: string, score: number) => {
-        setCriteria(prev => prev.map(item =>
-            item.id === id ? { ...item, score } : item
-        ));
-    };
 
     const handleSubmit = async () => {
         const submitResult = await dispatch(
@@ -119,28 +30,6 @@ export default function ContentCheckPanel({ application, onSuccess }: ContentChe
             onSuccess?.();
         }
     };
-
-    const getScoreColor = (score: number) => {
-        switch (score) {
-            case 3: return 'text-green-600 dark:text-green-400';
-            case 2: return 'text-yellow-600 dark:text-yellow-400';
-            case 1: return 'text-red-600 dark:text-red-400';
-            default: return 'text-slate-400';
-        }
-    };
-
-    const getScoreIcon = (score: number) => {
-        switch (score) {
-            case 3: return 'check_circle';
-            case 2: return 'warning';
-            case 1: return 'cancel';
-            default: return 'radio_button_unchecked';
-        }
-    };
-
-    const allAssessed = criteria.every(item => item.score > 0);
-    const hasFailures = criteria.some(item => item.score === 1);
-    const hasConcerns = criteria.some(item => item.score === 2);
 
     return (
         <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
@@ -197,110 +86,6 @@ export default function ContentCheckPanel({ application, onSuccess }: ContentChe
                     </div>
                 </div>
             </div>
-
-            {/* Examination Criteria */}
-            <div className="mb-6">
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
-                    {t('staff.contentCheck.examinationCriteria')}
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                    {t('staff.contentCheck.assessEachCriteria')}
-                </p>
-
-                <div className="space-y-4">
-                    {criteria.map((item) => (
-                        <div
-                            key={item.id}
-                            className="border border-slate-200 dark:border-slate-700 rounded-lg p-4"
-                        >
-                            <div className="flex items-start justify-between mb-3">
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-slate-900 dark:text-white mb-1">
-                                        {item.label}
-                                    </h4>
-                                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                                        {item.description}
-                                    </p>
-                                </div>
-                                <span className={`material-symbols-outlined text-2xl ml-4 ${getScoreColor(item.score)}`}>
-                                    {getScoreIcon(item.score)}
-                                </span>
-                            </div>
-
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => handleCriteriaChange(item.id, 3)}
-                                    className={`flex-1 py-2 px-3 rounded-lg border-2 transition-all text-sm font-medium ${
-                                        item.score === 3
-                                            ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
-                                            : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-green-300'
-                                    }`}
-                                >
-                                    {t('staff.contentCheck.pass')}
-                                </button>
-                                <button
-                                    onClick={() => handleCriteriaChange(item.id, 2)}
-                                    className={`flex-1 py-2 px-3 rounded-lg border-2 transition-all text-sm font-medium ${
-                                        item.score === 2
-                                            ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300'
-                                            : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-yellow-300'
-                                    }`}
-                                >
-                                    {t('staff.contentCheck.concern')}
-                                </button>
-                                <button
-                                    onClick={() => handleCriteriaChange(item.id, 1)}
-                                    className={`flex-1 py-2 px-3 rounded-lg border-2 transition-all text-sm font-medium ${
-                                        item.score === 1
-                                            ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                                            : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-red-300'
-                                    }`}
-                                >
-                                    {t('staff.contentCheck.fail')}
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Assessment Summary */}
-            {allAssessed && (
-                <div className={`rounded-lg p-4 mb-6 ${
-                    hasFailures
-                        ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-                        : hasConcerns
-                        ? 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800'
-                        : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-                }`}>
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className={`material-symbols-outlined ${
-                            hasFailures ? 'text-red-600' : hasConcerns ? 'text-yellow-600' : 'text-green-600'
-                        }`}>
-                            {hasFailures ? 'error' : hasConcerns ? 'warning' : 'check_circle'}
-                        </span>
-                        <h4 className={`font-semibold ${
-                            hasFailures ? 'text-red-800 dark:text-red-200' :
-                            hasConcerns ? 'text-yellow-800 dark:text-yellow-200' :
-                            'text-green-800 dark:text-green-200'
-                        }`}>
-                            {t('staff.contentCheck.assessmentSummary')}
-                        </h4>
-                    </div>
-                    <p className={`text-sm ${
-                        hasFailures ? 'text-red-700 dark:text-red-300' :
-                        hasConcerns ? 'text-yellow-700 dark:text-yellow-300' :
-                        'text-green-700 dark:text-green-300'
-                    }`}>
-                        {hasFailures
-                            ? t('staff.contentCheck.hasFailures')
-                            : hasConcerns
-                            ? t('staff.contentCheck.hasConcerns')
-                            : t('staff.contentCheck.allPass')
-                        }
-                    </p>
-                </div>
-            )}
 
             {/* Result Selection */}
             <div className="mb-6">
@@ -386,7 +171,7 @@ export default function ContentCheckPanel({ application, onSuccess }: ContentChe
             {/* Submit Button */}
             <button
                 onClick={handleSubmit}
-                disabled={examinationLoading || !allAssessed || ((result === 'OBJECTION' || result === 'REJECTED') && !notes.trim())}
+                disabled={examinationLoading || ((result === 'OBJECTION' || result === 'REJECTED') && !notes.trim())}
                 className="w-full bg-purple-600 text-white py-3 px-6 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-colors flex items-center justify-center gap-2"
             >
                 {examinationLoading ? (

@@ -9,8 +9,11 @@ export interface Application {
   // Note: abstract, description, claims are stored as file attachments
   // Use attachments with doc_type: ABSTRACT, DESCRIPTION, CLAIMS
   status: ApplicationStatus;
-  filing_date: string | null;
-  priority_date: string | null;
+  filing_date?: string | null;
+  issue_date?: string | null;
+  expiry_date?: string | null;
+  registration_number?: string | null;
+  priority_date?: string | null;
   priority_number: string | null;
   priority_country: string | null;
   is_pct: boolean;

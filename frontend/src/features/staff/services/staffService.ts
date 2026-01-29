@@ -73,13 +73,6 @@ export interface StaffRequest {
         licensor?: { id: number; name: string; email: string };
         licensees?: Array<{ id: number; name: string; email: string }>;
     };
-    appeal?: {
-        notice_date?: string;
-        grounds: string;
-        deadline?: string;
-        resolution?: string;
-        resolved_at?: string;
-    };
     complaint?: {
         grounds: string;
         deadline: string;
@@ -94,11 +87,6 @@ export interface StaffRequest {
         total_amount: number;
         status: string;
     };
-}
-
-export interface AppealResolutionRequest {
-    resolution: 'UPHELD' | 'OVERTURNED' | 'PARTIAL' | 'WITHDRAWN';
-    notes?: string;
 }
 
 export interface ComplaintResolutionRequest {
@@ -225,11 +213,6 @@ const staffService = {
 
     async refuseRequest(requestId: number, notes: string): Promise<ApiResponse<StaffRequest>> {
         const response = await axiosClient.post(`${BASE_URL}/requests/${requestId}/refuse`, { notes });
-        return response.data;
-    },
-
-    async resolveAppeal(requestId: number, data: AppealResolutionRequest): Promise<ApiResponse<StaffRequest>> {
-        const response = await axiosClient.post(`${BASE_URL}/requests/${requestId}/resolve-appeal`, data);
         return response.data;
     },
 

@@ -179,60 +179,23 @@ class AmendmentService extends BaseRequestService
             // Generate fee quote based on changes
             $this->generateEditModeFeeQuote($request, $pendingVersion);
 
-            // PRE-GRANT: Auto-apply immediately
-            if (!$isPostGrant) {
-                // Apply changes immediately
-                $this->amendmentVersionService->applyPendingVersion($pendingVersion, $userId);
+            // Require staff approval for ALL amendments (Pre and Post grant)
+            $request->update([
+                'status' => \App\Enums\RequestStatus::SUBMITTED,
+                'request_date' => now()->toDateString(),
+            ]);
 
-                // Adjust status based on changes
-                $this->adjustStatusForPreGrantAmendment($application, $pendingVersion);
-
-                // Mark request as auto-approved
-                $request->update([
-                    'status' => \App\Enums\RequestStatus::APPROVED,
-                    'request_date' => now()->toDateString(),
-                    'processed_by' => $userId,
-                    'processed_date' => now()->toDateString(),
-                    'processing_notes' => 'Pre-grant amendment auto-applied',
-                ]);
-            } else {
-                // POST-GRANT: Require staff approval
-                $request->update([
-                    'status' => \App\Enums\RequestStatus::SUBMITTED,
-                    'request_date' => now()->toDateString(),
-                ]);
-
-                // Set application to UNDER_AMENDMENT
-                $application->update([
-                    'previous_status' => $application->status,
-                    'status' => \App\Enums\ApplicationStatus::UNDER_AMENDMENT,
-                ]);
-            }
+            // Set application to UNDER_AMENDMENT to lock it during review
+            $application->update([
+                'previous_status' => $application->status,
+                'status' => \App\Enums\ApplicationStatus::UNDER_AMENDMENT,
+            ]);
 
             return $request->load(['amendment', 'amendment.pendingVersion', 'feeQuote', 'feeQuote.lines']);
         });
     }
 
-    /**
-     * Adjust application status after pre-grant amendment is auto-applied.
-     *
-     * Logic per CLAUDE.md Pre-grant Amendment:
-     * - If attachments changed → revert to SUBMITTED (restart formality)
-     * - If only parties/admin changed → status remains unchanged
-     */
-    protected function adjustStatusForPreGrantAmendment(
-        Application $application,
-        \App\Models\ApplicationPendingVersion $pendingVersion
-    ): void {
-        $changedFields = $pendingVersion->changed_fields ?? [];
-        $attachmentsChanged = in_array('attachments', $changedFields);
 
-        if ($attachmentsChanged) {
-            // Restart formality examination per CLAUDE.md
-            $application->update(['status' => \App\Enums\ApplicationStatus::SUBMITTED]);
-        }
-        // Otherwise, status remains unchanged (parties/admin only)
-    }
 
     /**
      * Generate fee quote for edit-mode amendment based on changes.
@@ -297,29 +260,82 @@ class AmendmentService extends BaseRequestService
                 $amendment->pendingVersion,
                 $request->processed_by
             );
-        } else if ($amendment) {
-            // Legacy form-based amendment
-            $docType = $this->sectionToDocType($amendment->section);
-            if ($docType) {
-                $application->attachments()
-                    ->where('doc_type', $docType)
-                    ->whereNull('request_id')
-                    ->update(['is_current' => false]);
-                $request->attachments()
-                    ->where('doc_type', $docType)
-                    ->update(['is_current' => true]);
+        } else {
+            if ($amendment) {
+                // Legacy form-based amendment
+                $docType = $this->sectionToDocType($amendment->section);
+                if ($docType) {
+                    $application->attachments()
+                        ->where('doc_type', $docType)
+                        ->whereNull('request_id')
+                        ->update(['is_current' => false]);
+                    $request->attachments()
+                        ->where('doc_type', $docType)
+                        ->update(['is_current' => true]);
+                }
             }
+
+            // Create version snapshot (only for legacy path)
+            $this->versioningService->createVersionFromAmendment(
+                $application,
+                $request,
+                $request->processed_by
+            );
         }
 
-        // Create version snapshot
-        $this->versioningService->createVersionFromAmendment(
-            $application,
-            $request,
-            $request->processed_by
-        );
+        // Restore status based on Amendment Logic
+        if ($application->previous_status === \App\Enums\ApplicationStatus::GRANTED) {
+             // POST-GRANT: Always return to GRANTED (New Version)
+             $application->update([
+                'status' => \App\Enums\ApplicationStatus::GRANTED,
+                'previous_status' => null,
+            ]);
+        } else {
+            // PRE-GRANT: Logic depends on what changed
+            $shouldResetProcess = false;
 
-        // Restore status (post-grant only)
-        $this->restoreApplicationStatus($application);
+            if ($amendment && $amendment->hasPendingVersion()) {
+                $changedFields = $amendment->pendingVersion->changed_fields ?? [];
+                if ($this->isContentChange($changedFields)) {
+                    $shouldResetProcess = true;
+                }
+            } elseif ($amendment) {
+                // Legacy check
+                 $section = $amendment->section[0] ?? null;
+                 if (in_array($section, [\App\Enums\AmendmentSection::SPECIFICATION->value, \App\Enums\AmendmentSection::CLAIMS->value, \App\Enums\AmendmentSection::DRAWINGS->value])) {
+                     $shouldResetProcess = true;
+                 }
+            }
+
+            if ($shouldResetProcess) {
+                $application->update([
+                    'status' => \App\Enums\ApplicationStatus::FORMALITY_EXAM,
+                    'previous_status' => null,
+                ]);
+            } else {
+                // Restore previous status
+                $application->update([
+                    'status' => $application->previous_status ?? \App\Enums\ApplicationStatus::FORMALITY_EXAM, // Fallback if null
+                    'previous_status' => null,
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Check if the changed fields constitute a "Content/Docs" change.
+     */
+    private function isContentChange(array $changedFields): bool
+    {
+        $contentFields = [
+            'attachments',
+            'title',
+            'ipc_classes',
+            'locarno_classes',
+            'priority_claims',
+        ];
+
+        return !empty(array_intersect($changedFields, $contentFields));
     }
 
     /**
@@ -336,24 +352,10 @@ class AmendmentService extends BaseRequestService
             $this->amendmentVersionService->discardPendingVersion($amendment->pendingVersion);
         }
 
-        // Restore to GRANTED (post-grant refusals)
-        if ($application->previous_status === \App\Enums\ApplicationStatus::GRANTED) {
+        // Restore previous status (for both Pre-grant and Post-grant)
+        if ($application->previous_status) {
             $application->update([
-                'status' => \App\Enums\ApplicationStatus::GRANTED,
-                'previous_status' => null,
-            ]);
-        }
-    }
-
-    /**
-     * Restore application status after POST-GRANT amendment approval.
-     * Post-grant amendments always return to GRANTED.
-     */
-    protected function restoreApplicationStatus(Application $application): void
-    {
-        if ($application->previous_status === \App\Enums\ApplicationStatus::GRANTED) {
-            $application->update([
-                'status' => \App\Enums\ApplicationStatus::GRANTED,
+                'status' => $application->previous_status,
                 'previous_status' => null,
             ]);
         }

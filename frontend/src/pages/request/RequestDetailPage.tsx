@@ -8,12 +8,10 @@ import {
   deleteAssignment,
   deleteLicense,
   deleteSplit,
-  deleteAppeal,
   submitAmendment,
   submitAssignment,
   submitLicense,
   submitSplit,
-  submitAppeal,
 } from '../../features/request/store/requestSlice';
 import { RequestDetail } from '../../features/request/components';
 import type { RequestType } from '../../features/request/types/enums';
@@ -24,7 +22,6 @@ const typeFromSlug = (slug: string): RequestType => {
     assignments: 'ASSIGNMENT',
     licenses: 'LICENSE',
     splits: 'SPLIT',
-    appeals: 'APPEAL',
   };
   return mapping[slug] || 'AMENDMENT';
 };
@@ -54,7 +51,6 @@ const RequestDetailPage: React.FC = () => {
       ASSIGNMENT: deleteAssignment,
       LICENSE: deleteLicense,
       SPLIT: deleteSplit,
-      APPEAL: deleteAppeal,
     };
 
     const action = deleteActions[currentRequest.type as keyof typeof deleteActions];
@@ -74,7 +70,6 @@ const RequestDetailPage: React.FC = () => {
       ASSIGNMENT: submitAssignment,
       LICENSE: submitLicense,
       SPLIT: submitSplit,
-      APPEAL: submitAppeal,
     };
 
     const action = submitActions[currentRequest.type as keyof typeof submitActions];

@@ -541,7 +541,6 @@
             "startExamination": "Start Examination",
             "approve": "Approve",
             "refuse": "Refuse",
-            "resolveAppeal": "Resolve Appeal",
             "resolveComplaint": "Resolve Complaint",
             "resolve": "Resolve",
             "complaintAcceptedInfo": "Accepting the complaint will revert the application to the previous examination stage for re-examination.",
@@ -689,7 +688,6 @@
         "createAssignment": "Create Assignment Request",
         "createLicense": "Create License Request",
         "createSplit": "Create Split Request",
-        "createAppeal": "Create Appeal",
         "submit": "Submit Request",
         "detail": "Request Detail",
         "loadError": "Unable to load request information",
@@ -715,7 +713,6 @@
             "LICENSE": "License",
             "SPLIT": "Split",
             "CONVERSION": "Conversion",
-            "APPEAL": "Appeal",
             "COMPLAINT": "Complaint",
             "RENEWAL": "Renewal",
             "TERMINATION": "Termination",
@@ -796,33 +793,6 @@
             "descriptionPlaceholder": "Describe in detail the portion of the invention to be separated into a new application...",
             "infoTitle": "Split Application Note",
             "infoDescription": "Split requests are used when the original application contains multiple independent inventions/designs and needs to be separated into distinct applications."
-        },
-        "appeal": {
-            "details": "Appeal Details",
-            "type": "Appeal Type",
-            "types": {
-                "DECISION_APPEAL": "Decision Appeal",
-                "NOTICE_OBJECTION": "Notice Objection"
-            },
-            "targetDecision": "Target Decision",
-            "targetDecisionPlaceholder": "Decision ID",
-            "targetEvent": "Target Event",
-            "targetEventPlaceholder": "Event ID",
-            "noticeDate": "Notice Date",
-            "noticeDateHelp": "The date you received the notice/decision to appeal",
-            "grounds": "Appeal Grounds",
-            "groundsPlaceholder": "Present detailed grounds for appeal, including legal basis and evidence...",
-            "deadline": "Appeal Deadline",
-            "resolution": "Resolution",
-            "resolutions": {
-                "UPHELD": "Decision Upheld",
-                "OVERTURNED": "Decision Overturned",
-                "PARTIAL": "Partially Modified",
-                "WITHDRAWN": "Appeal Withdrawn"
-            },
-            "resolvedAt": "Resolved Date",
-            "deadlineWarning": "Appeal Deadline",
-            "deadlineWarningDesc": "Appeals must be filed within 90 days from the date of receiving the notice/decision."
         },
         "complaint": {
             "details": "Complaint Details",

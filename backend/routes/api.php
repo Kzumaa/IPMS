@@ -148,7 +148,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/{requestId}/submit', [SplitController::class, 'submit']);
         });
 
-        // Complaint Requests (replaces Appeals per SRS Section 3.2)
+        // Complaint Requests (SRS Section 3.2)
         Route::prefix('/{id}/requests/complaints')->group(function () {
             Route::get('/', [ComplaintController::class, 'index']);
             Route::post('/', [ComplaintController::class, 'store']);

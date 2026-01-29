@@ -209,7 +209,7 @@ class ApplicationTimelineController extends Controller
             'requests.processor',
             'requests.amendment',
             'requests.license',
-            'requests.appeal',
+            'requests.complaint',
         ]);
 
         return $application->requests->map(function ($request) {
@@ -251,7 +251,7 @@ class ApplicationTimelineController extends Controller
             'LICENSE' => ['title' => 'License Request', 'icon' => 'license'],
             'SPLIT' => ['title' => 'Split Request', 'icon' => 'call_split'],
             'CONVERSION' => ['title' => 'Conversion Request', 'icon' => 'change_circle'],
-            'APPEAL' => ['title' => 'Appeal', 'icon' => 'gavel'],
+            'COMPLAINT' => ['title' => 'Complaint', 'icon' => 'gavel'],
         ];
 
         return $typeMap[$type] ?? ['title' => $type, 'icon' => 'description'];
@@ -300,8 +300,8 @@ class ApplicationTimelineController extends Controller
             $detail = " - {$request->assignment->transfer_type->label()}";
         } elseif ($request->relationLoaded('license') && $request->license) {
             $detail = " - {$request->license->license_type->label()}";
-        } elseif ($request->relationLoaded('appeal') && $request->appeal) {
-            $detail = " - {$request->appeal->appeal_type->label()}";
+        } elseif ($request->relationLoaded('complaint') && $request->complaint) {
+            $detail = " - Complaint #{$request->complaint->complaint_number}";
         }
 
         return "Status: {$statusText}{$detail}";

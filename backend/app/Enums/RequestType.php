@@ -11,7 +11,6 @@ enum RequestType: string
     case LICENSE = 'LICENSE';
     case SPLIT = 'SPLIT';
     case CONVERSION = 'CONVERSION';
-    case APPEAL = 'APPEAL'; // Deprecated: Use COMPLAINT instead
     case COMPLAINT = 'COMPLAINT';
     case RENEWAL = 'RENEWAL';
     case TERMINATION = 'TERMINATION';
@@ -28,7 +27,6 @@ enum RequestType: string
             self::LICENSE => 'REQ-LICENSE',
             self::SPLIT => 'REQ-SPLIT',
             self::CONVERSION => 'REQ-CONVERT',
-            self::APPEAL => 'REQ-APPEAL',
             self::COMPLAINT => 'REQ-COMPLAINT',
             self::RENEWAL => 'REQ-RENEWAL',
             self::TERMINATION => 'REQ-TERMINATE',

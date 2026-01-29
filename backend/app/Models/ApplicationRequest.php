@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\RequestStatus;
 use App\Enums\RequestType;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ApplicationRequest extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'application_id',
         'type',
@@ -55,19 +58,9 @@ class ApplicationRequest extends Model
         return $this->hasOne(RequestAmendment::class, 'request_id');
     }
 
-    public function assignment(): HasOne
-    {
-        return $this->hasOne(RequestAssignment::class, 'request_id');
-    }
-
     public function license(): HasOne
     {
         return $this->hasOne(RequestLicense::class, 'request_id');
-    }
-
-    public function appeal(): HasOne
-    {
-        return $this->hasOne(RequestAppeal::class, 'request_id');
     }
 
     public function complaint(): HasOne
@@ -140,9 +133,7 @@ class ApplicationRequest extends Model
     {
         return match ($this->type) {
             RequestType::AMENDMENT => $this->amendment,
-            RequestType::ASSIGNMENT => $this->assignment,
             RequestType::LICENSE => $this->license,
-            RequestType::APPEAL => $this->appeal,
             RequestType::COMPLAINT => $this->complaint,
             RequestType::RENEWAL => $this->renewal,
             RequestType::TERMINATION => $this->termination,

@@ -156,6 +156,12 @@ export const authSlice = createSlice({
                 state.isAuthenticated = false;
                 localStorage.removeItem('token');
             })
+            .addCase(logout.rejected, (state) => {
+                state.user = null;
+                state.token = null;
+                state.isAuthenticated = false;
+                localStorage.removeItem('token');
+            })
             // Fetch Me (restore user on page refresh)
             .addCase(fetchMe.pending, (state) => {
                 state.isLoading = true;

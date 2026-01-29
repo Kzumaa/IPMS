@@ -50,10 +50,11 @@ const ApplicationDetailPage: React.FC = () => {
     currentApplication &&
     !terminalStates.includes(currentApplication.status as ApplicationStatus);
 
-  // Check if application can be amended (submitted but not in terminal states)
+  // Check if application can be amended (submitted but not in terminal states, or GRANTED)
   const canAmend =
     currentApplication &&
-    !terminalStates.includes(currentApplication.status as ApplicationStatus);
+    (!terminalStates.includes(currentApplication.status as ApplicationStatus) ||
+      currentApplication.status === ApplicationStatus.GRANTED);
 
   console.log(currentApplication);
 

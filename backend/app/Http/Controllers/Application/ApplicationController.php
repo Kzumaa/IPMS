@@ -86,7 +86,7 @@ class ApplicationController extends Controller
      */
     public function grantedTitles()
     {
-        $applications = Application::with(['metrics', 'parties'])
+        $applications = Application::with(['metrics', 'parties', 'substantiveExamRecords'])
             ->where('created_by', Auth::id())
             ->where('status', ApplicationStatus::GRANTED)
             ->orderBy('created_at', 'desc')
@@ -104,7 +104,7 @@ class ApplicationController extends Controller
     {
         $userId = Auth::id();
 
-        $applications = Application::with(['metrics', 'parties'])
+        $applications = Application::with(['metrics', 'parties', 'substantiveExamRecords'])
             ->whereHas('requests', function ($query) use ($userId) {
                 $query->where('type', RequestType::LICENSE)
                     ->where('status', RequestStatus::APPROVED)
