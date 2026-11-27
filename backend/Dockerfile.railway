@@ -1,0 +1,63 @@
+FROM serversideup/php:8.3-fpm-nginx
+
+# Switch to root to install OS packages and PHP extensions
+USER root
+
+# Install ImageMagick, Ghostscript (for PDF handling), and utilities
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    unzip \
+    imagemagick \
+    ghostscript \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install/enable all PHP extensions required by your backend
+RUN install-php-extensions \
+    pdo_pgsql \
+    intl \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    redis \
+    imagick
+
+# Allow ImageMagick to read/write PDFs (handles both ImageMagick 6 and 7)
+RUN for f in /etc/ImageMagick-6/policy.xml /etc/ImageMagick-7/policy.xml; do \
+      if [ -f "$f" ]; then \
+        sed -i 's/rights="none" pattern="PDF"/rights="read|write" pattern="PDF"/' "$f"; \
+      fi; \
+    done
+
+# Switch back to non-root user
+USER www-data
+
+WORKDIR /var/www/html
+
+# Install Composer dependencies first for faster rebuild caching
+COPY --chown=www-data:www-data composer.json composer.lock ./
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-scripts
+
+# Copy the rest of the Laravel application
+COPY --chown=www-data:www-data . .
+
+# Ensure writable Laravel runtime directories and generate optimized autoloader
+RUN mkdir -p storage/framework/cache/data \
+             storage/framework/sessions \
+             storage/framework/views \
+             storage/logs \
+             bootstrap/cache \
+    && composer dump-autoload --optimize
+
+# Production PHP & Nginx settings (sized for PDF/document uploads)
+ENV PHP_OPCACHE_ENABLE=1
+ENV PHP_UPLOAD_MAX_FILE_SIZE=25M
+ENV PHP_POST_MAX_SIZE=30M
+ENV SSL_MODE=off
+
+EXPOSE 8080
